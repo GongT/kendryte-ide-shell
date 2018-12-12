@@ -1,0 +1,12 @@
+.logOn {
+	display: none;
+}
+
+body.showLog {
+	.logOn {
+		display: initial;
+	}
+	.logOff {
+		display: none;
+	}
+}

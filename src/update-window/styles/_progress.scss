@@ -1,0 +1,60 @@
+@import "inc";
+
+#progressBar {
+	@include absolute($height: 5px, $bottom: 0);
+	> .inner {
+		background: #3380b7;
+		height: 100%;
+		transition: width 0.2s ease-out;
+		width: 100%;
+	}
+	
+	> .line {
+		@include absolute();
+		opacity: 0.8;
+		background: #3484f8;
+		width: 150%;
+		height: 5px;
+		display: none;
+		position: absolute;
+		&.inc {
+			animation: increase 2s infinite;
+		}
+		&.dec {
+			animation: decrease 2s 0.5s infinite;
+		}
+	}
+	&.hide {
+		opacity: 0;
+	}
+	&.infinite {
+		> .line {
+			display: block;
+		}
+		> .inner {
+			width: 100% !important;
+		}
+	}
+}
+
+@keyframes increase {
+	from {
+		left: -5%;
+		width: 5%;
+	}
+	to {
+		left: 130%;
+		width: 100%;
+	}
+}
+
+@keyframes decrease {
+	from {
+		left: -80%;
+		width: 80%;
+	}
+	to {
+		left: 110%;
+		width: 10%;
+	}
+}

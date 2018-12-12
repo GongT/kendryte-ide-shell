@@ -1,0 +1,11 @@
+@import "inc";
+
+#btnQuit {
+	position: absolute;
+	z-index: 1000;
+	top: 0;
+	right: 0;
+	margin: 5px;
+	font-weight: bold;
+	@include btn-link;
+}

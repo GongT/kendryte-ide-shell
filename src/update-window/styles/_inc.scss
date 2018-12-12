@@ -1,0 +1,87 @@
+@mixin btn-link($hover:#cccccc) {
+	color: #5e5e5e;
+	text-decoration: none;
+	-webkit-app-region: no-drag;
+	
+	&:hover {
+		color: $hover;
+	}
+}
+
+@mixin absolute(
+	$height: 100%,
+	$width: 100%,
+	$top: 0,
+	$left: 0,
+	$bottom: null,
+	$right: null
+) {
+	position: absolute;
+	
+	height: $height;
+	@if ($bottom) {
+		bottom: $bottom;
+	} @else {
+		top: $top;
+	}
+	
+	width: $width;
+	@if ($right) {
+		right: $right;
+	} @else {
+		left: $left;
+	}
+}
+
+@mixin singleAnime($prop, $from, $to, $time:0.2s, $delay:0.2s, $ease: ease) {
+	#{$prop}: $from;
+	body.run & {
+		transition: $prop $time $ease $delay;
+		#{$prop}: $to;
+	}
+}
+
+@mixin Animation($items...) {
+	$pMap: ();
+	
+	$aniList: [];
+	
+	@each $data in $items {
+		$aniList: join($aniList, unquote("#{map-get($data, 'prop')} #{map-get($data, 'time')} #{map-get($data, 'ease')} #{map-get($data, 'delay')}"), comma);
+		$pMap: map-merge($pMap, (
+			#{map-get($data, 'prop')}: (
+				from:map-get($data, 'from'),
+				to:map-get($data, 'to')
+			)
+		));
+	}
+	
+	@each $name, $value in $pMap {
+		#{$name}: map-get($value, 'from');
+	}
+	body.run & {
+		$aniStr: null;
+		@for $i from 1 through length($aniList) {
+			@if $i == 1 {
+				$aniStr: unquote("#{nth($aniList, $i)}");
+			} @else {
+				$aniStr: unquote("#{$aniStr}, #{nth($aniList, $i)}");
+			}
+		}
+		transition: $aniStr;
+		@each $name, $value in $pMap {
+			#{$name}: map-get($value, 'to');
+		}
+	}
+}
+
+@function AnimationItem($prop, $from, $to, $time:0.2s, $delay:0.2s, $ease: ease) {
+	@return (
+		prop: $prop,
+		from: $from,
+		to: $to,
+		time: $time,
+		delay: $delay,
+		ease: $ease,
+	)
+}

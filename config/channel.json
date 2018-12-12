@@ -1,0 +1,5 @@
+{
+	"title": "Kendryte IDE",
+	"channel": "beta",
+	"registry": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/release/IDE.beta.json"
+}

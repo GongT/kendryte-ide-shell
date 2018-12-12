@@ -1,0 +1,43 @@
+{
+	"name": "kendryte-ide-shell",
+	"version": "1.0.0",
+	"repository": "git@github.com:GongT/kendryte-ide-shell.git",
+	"author": "GongT <admin@gongt.me>",
+	"license": "MIT",
+	"engineStrict": false,
+	"main": "./dist/electron-main.js",
+	"scripts": {
+		"watch": "gulp watch",
+		"build": "gulp default",
+		"start": "electron ."
+	},
+	"dependencies": {
+		"7zip-bin-wrapper": "^1.0.1",
+		"electron-util": "^0.10.2",
+		"fs-extra": "^7.0.1",
+		"iconv-lite": "^0.4.24",
+		"multipart-download": "^1.1.0",
+		"source-map-support": "*",
+		"split2": "^3.0.0"
+	},
+	"devDependencies": {
+		"@gongt/single-dog": ">=1.1.11111111",
+		"@types/electron-util": "^0.2.0",
+		"@types/fs-extra": "^5.0.4",
+		"@types/iconv-lite": "^0.0.1",
+		"@types/request": "^2.48.1",
+		"@types/split2": "^2.1.6",
+		"electron": "^3.0.10",
+		"fibers": "^3.1.1",
+		"gulp": "^3.9.1",
+		"gulp-dart-sass": "^0.9.1",
+		"gulp-sourcemaps": "^2.6.4",
+		"gulp-typescript": "^5.0.0",
+		"gulp-watch": "^5.0.1",
+		"sass": "^1.15.2",
+		"typescript": "latest"
+	},
+	"resolutions": {
+		"**/@types/node": "^8.0.24"
+	}
+}

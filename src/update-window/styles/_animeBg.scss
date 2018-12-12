@@ -1,0 +1,21 @@
+@import "inc";
+
+div.background {
+	z-index: -1;
+	background: url("../assets/logo.svg") no-repeat center center;
+	background-size: 40%;
+	@include absolute($top: null);
+	
+	@include Animation(
+			AnimationItem(top, 0, -18px, 0.8s, 0.2s),
+			AnimationItem(opacity, 1, 0.3, 1s, 0s)
+	);
+	
+	body.run & {
+		animation-name: fading;
+		animation-timing-function: ease;
+		animation-delay: 1s;
+		animation-iteration-count: infinite;
+		animation-duration: 2.5s;
+	}
+}
