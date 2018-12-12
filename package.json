@@ -27,7 +27,7 @@
 		"@types/iconv-lite": "^0.0.1",
 		"@types/request": "^2.48.1",
 		"@types/split2": "^2.1.6",
-		"electron": "^3.0.10",
+		"electron": "^3.0.11",
 		"fibers": "^3.1.1",
 		"gulp": "^3.9.1",
 		"gulp-dart-sass": "^0.9.1",
