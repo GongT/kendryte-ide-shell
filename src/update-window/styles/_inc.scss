@@ -1,10 +1,13 @@
-@mixin btn-link($hover:#cccccc) {
-	color: #5e5e5e;
+$btnNormal: #5e5e5e;
+$btnHover: #bfbfbf;
+
+@mixin btn-link() {
+	color: $btnNormal;
 	text-decoration: none;
 	-webkit-app-region: no-drag;
 	
 	&:hover {
-		color: $hover;
+		color: $btnHover;
 	}
 }
 

@@ -1,13 +1,13 @@
 'use strict';
 
-import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from '../library/constants';
 import { remote } from 'electron';
-import { startMainLogic } from '../main/main';
-import { handleError } from '../main/error';
-import { createLogger } from '../library/logger';
+import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from '../library/constants';
 import { doCleanup } from '../library/lifecycle';
-import { loadApplicationData, ISelfConfig } from '../main/appdata';
+import { createLogger } from '../library/logger';
 import { timeout } from '../library/timeout';
+import { ISelfConfig, loadApplicationData } from '../main/appdata';
+import { handleError } from '../main/error';
+import { startMainLogic } from '../main/main';
 
 const container: HTMLDivElement = document.querySelector('div.container');
 document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';
@@ -28,14 +28,14 @@ function resizing(shown: boolean = document.body.classList.toggle('showLog')) {
 	} else {
 		newSize = WINDOW_WIDTH;
 	}
-
+	
 	container.style.width = (newSize - 20) + 'px';
 	w.setSize(newSize, WINDOW_HEIGHT);
-
+	
 	if (newSize === original) {
 		return;
 	}
-
+	
 	const pos = w.getPosition();
 	if (pos[0] <= 0) {
 		return;
@@ -56,7 +56,8 @@ if (document.readyState === 'complete') {
 }
 
 function bootstrap() {
-	Promise.resolve()
+	Promise
+		.resolve()
 		.then(loadApplicationData)
 		.then(async (data) => {
 			await createLogger(
@@ -74,13 +75,17 @@ function bootstrap() {
 }
 
 async function animate(data: ISelfConfig) {
+	const title = document.createElement('title');
+	title.innerText = `${data.title} :: Auto Updater`;
+	document.head.appendChild(title);
+	
 	console.info('animate');
 	await timeout(1000);
-
+	
 	const $main = document.querySelector('#viewMain');
 	$main.querySelector('.title').innerHTML = data.title;
 	$main.querySelector('.subtitle').innerHTML = '(' + data.channel + ')';
-
+	
 	document.body.classList.add('run');
 	return data;
 }

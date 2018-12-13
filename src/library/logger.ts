@@ -1,6 +1,6 @@
 import { is } from 'electron-util';
-import { appRoot, configFile, isBuilt, logPath, nativePath } from './environment';
 import { createWriteStream, ensureDir, ftruncate, open } from 'fs-extra';
+import { appRoot, configFile, isBuilt, logPath, nativePath } from './environment';
 import { registerCleanup } from './lifecycle';
 
 const CLS_INFINITY = 'infinite';
@@ -8,15 +8,15 @@ const CLS_HIDE = 'hide';
 
 export interface ILogger {
 	debug(message: string): void;
-
+	
 	log(message: string): void;
-
+	
 	error(message: string): void;
-
-	action(message: string): void;
-
+	
+	action(message: string, subMessage?: string): void;
+	
 	sub(message: string): void;
-
+	
 	progress(percent: number): void;
 }
 
@@ -24,7 +24,7 @@ class Logger implements ILogger {
 	private readonly $progressInner: HTMLDivElement;
 	private readonly isInfinity = stateStore(this.$progress, CLS_INFINITY, false);
 	private readonly isNaN = stateStore(this.$progress, CLS_HIDE, true);
-
+	
 	constructor(
 		private readonly _output: NodeJS.WritableStream,
 		private readonly $action: HTMLDivElement,
@@ -34,16 +34,18 @@ class Logger implements ILogger {
 	) {
 		this.$progressInner = $progress.querySelector('.inner');
 	}
-
-	public action(message: string): void {
+	
+	public action(message: string, subMessage: string = ''): void {
 		this.$action.innerHTML = message;
+		this.$doing.innerHTML = subMessage;
 		this._writeln(message, 'action');
+		this._writeln(subMessage, 'action-sub');
 	}
-
+	
 	public sub(message: string): void {
 		this.$doing.innerHTML = message;
 	}
-
+	
 	public progress(percent: number): void {
 		if (this.isNaN(isNaN(percent))) {
 			return;
@@ -51,24 +53,24 @@ class Logger implements ILogger {
 		if (this.isInfinity(percent === Infinity)) {
 			return;
 		}
-
+		
 		this.$progressInner.style.width = percent.toFixed(2) + '%';
 	}
-
+	
 	public debug(message: string): void {
 		this._writeln(message, 'log debug');
 	}
-
+	
 	public log(message: string): void {
 		this._writeln(message, 'log');
 		this.sub(message);
 	}
-
+	
 	public error(message: string): void {
 		this._writeln(message, 'error');
-		this.action(message);
+		this.sub(message);
 	}
-
+	
 	private _writeln(message: string, cls: string = '') {
 		const line = document.createElement('div');
 		if (cls) {
@@ -111,8 +113,8 @@ export async function createLogger(
 	await ensureDir(nativePath(path, '..'));
 	const fd = await open(path, 'w');
 	await ftruncate(fd);
-	const stream = createWriteStream(path, { fd, encoding: 'utf8', autoClose: true, start: 0 });
-
+	const stream = createWriteStream(path, {fd, encoding: 'utf8', autoClose: true, start: 0});
+	
 	logger = new Logger(
 		stream,
 		$action,
@@ -120,11 +122,11 @@ export async function createLogger(
 		$progress,
 		$log,
 	);
-
+	
 	logger.debug(`isBuilt=${isBuilt}`);
 	logger.debug(`appRoot=${appRoot}`);
 	logger.debug(`configFile=${configFile}`);
-
+	
 	registerCleanup(() => {
 		logger = null;
 		return new Promise<void>((resolve, reject) => {

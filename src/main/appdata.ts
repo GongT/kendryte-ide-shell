@@ -8,6 +8,7 @@ export interface ISelfConfig {
 	title: string;
 	channel: string;
 	registry: string;
+	thirdParty: string;
 }
 
 export interface IRegistryData extends IDEJson {

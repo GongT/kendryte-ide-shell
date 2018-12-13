@@ -11,14 +11,16 @@ export interface IDEJson {
 	windows: string;
 }
 
+export type UrlKey = 'linux'|'mac'|'windows';
+
 export interface IDEPatchJson {
-	linux: { generic: string };
-	mac: { generic: string };
+	linux: {generic: string};
+	mac: {generic: string};
 	version: string;
-	windows: { generic: string };
+	windows: {generic: string};
 }
 
-function ideUrlPropName() {
+function ideUrlPropName(): UrlKey {
 	if (is.windows) {
 		return 'windows';
 	} else if (is.macos) {
@@ -28,10 +30,10 @@ function ideUrlPropName() {
 	}
 }
 
-export function latestPatch(state: IDEJson): null | IDEPatchJson {
+export function latestPatch(state: IDEJson): null|IDEPatchJson {
 	state.patches.sort((a, b) => {
 		return parseFloat(b.version) - parseFloat(a.version);
 	});
-
+	
 	return state.patches[0];
 }

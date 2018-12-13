@@ -3,9 +3,33 @@
 #btnQuit {
 	position: absolute;
 	z-index: 1000;
-	top: 0;
-	right: 0;
-	margin: 5px;
-	font-weight: bold;
-	@include btn-link;
+	top: 5px;
+	right: 5px;
+	width: 18px;
+	height: 18px;
+	overflow: hidden;
+	
+	text-decoration: none;
+	-webkit-app-region: no-drag;
+	
+	&:before, &:after {
+		position: absolute;
+		content: ' ';
+		height: 18px;
+		width: 2px;
+		background-color: $btnNormal;
+	}
+	&:hover {
+		&:before, &:after {
+			background-color: $btnHover;
+		}
+	}
+	
+	&:before {
+		transform: rotate(45deg);
+	}
+	&:after {
+		transform: rotate(-45deg);
+	}
+	
 }

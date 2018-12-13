@@ -11,3 +11,5 @@ dist/
 !.idea/modules.xml
 !.idea/codeStyles/
 
+DebugContents/*
+!DebugContents/config

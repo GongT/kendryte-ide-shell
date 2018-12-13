@@ -1,22 +1,12 @@
-import MultipartDownload = require('multipart-download');
-import { basename, dirname } from 'path';
+import { request } from './request/request';
 
-export function downloadFile(url: string, saveTo: string) {
-	const download = new MultipartDownload();
-	download.start(url, {
-		numOfConnections: 5,
-		saveDirectory   : dirname(saveTo),
-		fileName        : basename(saveTo),
-	});
-
-	download.on('data', (data, offset) => {
-		console.log('data!', offset);
-	});
-	download.on('error', (err) => {
-		console.log('error!', err);
-	});
-	download.on('end', (output) => {
-		console.log('end!', output);
+export function nodeHttpFetch(method: string, url: string, headers: object = {}) {
+	return request({
+		type: method,
+		url,
+		headers,
+		followRedirects: 3,
+		strictSSL: true,
 	});
 }
 
@@ -29,4 +19,3 @@ export function loadJson<T>(url: string): Promise<T> {
 		}
 	});
 }
-

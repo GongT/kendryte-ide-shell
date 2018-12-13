@@ -45,6 +45,10 @@ div.container {
 		font-size: 16px;
 		user-select: text;
 		text-align: left;
+		> * {
+			margin: 6px 5px;
+			white-space: pre-wrap;
+		}
 	}
 }
 
@@ -99,7 +103,7 @@ div.container {
 	> .footer {
 		text-align: right;
 		> a {
-			@include btn-link(#bfbfbf);
+			@include btn-link();
 		}
 	}
 }

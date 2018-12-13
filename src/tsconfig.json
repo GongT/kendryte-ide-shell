@@ -5,6 +5,7 @@
 			"esnext",
 			"dom"
 		],
+		"inlineSources": true,
 		"baseUrl": ".",
 		"outDir": "../dist",
 		"types": [

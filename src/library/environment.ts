@@ -1,12 +1,12 @@
-import { resolve } from 'path';
 import { is } from 'electron-util';
+import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
 
 const winSlash = /\\/g;
 
 export const isBuilt = /[\/\\]resources[\/\\]app[\/\\]/.test(__dirname);
 console.log(`isBuilt=${isBuilt}`);
-export const appRoot = isBuilt? resolve(__dirname, '../../../../../') : resolve(__dirname, '../../');
+export const appRoot = isBuilt? resolve(__dirname, '../../../../../') : resolve(__dirname, '../../DebugContents');
 console.log(`appRoot=${appRoot}`);
 export const configFile = resolve(appRoot, 'config', configFileName);
 console.log(`configFile=${configFile}`);
@@ -27,6 +27,10 @@ function resolveWindowsPath(...pathSegments: string[]): string {
 
 export function applicationPath(what: string) {
 	return resolve(appRoot, 'Application', what);
+}
+
+export function localPackagePath(what: string) {
+	return resolve(appRoot, 'LocalPackage', what);
 }
 
 export function logPath(what: string) {
