@@ -19,6 +19,7 @@
 		"http-proxy-agent": "^2.1.0",
 		"https-proxy-agent": "^2.2.1",
 		"iconv-lite": "^0.4.24",
+		"progress-stream": "^1.2.0",
 		"rimraf": "^2.6.2",
 		"semver": "^5.6.0",
 		"source-map-support": "*",

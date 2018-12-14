@@ -1,19 +1,21 @@
-export function streamPromise(stream: NodeJS.ReadableStream|NodeJS.WritableStream): Promise<void> {
+export function streamPromise(stream: NodeJS.WritableStream): Promise<NodeJS.WritableStream>;
+export function streamPromise(stream: NodeJS.ReadableStream): Promise<NodeJS.ReadableStream>;
+export function streamPromise(stream: NodeJS.ReadableStream|NodeJS.WritableStream): Promise<NodeJS.ReadableStream|NodeJS.WritableStream> {
 	if (streamHasEnd(stream)) {
-		return Promise.resolve();
+		return Promise.resolve(stream);
 	} else {
 		return new Promise((resolve, reject) => {
 			stream.once('end', () => {
 				console.log('stream end');
-				resolve();
+				resolve(stream);
 			});
 			stream.once('finish', () => {
 				console.log('stream finish');
-				resolve();
+				resolve(stream);
 			});
 			stream.once('close', () => {
 				console.log('stream close');
-				resolve();
+				resolve(stream);
 			});
 			stream.once('error', reject);
 		});

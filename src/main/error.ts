@@ -8,6 +8,6 @@ export function handleError(error: Error) {
 		return;
 	}
 	
-	logger.debug(error.stack);
-	logger.action('Error!', error.message + '\nPlease retry.');
+	logger.error(error.stack);
+	logger.action('Error!', 'See log to more info\nPlease retry.');
 }

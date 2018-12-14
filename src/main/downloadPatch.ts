@@ -9,6 +9,6 @@ export function downloadPatch(template: string, target: string, urls: string[]) 
 		await copy(template, target);
 	});
 	urls.forEach((url) => {
-		downloadAndExtract(url, target);
+		downloadAndExtract(url, target, 'Updates');
 	});
 }

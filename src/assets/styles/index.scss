@@ -87,6 +87,7 @@ div.container {
 				text-align: center;
 				overflow: hidden;
 				text-overflow: ellipsis;
+				white-space: pre-line;
 			}
 			> .line1 {
 				font-weight: bold;

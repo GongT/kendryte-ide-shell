@@ -1,13 +1,13 @@
 'use strict';
 
 import { remote } from 'electron';
-import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from '../library/constants';
-import { doCleanup } from '../library/lifecycle';
-import { createLogger } from '../library/logger';
-import { timeout } from '../library/timeout';
-import { ISelfConfig, loadApplicationData } from '../main/appdata';
-import { handleError } from '../main/error';
-import { startMainLogic } from '../main/main';
+import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from './library/constants';
+import { doCleanup } from './library/lifecycle';
+import { createLogger } from './library/logger';
+import { timeout } from './library/timeout';
+import { ISelfConfig, loadApplicationData } from './main/appdata';
+import { handleError } from './main/error';
+import { startMainLogic } from './main/main';
 
 const container: HTMLDivElement = document.querySelector('div.container');
 document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';

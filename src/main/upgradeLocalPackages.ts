@@ -1,4 +1,4 @@
-import { ensureDir, pathExists, readJson } from 'fs-extra';
+import { ensureDir, pathExists, readFile, readJson, writeFile, writeJson } from 'fs-extra';
 import { resolve as resolveUrl } from 'url';
 import { localPackagePath, nativePath } from '../library/environment';
 import { logger } from '../library/logger';
@@ -7,6 +7,8 @@ import { willRemove } from '../library/removeDirectory';
 import { registerWork, workTitle } from '../library/work';
 import { downloadAndExtract } from './downloadAndExtract';
 import { SYS_NAME } from './release.json';
+
+const CONTENT_PACKAGE_OK = 'install-ok:v0.0.0';
 
 export type IThirdPartyRegistry = ReadonlyArray<{
 	projectName: string;
@@ -73,17 +75,43 @@ export async function upgradeLocalPackages(remote: string) {
 	
 	for (const [name, {version, url}] of Object.entries(remoteVersion)) {
 		const pkgPath = localPackagePath(name);
-		if (!await pathExists(nativePath(pkgPath, '.install-ok'))) {
+		const ifOk = nativePath(pkgPath, '.install-ok');
+		if (!await isInstallOk(ifOk)) {
+			console.log('Missing Required Package: ' + name);
 			registerWork(workTitle('Installing', 'missing package: ' + name));
-			downloadAndExtract(url, pkgPath);
-			throw new Error('write install-ok') || new Error('write bundle-json');
 		} else if (bundleVersion[name] !== version) {
+			console.log(`Update Required Package: ${name} (from ${bundleVersion[name]} to ${version})`);
 			registerWork(workTitle('Updating', 'outdated package: ' + name));
 			willRemove(pkgPath);
-			downloadAndExtract(url, pkgPath);
-			throw new Error('write install-ok') || new Error('write bundle-json');
 		} else {
 			logger.debug('no action on: ' + name);
+			continue;
 		}
+		
+		downloadAndExtract(url, pkgPath, name);
+		registerWork(async () => {
+			await writeInstallOk(ifOk);
+			await writeBundleVersion(bvFile, bundleVersion, name, version);
+		});
 	}
+}
+
+async function isInstallOk(ifOk: string) {
+	if (!await pathExists(ifOk)) {
+		return false;
+	}
+	const content = (await readFile(ifOk, 'utf8')).trim();
+	if (content === CONTENT_PACKAGE_OK) {
+		return true;
+	}
+	return false;
+}
+
+function writeInstallOk(ifOk: string) {
+	return writeFile(ifOk, CONTENT_PACKAGE_OK, 'utf8');
+}
+
+function writeBundleVersion(bvFile: string, bundleVersion: VersionMap, name: any, version: any) {
+	bundleVersion[name] = version;
+	return writeJson(bvFile, bundleVersion);
 }

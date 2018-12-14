@@ -1,13 +1,14 @@
 import { createWriteStream } from 'fs';
 import { ensureDir, pathExists, readFile, truncate, writeFile } from 'fs-extra';
 import { IncomingHttpHeaders } from 'http';
-import { tmpdir } from 'os';
 import { dirname } from 'path';
-import { nativePath } from './environment';
+import { tempDir } from './environment';
 import { logger } from './logger';
 import { nodeHttpFetch } from './network';
 import { IRequestContext } from './request/request';
 import { streamPromise } from './streamPromise';
+
+const progressStream = require('progress-stream');
 
 export interface IDownloadTargetInfo {
 	url: string;
@@ -18,25 +19,25 @@ export interface IDownloadTargetInfo {
 	lastModified: string;
 	target: string;
 	thisFile: string;
-	
-	speedStart: {
-		size?: number;
-		time?: number;
-	};
 }
 
 export function downloadedFilePath(fileName: string) {
-	return nativePath(tmpdir(), 'KendryteIDE', fileName);
+	return tempDir(fileName);
 }
 
 export async function downloadFile(url: string, fileName: string) {
 	logger.progress(Infinity);
 	
-	await ensureDir(nativePath(tmpdir(), 'KendryteIDE'));
+	await ensureDir(tempDir('.'));
 	
 	const target = downloadedFilePath(fileName);
 	const partInfo = await loadFromResumeFile(url, target);
 	await checkInfo(partInfo);
+	
+	if (partInfo.total === partInfo.current) {
+		logger.debug('success, no need download any data.');
+		return target;
+	}
 	
 	const headers = partInfo.total? {
 		'range': `bytes=${partInfo.current}-${partInfo.total}`,
@@ -45,23 +46,17 @@ export async function downloadFile(url: string, fileName: string) {
 	
 	const {res, stream}: IRequestContext = await nodeHttpFetch('GET', partInfo.url, headers);
 	
-	partInfo.speedStart = {};
-	
 	if (res.statusCode === 200) { // success, but not part response
 		logger.debug('success, but not part response (200).');
 		partInfo.current = 0;
-		await triggerCurrentChange(partInfo);
 	} else if (res.statusCode === 206) {
 		logger.debug('success, 206.');
-		await triggerCurrentChange(partInfo);
 	} else { // faield response
+		console.log('', headers);
 		throw new Error(`HTTP: ${res.statusCode} HEAD ${partInfo.url}`);
 	}
 	
-	partInfo.speedStart = {
-		size: partInfo.current,
-		time: Date.now(),
-	};
+	logger.sub(`--`);
 	
 	const fd = createWriteStream(partInfo.target, {
 		flags: 'r+',
@@ -70,11 +65,14 @@ export async function downloadFile(url: string, fileName: string) {
 	});
 	logger.debug('starting piping to file');
 	
-	const to = setInterval(() => {
-		triggerCurrentChange(partInfo).catch();
-	}, 500);
+	const progress = progressStream({
+		time: 300,
+		length: partInfo.current,
+		transferred: partInfo.total,
+	});
+	progress.on('progress', triggerCurrentChange);
 	
-	stream.pipe(fd);
+	stream.pipe(progress).pipe(fd);
 	stream.on('data', (buff: Buffer) => {
 		console.log('chunk: ' + buff.length);
 		partInfo.current += buff.length;
@@ -84,33 +82,33 @@ export async function downloadFile(url: string, fileName: string) {
 	
 	logger.debug('finishing piping');
 	
-	clearTimeout(to);
-	await triggerCurrentChange(partInfo);
+	logger.sub(`--`);
 	
 	return target;
 }
 
-function triggerCurrentChange(partInfo: IDownloadTargetInfo) {
-	throw new Error('use stream progress');
-	logger.progress(partInfo.current / partInfo.total || Infinity);
-	const deltaSize = partInfo.current - partInfo.speedStart.size;
-	const deltaTime = Date.now() - partInfo.speedStart.time;
-	let speed = (deltaSize / deltaTime) * 1000 * 1024;
-	let u = 'K';
-	if (speed) {
-		if (speed > 1024) {
-			u = 'M';
-			speed = speed / 1024;
-		}
-		logger.sub(`${speed.toFixed(2)} ${u}B/s`);
+function size(size: number) {
+	let u: string;
+	if (size > 1024 * 1024) {
+		u = 'MB';
+		size = size / 1024 / 1024;
+	} else if (size > 1024) {
+		u = 'KB';
+		size = size / 1024;
 	} else {
-		logger.sub('-- KB/s');
+		u = 'B';
 	}
-	return flush(partInfo);
+	return `${size.toFixed(2).replace(/\.?0+$/, '')}${u}`;
+}
+
+function triggerCurrentChange(p: any) {
+	logger.progress(p.percentage);
+	logger.sub(`${p.percentage}% @ ${size(p.speed)}/s\n${size(p.remaining)} -${p.eta}> ${size(p.transferred)}`);
 }
 
 async function loadFromResumeFile(url: string, target: string): Promise<IDownloadTargetInfo> {
 	const resumeFile = target + '.partDownloadInfo';
+	console.log(`Download:\n\tFrom: ${url}\n\tTo: ${target}{,.partDownloadInfo}`);
 	if (await pathExists(resumeFile) && await pathExists(target)) {
 		const data: IDownloadTargetInfo = JSON.parse(await readFile(resumeFile, 'utf8'));
 		data.url = url;
@@ -165,7 +163,7 @@ async function checkInfo(partInfo: IDownloadTargetInfo) {
 }
 
 function flush(partInfo: IDownloadTargetInfo): Promise<void> {
-	const {speedStart, url, target, thisFile, ...resumeFile} = partInfo;
+	const {url, target, thisFile, ...resumeFile} = partInfo;
 	console.log(`flush: [${thisFile}] ${JSON.stringify(resumeFile, null, 2)}`);
 	return writeFile(thisFile, JSON.stringify(resumeFile, null, 2));
 }

@@ -42,5 +42,5 @@ app.on('ready', () => {
 		console.log('ready-to-show');
 		win.show();
 	});
-	win.loadFile(resolve(__dirname, 'update-window/index.html'));
+	win.loadFile(resolve(__dirname, 'index.html'));
 });

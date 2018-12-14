@@ -1,4 +1,5 @@
 import { is } from 'electron-util';
+import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
 
@@ -35,4 +36,8 @@ export function localPackagePath(what: string) {
 
 export function logPath(what: string) {
 	return resolve(appRoot, 'logs', what);
+}
+
+export function tempDir(what: string) {
+	return nativePath(tmpdir(), 'KendryteIDE', what);
 }

@@ -15,7 +15,7 @@ export interface ILogger {
 	
 	action(message: string, subMessage?: string): void;
 	
-	sub(message: string): void;
+	 sub(message: string): void;
 	
 	progress(percent: number): void;
 }
