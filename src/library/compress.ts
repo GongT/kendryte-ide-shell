@@ -24,8 +24,8 @@ export async function un7z(from: string, to: string): Promise<void> {
 	
 	const content: string[] = (await readdir(to)).filter(file => !file.startsWith('.'));
 	if (content.length === 1) {
-		debugger;
-		const onlyChild = content[0];
+		const onlyChild = nativePath(to, content[0]);
+		logger.debug(`only child: ${onlyChild}`);
 		if ((await lstat(onlyChild)).isDirectory()) {
 			logger.debug(`rename(${onlyChild}, ${to}.rename-temp})`);
 			await rename(onlyChild, to + '.rename-temp');
@@ -42,5 +42,7 @@ export async function un7z(from: string, to: string): Promise<void> {
 			logger.debug(`un7z(${temp}, ${to})`);
 			await un7z(temp, to);
 		}
+	} else {
+		logger.debug(`child dirs: ${content.join(', ')}`);
 	}
 }
