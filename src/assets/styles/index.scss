@@ -83,21 +83,32 @@ div.container {
 			@include singleAnime(margin-bottom, 0px, 30px, 1s, 0.4s);
 			
 			> .line1,
-			> .line2 {
-				text-align: center;
+			> .line2,
+			> .line3 {
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: pre-line;
+				word-break: break-all;
 			}
 			> .line1 {
+				text-align: center;
 				font-weight: bold;
 				line-height: 1.4em;
 				font-size: 28px;
 			}
-			> .line2 {
+			> .line2,
+			> .line3 {
 				line-height: 1.3em;
 				font-size: 11px;
-				height: 2.6em;
+			}
+			> .line2 {
+				text-align: center;
+				max-height: 1.3em;
+			}
+			> .line3 {
+				text-align: left;
+				padding: 0 21px;
+				max-height: 3.6em;
 			}
 		}
 	}

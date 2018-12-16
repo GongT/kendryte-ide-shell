@@ -11,6 +11,18 @@ body.showLog {
 	}
 }
 
-.action {
-	font-weight: bold;
+#viewLog > .logText {
+	> .action {
+		font-weight: bold;
+	}
+	> .error {
+		color: #9c0000;
+		margin: 8px 3px;
+	}
+	.work-start {
+		font-weight: bold;
+	}
+	.work-end {
+		margin-bottom: 5px;
+	}
 }

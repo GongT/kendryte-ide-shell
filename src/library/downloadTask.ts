@@ -56,7 +56,7 @@ export async function downloadFile(url: string, fileName: string) {
 		throw new Error(`HTTP: ${res.statusCode} HEAD ${partInfo.url}`);
 	}
 	
-	logger.sub(`--`);
+	logger.sub2(`--`);
 	
 	const fd = createWriteStream(partInfo.target, {
 		flags: 'r+',
@@ -67,22 +67,32 @@ export async function downloadFile(url: string, fileName: string) {
 	
 	const progress = progressStream({
 		time: 300,
-		length: partInfo.current,
-		transferred: partInfo.total,
+		length: partInfo.total,
+		transferred: partInfo.current,
 	});
 	progress.on('progress', triggerCurrentChange);
 	
 	stream.pipe(progress).pipe(fd);
 	stream.on('data', (buff: Buffer) => {
-		console.log('chunk: ' + buff.length);
+		// console.log('chunk: ' + buff.length);
 		partInfo.current += buff.length;
 	});
 	
+	const to = setInterval(() => {
+		flush(partInfo).catch((e) => {
+			console.log(e);
+			logger.debug(`minor error when flush: ${e.message}`);
+		});
+	}, 5000);
+	
 	await streamPromise(fd);
+	
+	clearInterval(to);
+	await flush(partInfo);
 	
 	logger.debug('finishing piping');
 	
-	logger.sub(`--`);
+	logger.sub2(`--`);
 	
 	return target;
 }
@@ -103,7 +113,7 @@ function size(size: number) {
 
 function triggerCurrentChange(p: any) {
 	logger.progress(p.percentage);
-	logger.sub(`${p.percentage}% @ ${size(p.speed)}/s\n${size(p.remaining)} -${p.eta}> ${size(p.transferred)}`);
+	logger.sub2(`${p.percentage.toFixed(2)}% @ ${size(p.speed)}/s\n${size(p.remaining)} -${p.eta}> ${size(p.transferred)}`);
 }
 
 async function loadFromResumeFile(url: string, target: string): Promise<IDownloadTargetInfo> {

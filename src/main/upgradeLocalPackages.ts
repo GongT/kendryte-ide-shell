@@ -67,7 +67,7 @@ export async function upgradeLocalPackages(remote: string) {
 	
 	for (const name of Object.keys(bundleVersion)) {
 		if (!remoteVersion[name]) {
-			registerWork(workTitle('Uninstalling', 'redundant package: ' + name));
+			workTitle('Uninstalling', 'redundant package: ' + name);
 			willRemove(localPackagePath(name));
 			delete bundleVersion[name];
 		}
@@ -78,10 +78,9 @@ export async function upgradeLocalPackages(remote: string) {
 		const ifOk = nativePath(pkgPath, '.install-ok');
 		if (!await isInstallOk(ifOk)) {
 			console.log('Missing Required Package: ' + name);
-			registerWork(workTitle('Installing', 'missing package: ' + name));
 		} else if (bundleVersion[name] !== version) {
 			console.log(`Update Required Package: ${name} (from ${bundleVersion[name]} to ${version})`);
-			registerWork(workTitle('Updating', 'outdated package: ' + name));
+			workTitle(`Removing ${name}`, pkgPath);
 			willRemove(pkgPath);
 		} else {
 			logger.debug('no action on: ' + name);

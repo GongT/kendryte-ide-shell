@@ -8,16 +8,13 @@ const CLS_HIDE = 'hide';
 
 export interface ILogger {
 	debug(message: string): void;
-	
 	log(message: string): void;
-	
 	error(message: string): void;
-	
 	action(message: string, subMessage?: string): void;
-	
-	 sub(message: string): void;
-	
+	sub1(message: string): void;
+	sub2(message: string): void;
 	progress(percent: number): void;
+	readonly currentAction: string;
 }
 
 class Logger implements ILogger {
@@ -28,22 +25,35 @@ class Logger implements ILogger {
 	constructor(
 		private readonly _output: NodeJS.WritableStream,
 		private readonly $action: HTMLDivElement,
-		private readonly $doing: HTMLDivElement,
+		private readonly $doing1: HTMLDivElement,
+		private readonly $doing2: HTMLDivElement,
 		private readonly $progress: HTMLDivElement,
 		private readonly $log: HTMLDivElement,
 	) {
 		this.$progressInner = $progress.querySelector('.inner');
 	}
 	
-	public action(message: string, subMessage: string = ''): void {
-		this.$action.innerHTML = message;
-		this.$doing.innerHTML = subMessage;
-		this._writeln(message, 'action');
-		this._writeln(subMessage, 'action-sub');
+	public get currentAction() {
+		return this.$action.innerHTML;
 	}
 	
-	public sub(message: string): void {
-		this.$doing.innerHTML = message;
+	public action(message: string, subMessage: string = ''): void {
+		this.$action.innerHTML = message;
+		this._writeln(message, 'action');
+		
+		this.$doing1.innerHTML = subMessage;
+		this.$doing2.innerHTML = '';
+		if (subMessage) {
+			this._writeln(subMessage, 'action-sub');
+		}
+	}
+	
+	public sub1(message: string): void {
+		this.$doing1.innerHTML = message;
+	}
+	
+	public sub2(message: string): void {
+		this.$doing2.innerHTML = message;
 	}
 	
 	public progress(percent: number): void {
@@ -63,12 +73,12 @@ class Logger implements ILogger {
 	
 	public log(message: string): void {
 		this._writeln(message, 'log');
-		this.sub(message);
+		this.sub2(message);
 	}
 	
 	public error(message: string): void {
 		this._writeln(message, 'error');
-		this.sub(message);
+		this.sub2(message);
 	}
 	
 	private _writeln(message: string, cls: string = '') {
@@ -105,7 +115,8 @@ if (is.main) {
 
 export async function createLogger(
 	$action: HTMLDivElement,
-	$doing: HTMLDivElement,
+	$doing1: HTMLDivElement,
+	$doing2: HTMLDivElement,
 	$progress: HTMLDivElement,
 	$log: HTMLDivElement,
 ) {
@@ -118,7 +129,8 @@ export async function createLogger(
 	logger = new Logger(
 		stream,
 		$action,
-		$doing,
+		$doing1,
+		$doing2,
 		$progress,
 		$log,
 	);

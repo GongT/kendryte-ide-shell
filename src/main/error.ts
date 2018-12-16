@@ -9,5 +9,7 @@ export function handleError(error: Error) {
 	}
 	
 	logger.error(error.stack);
-	logger.action('Error!', 'See log to more info\nPlease retry.');
+	logger.sub1('Failed! Check log for more info.');
+	logger.sub2(error.message);
+	logger.progress(NaN);
 }

@@ -12,11 +12,11 @@ export function downloadAndExtract(from: string, target: string, what?: string) 
 	}
 	logger.debug(`Will download object from:\n    ${from}\n extract to:\n    ${target}`);
 	const fromBase = basename(from);
-	registerWork(workTitle(`Downloading${what}`, from));
+	workTitle(`Downloading${what}`, from);
 	registerWork(() => {
 		return downloadFile(from, fromBase);
 	});
-	registerWork(workTitle(`Installing${what}`, target));
+	workTitle(`Installing${what}`, target);
 	registerWork(() => {
 		return un7z(downloadedFilePath(fromBase), target);
 	});

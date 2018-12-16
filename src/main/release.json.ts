@@ -9,6 +9,11 @@ export interface IDEJson {
 	patches: IDEPatchJson[];
 	version: string;
 	windows: string;
+	allDownloads: {
+		linux: string[];
+		mac: string[];
+		windows: string[];
+	};
 }
 
 export type UrlKey = 'linux'|'mac'|'windows';

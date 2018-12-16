@@ -63,6 +63,7 @@ function bootstrap() {
 			await createLogger(
 				document.querySelector('#viewMain .doing .line1'),
 				document.querySelector('#viewMain .doing .line2'),
+				document.querySelector('#viewMain .doing .line3'),
 				document.querySelector('#progressBar'),
 				document.querySelector('#viewLog>.logText'),
 			);
