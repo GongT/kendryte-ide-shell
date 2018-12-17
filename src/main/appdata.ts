@@ -7,6 +7,7 @@ export const configFileName = 'channel.json';
 export interface ISelfConfig {
 	title: string;
 	channel: string;
+	sourceRoot: string;
 	registry: string;
 	thirdParty: string;
 }

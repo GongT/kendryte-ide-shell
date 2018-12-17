@@ -3,7 +3,11 @@
 	overflow-x: hidden;
 }
 
-html, body {
+html {
+	height: 100%;
+}
+
+body {
 	height: 100%;
 	-webkit-user-select: none;
 	-webkit-app-region: drag;

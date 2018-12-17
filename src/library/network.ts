@@ -18,13 +18,31 @@ export function nodeHttpFetch(method: string, url: string, headers: object = {})
 	});
 }
 
-export async function loadJson<T>(url: string): Promise<T> {
+export function loadJson<T>(url: string): Promise<T> {
+	console.groupCollapsed('[load json]', url);
+	return _loadJson<T>(url).then((d) => {
+		console.log(d);
+		console.groupEnd();
+		return d;
+	}, (e) => {
+		console.error(e);
+		console.groupEnd();
+		throw e;
+	});
+}
+
+export async function _loadJson<T>(url: string): Promise<T> {
 	const {res, stream} = await request({url});
+	console.log(res);
 	if (res.statusCode === 200) {
 		const data = new CollectingStream();
+		console.log('start piping');
 		stream.pipe(data);
 		await streamPromise(data);
-		return JSON.parse(data.getOutput());
+		console.log('pipe end');
+		const text = data.getOutput();
+		console.log(text);
+		return JSON.parse(text);
 	} else {
 		throw new Error(`HTTP ${res.statusCode}: ${url}`);
 	}

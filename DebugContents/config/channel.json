@@ -1,6 +1,7 @@
 {
 	"title": "Kendryte IDE",
-	"channel": "beta",
+	"channel": "sourcecode",
+	"sourceRoot": "../kendryte-ide",
 	"registry": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/release/IDE.beta.json",
-	"thirdParty": "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/versions.json"
+	"thirdParty": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/3rd-party/versions.json"
 }

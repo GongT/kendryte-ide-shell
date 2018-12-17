@@ -1,6 +1,6 @@
 import { is } from 'electron-util';
 import { createWriteStream, ensureDir, ftruncate, open } from 'fs-extra';
-import { appRoot, configFile, isBuilt, logPath, nativePath } from './environment';
+import { contentRoot, configFile, isBuilt, myProfilePath, nativePath } from './environment';
 import { registerCleanup } from './lifecycle';
 
 const CLS_INFINITY = 'infinite';
@@ -120,7 +120,7 @@ export async function createLogger(
 	$progress: HTMLDivElement,
 	$log: HTMLDivElement,
 ) {
-	const path = logPath('kupdater.log');
+	const path = myProfilePath('logs/kupdater.log');
 	await ensureDir(nativePath(path, '..'));
 	const fd = await open(path, 'w');
 	await ftruncate(fd);
@@ -136,7 +136,7 @@ export async function createLogger(
 	);
 	
 	logger.debug(`isBuilt=${isBuilt}`);
-	logger.debug(`appRoot=${appRoot}`);
+	logger.debug(`appRoot=${contentRoot}`);
 	logger.debug(`configFile=${configFile}`);
 	
 	registerCleanup(() => {

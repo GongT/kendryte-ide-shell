@@ -18,6 +18,17 @@ window.addEventListener('beforeUnload', () => {
 	window.scrollTo(0, 0);
 });
 
+const userCancelError = new Error('user cancel');
+
+function userCancel() {
+	return new Promise((resolve, reject) => {
+		document.querySelector('#btnQuit').addEventListener('click', () => {
+			console.log('btnQuit clicked');
+			reject(userCancelError);
+		});
+	});
+}
+
 function resizing(shown: boolean = document.body.classList.toggle('showLog')) {
 	const diff = Math.ceil((WINDOW_WIDTH_WITH_LOG - WINDOW_WIDTH) / 2);
 	const w = remote.getCurrentWindow();
@@ -56,7 +67,22 @@ if (document.readyState === 'complete') {
 }
 
 function bootstrap() {
-	Promise
+	const cancel = userCancel();
+	Promise.all([
+		mainLogic(), // main logic handle it's error
+		cancel, // never resolve
+	]).catch(async (e) => {
+		await doCleanup();
+		return e === userCancelError;
+	}).then((needQuit: boolean) => {
+		if (needQuit) {
+			window.close();
+		}
+	});
+}
+
+function mainLogic(): Promise<boolean> {
+	return Promise
 		.resolve()
 		.then(loadApplicationData)
 		.then(async (data) => {
@@ -71,7 +97,10 @@ function bootstrap() {
 		})
 		.then(animate)
 		.then(startMainLogic)
-		.then(doCleanup)
+		.then(() => {
+			console.info('Great! All jobs are done.');
+			return true;
+		})
 		.catch(handleError);
 }
 

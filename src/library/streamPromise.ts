@@ -6,15 +6,12 @@ export function streamPromise(stream: NodeJS.ReadableStream|NodeJS.WritableStrea
 	} else {
 		return new Promise((resolve, reject) => {
 			stream.once('end', () => {
-				console.log('stream end');
 				resolve(stream);
 			});
 			stream.once('finish', () => {
-				console.log('stream finish');
 				resolve(stream);
 			});
 			stream.once('close', () => {
-				console.log('stream close');
 				resolve(stream);
 			});
 			stream.once('error', reject);

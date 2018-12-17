@@ -95,6 +95,7 @@ div.container {
 				font-weight: bold;
 				line-height: 1.4em;
 				font-size: 28px;
+				max-height: 1.4em;
 			}
 			> .line2,
 			> .line3 {
@@ -113,9 +114,19 @@ div.container {
 		}
 	}
 	> .footer {
-		text-align: right;
+		height: 1em;
+		font-size: 14px;
+		display: flex;
+		flex-direction: row;
+		* {
+			overflow: hidden;
+		}
 		> a {
+			margin-left: 4px;
 			@include btn-link();
+		}
+		> span.space {
+			flex: 1;
 		}
 	}
 }

@@ -16,6 +16,11 @@
   resolved "https://registry.yarnpkg.com/7zip-bin/-/7zip-bin-4.1.0.tgz#33eff662a5c39c0c2061170cc003c5120743fff0"
   integrity sha512-AsnBZN3a8/JcNt+KPkGGODaA4c7l3W5+WpeKgGSbstSLxqWtTXqd1ieJGBQ8IFCtRg8DmmKUcSkIkUc0A4p3YA==
 
+"@fortawesome/fontawesome-free@^5.6.1":
+  version "5.6.1"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.6.1.tgz#eb096a49446d649bdc8c90f04400306eff7c33c2"
+  integrity sha512-0afQfB+HBeJHlXPzcF2Jjh78SbwPSkDjba/O7pZFzAW3WGKNzd4s4AqrZo7oIlMWGnfoyDo8+QeosK0+DTDrTg==
+
 "@gongt/single-dog@>=1.1.11111111":
   version "1.1.11111111"
   resolved "https://registry.yarnpkg.com/@gongt/single-dog/-/single-dog-1.1.11111111.tgz#5a0ab70e4067314655f561e07d87ade8dfd7d5e3"
