@@ -1,8 +1,7 @@
 import { ipcRenderer, remote } from 'electron';
 import { is } from 'electron-util';
 import { ensureDir, pathExistsSync, readJson } from 'fs-extra';
-import { tmpdir } from 'os';
-import { appRoot, contentRoot, myArgs, nativePath, userDataPath } from '../library/environment';
+import { appRoot, myArgs, nativePath, userDataPath } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { registerWork, workTitle } from '../library/work';
@@ -27,7 +26,9 @@ export function launchProduction() {
 		
 		const exe = await resolveExecutable(lastVersion.fsPath);
 		
-		await launch(exe, remote.process.cwd(), myArgs(), {});
+		await launch(exe, remote.process.cwd(), myArgs(), {
+			VSCODE_PATH: lastVersion.fsPath,
+		});
 	}, 'launch application');
 }
 
@@ -37,34 +38,25 @@ export function launchSource(data: ISelfConfig) {
 		const sourceRoot = ideSourceRoot(data);
 		const exe = await ideSourceCmdline(sourceRoot);
 		
-		await launch(exe[0], remote.process.cwd(), [
-			...exe.slice(1),
-			...myArgs(),
-		], {});
+		await launch(exe, remote.process.cwd(), myArgs(), {
+			IS_SOURCE_RUN: 'yes',
+			VSCODE_PATH: sourceRoot,
+		});
 	}, 'launch application');
 }
 
-async function launch(exe: string, cwd: string, args: string[], env: any) {
+async function launch(exe: string|string[], cwd: string, args: string[], env: any) {
 	console.info('LAUNCH', exe, cwd, args, env);
 	const msg = `${exe} ${args.join(' ')}\nwd: ${cwd}`;
 	logger.debug(msg);
 	logger.sub2(msg);
 	
 	const userData = userDataPath('latest');
-	env.VSCODE_PORTABLE = userData;
 	await ensureDir(nativePath(userData, 'tmp'));
-	
-	env.VSCODE_NLS_CONFIG = JSON.stringify({
-		'locale': 'zh-cn',
-		'availableLanguages': {},
-		'_languagePackSupport': true,
-	});
-	
-	env.SYSTEM_TEMP = tmpdir();
-	env.TEMP = env.TMP = nativePath(contentRoot, 'PortableSystemTemp');
 	
 	await new Promise((resolve, reject) => {
 		ipcRenderer.once('spawnCallback', (event: any, se: Error) => {
+			console.log('spawnCallback', event, se);
 			if (se) {
 				const e = new Error(se.message);
 				e.stack = se.stack;

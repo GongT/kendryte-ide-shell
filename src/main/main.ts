@@ -77,6 +77,13 @@ export async function startMainLogic(data: ISelfConfig) {
 		logger.action('...');
 		await doActualWork();
 	}
+	logger.debug('All jobs complete. window will close now!');
+	
+	logger.progress(NaN);
+	logger.sub1('');
+	logger.sub2('');
+	
+	window.close();
 }
 
 function str(v: any) {

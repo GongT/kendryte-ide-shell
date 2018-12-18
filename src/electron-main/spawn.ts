@@ -1,17 +1,18 @@
-import { ChildProcess, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import { createWriteStream } from 'fs-extra';
+import { tmpdir } from 'os';
 import { format } from 'util';
 import { alwaysPromise } from '../library/alwaysPromise';
-import { contentRoot, isBuilt, myProfilePath } from '../library/environment';
+import { createLogPack } from '../library/createLogPack';
+import { contentRoot, isBuilt, localPackagePath, myProfilePath, nativePath, userDataPath } from '../library/environment';
 import { registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
 import { DebugScript } from './debugScript';
 import { closeIpcChannel, createIpcChannel, ensureIpcServer, ipcPipe } from './ipc';
-import { handleProcessReference, isQuitting } from './lifecycleMain';
+import { afterWord, gracefulRestart, handleProcessReference, isQuitting, muteQuit } from './lifecycleMain';
 import { executableResolved, getLastKnownApp } from './rememberWhatIsStart';
 
 let connId = 0;
-const pool = new Map<string, ChildProcess>();
 
 function detectInspectPortToUse() {
 	const myInspectArg = process.argv.find((item) => {
@@ -30,7 +31,20 @@ function detectInspectPortToUse() {
 	}
 }
 
-function realSpawn(args: string[], cwd: string, envVars: any, channel: string) {
+function makeAppArg(exe: string, args: string[]): [string, string[]] {
+	if (!exe) {
+		const app = getLastKnownApp();
+		if (Array.isArray(app)) {
+			exe = app[0];
+			args.unshift(...app.slice(1));
+		} else {
+			exe = app;
+		}
+	}
+	return [exe, args];
+}
+
+function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channel: string) {
 	const inspectPortArg = args.indexOf('--inspect-brk=') || args.indexOf('--inspect=');
 	if (inspectPortArg !== -1) {
 		args[inspectPortArg] = args[inspectPortArg].split('=')[0] + '=' + detectInspectPortToUse();
@@ -40,33 +54,47 @@ function realSpawn(args: string[], cwd: string, envVars: any, channel: string) {
 		args[inspectArg] += '=' + detectInspectPortToUse();
 	}
 	
-	const exe = getLastKnownApp();
-	const env = {
-		...process.env,
-		KENDRYTE_IDE_UPDATER: process.argv0,
-		KENDRYTE_IDE_UPDATER_IS_BUILT: isBuilt? 'yes' : '',
-		KENDRYTE_IDE_UPDATER_CONTENT_ROOT: contentRoot,
-		KENDRYTE_IDE_UPDATER_PIPE: ipcPipe,
-		KENDRYTE_IDE_UPDATER_PIPE_ID: channel,
-		...envVars,
-	};
+	for (const [k, v] of Array.from(Object.entries(process.env))) {
+		if (!(k in envVars)) {
+			envVars[k] = v;
+		}
+	}
 	
-	const dbg = new DebugScript(cwd, env);
+	envVars.VSCODE_PORTABLE = userDataPath('latest');
+	envVars.KENDRYTE_IDE_UPDATER = process.argv0;
+	envVars.KENDRYTE_IDE_UPDATER_IS_BUILT = isBuilt? 'yes' : '';
+	envVars.KENDRYTE_IDE_UPDATER_CONTENT_ROOT = contentRoot;
+	envVars.KENDRYTE_IDE_LOCAL_PACKAGE_DIR = localPackagePath('.');
+	envVars.KENDRYTE_IDE_UPDATER_PIPE = ipcPipe;
+	envVars.KENDRYTE_IDE_UPDATER_PIPE_ID = channel;
+	
+	envVars.VSCODE_NLS_CONFIG = JSON.stringify({
+		'locale': 'zh-cn',
+		'availableLanguages': {},
+		'_languagePackSupport': true,
+	});
+	
+	envVars.SYSTEM_TEMP = tmpdir();
+	envVars.TEMP = envVars.TMP = nativePath(contentRoot, 'PortableSystemTemp');
+	
+	const dbg = new DebugScript(cwd, envVars);
 	dbg.command(exe, args);
 	dbg.writeBack('last-instance').catch(e => console.error('DebugScript::writeBack - ', e));
 	
+	console.log('\x1B[38;5;10m%s\x1B[0m\n\x1B[38;5;11m%s\x1B[0m\n\x1B[38;5;14mcwd: %s\x1B[0m',
+		exe, args.map((e, i) => `  ${i}: ${e}`).join('\n'), cwd);
 	const cp = spawn(exe, args, {
 		cwd,
 		stdio: ['inherit', 'pipe', 'pipe'],
 		shell: true,
 		windowsVerbatimArguments: true,
 		windowsHide: true,
-		env,
+		env: envVars,
 	});
 	cp.stdout.pipe(process.stdout);
 	cp.stderr.pipe(process.stderr);
 	
-	handleProcessReference(cp);
+	handleProcessReference(cp, channel);
 	
 	return cp;
 }
@@ -76,44 +104,52 @@ enum LogLevel {
 	ERROR = 'ERROR',
 }
 
-export async function spawnIDE(args: string[], cwd: string, envVars: any = {}): Promise<void> {
+export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, exe = ''): Promise<void> {
 	if (isQuitting()) {
 		return;
 	}
+	
 	await executableResolved;
+	
+	if (!exe) {
+		[exe, args] = makeAppArg(exe, args);
+	}
+	
 	await ensureIpcServer();
 	
 	const connectId = (++connId).toFixed(0);
 	
-	const logOut = createWriteStream(myProfilePath('logs/output-' + (new Date()).toUTCString() + '.log'));
-	const close = registerCleanupStream(logOut, () => {
+	const currentLog = myProfilePath('logs/output-' + (new Date()).toISOString() + '.log');
+	const logOut = createWriteStream(currentLog);
+	registerCleanupStream(logOut, () => {
 		if (cp) {
 			cp.stdout.unpipe(logOut);
 			cp.stderr.unpipe(logOut);
 		}
 	});
 	
-	console.error('\n\n------------------------\n');
-	const cp = realSpawn(args, cwd, envVars, connectId);
+	const cp = newSpawn(exe, args, cwd, envVars, connectId);
 	
 	cp.stdout.pipe(logOut);
 	cp.stderr.pipe(logOut);
 	
 	function log(tag: LogLevel, message: string, ...args: any[]) {
 		const msg = format(`[${tag}] ${message}`, ...args);
-		try {
-			logOut.write(msg + '\n');
-		} catch (e) {
-		}
+		logOut.write(msg + '\n');
 		console.error('[child]' + msg);
 	}
 	
 	const p = new Promise((resolve, reject) => {
-		cp.on('error', (e) => {
+		cp.once('my-stable', () => {
+			resolve();
+			cp.removeListener('error', logErr);
+			cp.removeListener('exit', logExit);
+		});
+		const logErr = (e: Error) => {
 			log(LogLevel.ERROR, 'Application spawn fail with [%s]', e.message);
 			reject(e);
-		});
-		cp.once('exit', (code: number, signal: string) => {
+		};
+		const logExit = (code: number, signal: string) => {
 			// TODO: relaunch
 			if (signal) {
 				log(LogLevel.ERROR, 'Application kill with signal [%s]', signal);
@@ -121,22 +157,13 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}): 
 				log(LogLevel.ERROR, 'Application quit with code [%s]', code);
 			}
 			reject(new Error('application quit too early'));
-		});
+		};
+		cp.on('error', logErr);
+		cp.on('exit', logExit);
 	});
 	
-	pool.set(connectId, cp);
-	alwaysPromise(p, () => { // on process exit
+	cp.once('exit', () => {
 		closeIpcChannel(connectId);
-		pool.delete(connectId);
-		
-		cp.stdout.unpipe(logOut);
-		cp.stderr.unpipe(logOut);
-		
-		try {
-			logOut.write('---- unpipe output ----');
-			close()();
-		} catch (e) {
-		}
 	});
 	
 	const channel = await createIpcChannel(connectId);
@@ -145,5 +172,33 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}): 
 		cp.kill('SIGINT');
 	});
 	
-	await channel.waitMessage('hello');
+	channel.once('please-relaunch', (arg, response) => {
+		muteQuit();
+		cp.once('exit', () => {
+			afterWord(spawnIDE(args, cwd, envVars, exe));
+		});
+		response();
+	});
+	channel.once('please-update', (arg, response) => {
+		afterWord(gracefulRestart());
+		response();
+	});
+	channel.on('please-create-log-zip', (arg, response) => {
+		if (envVars.IS_SOURCE_RUN) {
+			response(new Error('Source code version is not supported.'));
+		} else {
+			createLogPack(args, cwd, envVars).then(response, response);
+		}
+	});
+	
+	channel.send('stable', '').then(() => {
+		cp.emit('my-stable');
+	});
+	
+	await p;
+	
+	logOut.write('---- unpipe original output ----');
+	cp.stdout.unpipe(logOut);
+	cp.stderr.unpipe(logOut);
+	logOut.close();
 }

@@ -3,13 +3,22 @@ import { ensureDirSync } from 'fs-extra';
 import { alertError } from './electron-main/alertError';
 import { spawnIDE } from './electron-main/spawn';
 import { startUpdater } from './electron-main/startWindow';
-import { myProfilePath } from './library/environment';
+import { isBuilt, myProfilePath } from './library/environment';
 
 app.setPath('userData', myProfilePath('.'));
 
-app.on('second-instance', (event, argv: string[], workDir: string) => {
-	spawnIDE(argv, workDir).catch(alertError);
-});
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+	app.quit();
+} else {
+	app.on('second-instance', (event, argv: string[], workDir: string) => {
+		argv.shift(); // electron
+		if (!isBuilt) {
+			argv.shift(); // .
+		}
+		spawnIDE(argv, workDir).catch(alertError);
+	});
+}
 
 app.on('ready', () => {
 	ensureDirSync(myProfilePath('logs'));

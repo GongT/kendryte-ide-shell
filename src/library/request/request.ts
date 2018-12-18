@@ -95,8 +95,9 @@ export function request(options: IRequestOptions): Promise<IRequestContext> {
 			if (options.user && options.password) {
 				opts.auth = options.user + ':' + options.password;
 			}
-			
+			console.log('rawRequest=', rawRequest);
 			req = rawRequest(opts, (res: http.ClientResponse) => {
+				console.log('rawResponse: ', res);
 				const followRedirects: number = isNumber(options.followRedirects)? options.followRedirects : 3;
 				if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && followRedirects > 0 && res.headers['location']) {
 					request(Object.assign({}, options, {
@@ -111,6 +112,9 @@ export function request(options: IRequestOptions): Promise<IRequestContext> {
 			});
 			
 			req.on('error', e);
+			req.on('error', (e) => {
+				console.error(e);
+			});
 			
 			if (options.timeout) {
 				req.setTimeout(options.timeout);
@@ -125,6 +129,8 @@ export function request(options: IRequestOptions): Promise<IRequestContext> {
 				}
 			}
 			
+			console.log(options);
+			console.log('request sent');
 			req.end();
 		});
 	});

@@ -20,7 +20,7 @@ export function nodeHttpFetch(method: string, url: string, headers: object = {})
 
 export function loadJson<T>(url: string): Promise<T> {
 	console.groupCollapsed('[load json]', url);
-	return _loadJson<T>(url).then((d) => {
+	return _loadJson<T>('' + url).then((d) => {
 		console.log(d);
 		console.groupEnd();
 		return d;

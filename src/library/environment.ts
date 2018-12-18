@@ -1,5 +1,6 @@
 import { remote } from 'electron';
 import { is } from 'electron-util';
+import { readdir, unlink } from 'fs-extra';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
@@ -54,9 +55,33 @@ export function localPackagePath(what: string) {
 }
 
 export function myProfilePath(what: string) {
-	return resolve(contentRoot, 'UserData/updater/user-data', what);
+	return resolve(contentRoot, 'UserData/updater/user-data/', what);
 }
 
 export function tempDir(what: string) {
 	return nativePath(tmpdir(), 'KendryteIDE', what);
 }
+
+const logdir = myProfilePath('logs');
+readdir(logdir).then(async (files) => {
+	for (const file of files) {
+		if (file.startsWith('output-')) {
+			const ts = Date.parse(file.replace(/^output-|$\.log/g, ''));
+			if (isNaN(ts)) {
+				continue;
+			}
+			const yesterday = new Date();
+			yesterday.setHours(0);
+			yesterday.setMinutes(0);
+			yesterday.setSeconds(0);
+			yesterday.setMilliseconds(0);
+			yesterday.setDate(yesterday.getDate() - 1);
+			
+			if (ts < yesterday.getTime()) {
+				await unlink(nativePath(logdir, file));
+			}
+		}
+	}
+}).catch((e) => {
+	console.error('[Warn] cannot cleanup logs folder.');
+});

@@ -3,6 +3,23 @@ export function timeout(ms: number) {
 		setTimeout(resolve, ms);
 	});
 }
+
+export function timeoutReject(ms: number): Promise<never>&{cancel(): void} {
+	let to: NodeJS.Timer;
+	return Object.assign(new Promise<never>((resolve, reject) => {
+		to = setTimeout(() => {
+			to = null;
+			reject(new Error('Timeout'));
+		}, ms);
+	}), {
+		cancel() {
+			if (to) {
+				clearTimeout(to);
+			}
+		},
+	});
+}
+
 export function timing() {
 	const date = new Date;
 	

@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from 'electron';
+import { BrowserWindow, screen, shell } from 'electron';
 import { resolve } from 'path';
 import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from '../library/constants';
 import { isQuitting } from './lifecycleMain';
@@ -35,6 +35,16 @@ export function startUpdater() {
 		},
 	});
 	win.webContents.openDevTools({mode: 'detach'});
+	
+	const handleRedirect = (e: Event, url: string) => {
+		if (url != win.webContents.getURL()) {
+			e.preventDefault();
+			shell.openExternal(url);
+		}
+	};
+	
+	win.webContents.on('will-navigate', handleRedirect);
+	win.webContents.on('new-window', handleRedirect);
 	
 	win.on('ready-to-show', () => {
 		win.show();
