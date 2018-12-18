@@ -3,6 +3,7 @@ node_modules/
 jspm_packages/
 *.log
 dist/
+build/
 *.tgz
 
 .idea/*
@@ -13,3 +14,6 @@ dist/
 
 DebugContents/*
 !DebugContents/config
+
+gulpfile.js
+scripts/**/*.js

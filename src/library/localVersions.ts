@@ -1,6 +1,6 @@
 import { pathExistsSync, readdir } from 'fs-extra';
 import { compare } from 'semver';
-import { applicationPath, nativePath } from './environment';
+import { applicationPath, nativePath, resourceLocation } from './environment';
 import { logger } from './logger';
 
 export interface ILocalStatus {
@@ -19,8 +19,8 @@ export async function readLocalVersions() {
 	const results: ILocalStatus[] = [];
 	for (const item of items) {
 		try {
-			const versionRoot = nativePath(root, item, 'resources/app');
-			const {version, patchVersion} = require(nativePath(versionRoot, 'package.json'));
+			const versionRoot = nativePath(root, item);
+			const {version, patchVersion} = require(nativePath(versionRoot, resourceLocation, 'package.json'));
 			results.push({
 				version,
 				patch: patchVersion.toFixed(6),

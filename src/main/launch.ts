@@ -1,18 +1,20 @@
 import { ipcRenderer, remote } from 'electron';
 import { is } from 'electron-util';
 import { ensureDir, pathExistsSync, readJson } from 'fs-extra';
-import { appRoot, myArgs, nativePath, userDataPath } from '../library/environment';
+import { appRoot, myArgs, nativePath, resourceLocation, userDataPath } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { registerWork, workTitle } from '../library/work';
 import { ISelfConfig } from './appdata';
 
 export async function resolveExecutable(fsPath: string) {
-	const product = nativePath(fsPath, 'resources/app/product.json');
-	const data: any = readJson(product);
+	const product = nativePath(fsPath, resourceLocation, 'product.json');
+	const data: any = await readJson(product);
+	console.log('production = ', data);
 	
 	const executableName = is.windows? data.nameShort + '.exe' : data.applicationName;
-	return nativePath(executableName, product);
+	console.log('executable name = %s', executableName);
+	return nativePath(fsPath, executableName);
 }
 
 export function launchProduction() {

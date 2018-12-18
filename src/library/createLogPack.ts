@@ -1,7 +1,16 @@
 import { compress } from '7zip-bin-wrapper';
 import { copy, mkdirp, pathExists, readdir, unlink, writeFile, writeJSON } from 'fs-extra';
 import { getLastKnownApp } from '../electron-main/rememberWhatIsStart';
-import { applicationPath, configFile, contentRoot, localPackagePath, myProfilePath, nativePath, tempDir } from './environment';
+import {
+	applicationPath,
+	configFile,
+	contentRoot,
+	localPackagePath,
+	myProfilePath,
+	nativePath,
+	resourceLocation,
+	tempDir,
+} from './environment';
 
 export async function createLogPack(args: string[], cwd: string, envVars: any) {
 	const resultPath = tempDir('report-' + Date.now().toFixed(0));
@@ -21,7 +30,7 @@ export async function createLogPack(args: string[], cwd: string, envVars: any) {
 		data: await listDir(nativePath(envVars.VSCODE_PORTABLE, 'extensions')),
 		pack: await listDir(localPackagePath('.')),
 		app: await listDir(applicationPath('.')),
-		inter: await listDir(nativePath(envVars.VSCODE_PATH, 'resources/app/extensions')),
+		inter: await listDir(nativePath(envVars.VSCODE_PATH, resourceLocation, 'extensions')),
 	});
 	
 	await copy(configFile, nativePath(resultPath, 'channel.json'));

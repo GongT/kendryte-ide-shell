@@ -7,17 +7,19 @@ import { configFileName } from '../main/appdata';
 
 const winSlash = /\\/g;
 
-export const isBuilt = /[\/\\]resources[\/\\]app[\/\\]/.test(__dirname);
-console.log(`isBuilt=${isBuilt}`);
+export const isBuilt = /[\/\\]resources[\/\\]app(?:\.asar)?[\/\\]/i.test(__dirname);
+console.log(`isBuilt=${isBuilt} (%s)`, __dirname);
 
-// from src/library:                   src/app/resources/electronRoot/wrapper                src/sourceRoot/DebugContents
-export const appRoot = isBuilt? resolve(__dirname, '../../../../../') : resolve(__dirname, '../../');
+// from src/library:                   app/resources/electronRoot/wrapper                sourceRoot/DebugContents
+export const appRoot = isBuilt? resolve(__dirname, '../../../../') : resolve(__dirname, '../');
 console.log(`appRoot=${appRoot}`);
 
 export const contentRoot = isBuilt? appRoot : resolve(appRoot, 'DebugContents');
 
-export const configFile = resolve(contentRoot, 'config', configFileName);
+export const configFile = isBuilt? resolve(appRoot, configFileName) : resolve(contentRoot, 'config', configFileName);
 console.log(`configFile=${configFile}`);
+
+export const resourceLocation = is.macos? 'Contents/Resources/app' : 'resources/app';
 
 export function myArgs() {
 	const args = [...remote.process.argv];

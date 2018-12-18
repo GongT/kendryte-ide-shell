@@ -11,6 +11,7 @@ export async function un7z(from: string, to: string): Promise<void> {
 	await removeDirectory(to);
 	
 	const handler = extract(from, to);
+	logger.debug(handler.commandline.join(' '));
 	handler.on('output', (data: string) => {
 		logger.debug(data);
 	});

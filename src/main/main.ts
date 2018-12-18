@@ -54,7 +54,9 @@ export async function startMainLogic(data: ISelfConfig) {
 		const newestLocal = localVersions.pop();
 		if (!newestLocal || newestLocal.version !== registry.version) {
 			// big version has update
-			migrateUserData(newestLocal.version);
+			if (newestLocal && newestLocal.version) {
+				migrateUserData(newestLocal.version);
+			}
 			await ensureDir(applicationPath('.'));
 			downloadMain(
 				applicationPath(`app_${registry.version}_${lastPatch}`),
