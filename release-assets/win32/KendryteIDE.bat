@@ -1,2 +1,2 @@
 @echo off
-start %~dp1\Updater\electron.exe %*
+start %~dp0\Updater\electron.exe %*
