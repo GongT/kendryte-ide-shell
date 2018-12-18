@@ -60,7 +60,11 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 		}
 	}
 	
-	envVars.VSCODE_PORTABLE = userDataPath('latest');
+	if (envVars.IS_SOURCE_RUN) {
+		envVars.VSCODE_PORTABLE = nativePath(envVars.VSCODE_PATH, 'data');
+	} else {
+		envVars.VSCODE_PORTABLE = userDataPath('latest');
+	}
 	envVars.KENDRYTE_IDE_UPDATER = process.argv0;
 	envVars.KENDRYTE_IDE_UPDATER_IS_BUILT = isBuilt? 'yes' : '';
 	envVars.KENDRYTE_IDE_UPDATER_CONTENT_ROOT = contentRoot;
