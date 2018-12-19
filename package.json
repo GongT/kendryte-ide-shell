@@ -8,8 +8,8 @@
 	"main": "./boot.js",
 	"scripts": {
 		"gulp": "tsc gulpfile.ts && gulp",
-		"watch": "gulp watch",
-		"build": "gulp default",
+		"compile": "tsc gulpfile.ts && gulp default && echo use tsc -p src -w now",
+		"build": "tsc gulpfile.ts && gulp build",
 		"start": "electron ."
 	},
 	"dependencies": {

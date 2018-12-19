@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/electron-update.iml" filepath="$PROJECT_DIR$/.idea/electron-update.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/kendryte-ide-shell.iml" filepath="$PROJECT_DIR$/.idea/kendryte-ide-shell.iml" />
     </modules>
   </component>
 </project>

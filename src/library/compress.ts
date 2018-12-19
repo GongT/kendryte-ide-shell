@@ -29,6 +29,7 @@ export async function un7z(from: string, to: string): Promise<void> {
 		logger.debug(`only child: ${onlyChild}`);
 		logger.sub1('post processing...');
 		if ((await lstat(onlyChild)).isDirectory()) {
+			await removeDirectory(to + '.rename-temp');
 			logger.debug(`rename(${onlyChild}, ${to}.rename-temp)`);
 			await rename(onlyChild, to + '.rename-temp');
 			logger.debug(`removeDirectory(${to})`);
