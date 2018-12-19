@@ -77,6 +77,7 @@ export function isRunSource(data: ISelfConfig): boolean {
 }
 
 async function ideSourceCmdline(sourceRoot: string) {
+	logger.debug('try to find IDE source code at: ' + sourceRoot);
 	if (!await pathExistsSync(sourceRoot)) {
 		throw new Error('Unable to detect IDE source code.');
 	}

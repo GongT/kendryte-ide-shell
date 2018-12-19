@@ -7,10 +7,16 @@
 		],
 		"inlineSources": true,
 		"baseUrl": ".",
+		"sourceRoot": ".",
 		"outDir": "../dist",
 		"types": [
 			"electron",
 			"node"
 		]
-	}
+	},
+	"files": [
+		"boot.ts",
+		"electron-main.ts",
+		"electron-browser.ts"
+	]
 }

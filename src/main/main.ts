@@ -1,5 +1,5 @@
 import { ensureDir } from 'fs-extra';
-import { applicationPath } from '../library/environment';
+import { applicationPath, isBuilt, SELF_VERSION } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { loadJson } from '../library/network';
@@ -38,6 +38,15 @@ export async function startMainLogic(data: ISelfConfig) {
 	logger.debug(`latest patch: ${lastPatch || 'No Patch'}`);
 	
 	logger.progress(NaN);
+	
+	if (isBuilt && registry.updaterVersion !== SELF_VERSION) {
+		console.log('remote:', registry.updaterVersion);
+		console.log('local:', SELF_VERSION);
+		logger.action('Outdated !', 'please download newest version.');
+		logger.sub2('Please click the Download button below 👇');
+		return;
+	}
+	
 	logger.action('checking');
 	logger.debug('-------------------------');
 	

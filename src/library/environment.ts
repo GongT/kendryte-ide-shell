@@ -5,18 +5,21 @@ import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
 
+export const SELF_VERSION = '20181219-0001';
+
 const winSlash = /\\/g;
 
 export const isBuilt = /[\/\\]resources[\/\\]app(?:\.asar)?[\/\\]/i.test(__dirname);
 console.log(`isBuilt=${isBuilt} (%s)`, __dirname);
 
-// from src/library:                   app/resources/electronRoot/wrapper                sourceRoot/DebugContents
-export const appRoot = isBuilt? resolve(__dirname, '../../../../') : resolve(__dirname, '../');
+// from src/library:                   app/resources/electronRoot/wrapper                src/sourceRoot/DebugContents
+export const appRoot = isBuilt? resolve(__dirname, '../../../../') : resolve(__dirname, '../..');
 console.log(`appRoot=${appRoot}`);
 
 export const contentRoot = isBuilt? appRoot : resolve(appRoot, 'DebugContents');
+console.log(`contentRoot=${contentRoot}`);
 
-export const configFile = isBuilt? resolve(appRoot, configFileName) : resolve(contentRoot, 'config', configFileName);
+export const configFile = resolve(contentRoot, configFileName);
 console.log(`configFile=${configFile}`);
 
 export const resourceLocation = is.macos? 'Contents/Resources/app' : 'resources/app';

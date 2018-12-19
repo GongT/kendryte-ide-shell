@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { platform } from 'os';
 import { basename, resolve } from 'path';
 import { TASK_BUILD } from './release';
-import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, BUILD_DIST_TARGETS, BUILD_RELEASE_FILES, ELECTRON_VERSION } from './root';
+import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, BUILD_DIST_TARGETS, BUILD_RELEASE_FILES, ELECTRON_VERSION, getReleaseChannel, } from './root';
 import { createAsar } from './vscode/asar';
 import { rimraf, skipDirectories } from './vscode/uitl';
 
@@ -13,6 +13,7 @@ const zip = require('gulp-vinyl-zip');
 const es = require('event-stream');
 const rename = require('gulp-rename');
 const run = require('gulp-run-command').default;
+const jeditor = require('gulp-json-editor');
 
 const platforms = ['win32', 'darwin', 'linux'];
 
@@ -104,6 +105,7 @@ function createReleases() {
 				wrapZ(zip.src(zipFile).pipe(filter(['**', '!**/default_app.asar']))),
 				wrap(gulp.src(BUILD_DIST_ROOT + 'resources/**', {base: BUILD_DIST_ROOT})),
 				gulp.src(BUILD_RELEASE_FILES + platform + '/**', {base: BUILD_RELEASE_FILES + platform}),
+				gulp.src('./channel.json').pipe(jeditor({channel: getReleaseChannel()})),
 			).pipe(skipDirectories()).pipe(gulp.dest(currentTarget));
 		});
 		
@@ -116,7 +118,7 @@ function createReleases() {
 			'-mx8',
 			'-mmt',
 			'-ssc',
-			`release.7z`,
+			`../${getReleaseChannel()}.${platform}.7z`,
 			'KendryteIDE',
 		].join(' ');
 		gulp.task(createZip, [createDist], run(szCmd, {cwd: currentPlatformDir}));

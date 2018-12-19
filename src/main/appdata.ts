@@ -13,10 +13,11 @@ export interface ISelfConfig {
 }
 
 export interface IRegistryData extends IDEJson {
+	updaterVersion: string;
 }
 
 export function loadApplicationData(): Promise<ISelfConfig> {
 	console.info('loadApplicationData');
-
-	return readJson(configFile, { encoding: 'utf8' });
+	
+	return readJson(configFile, {encoding: 'utf8'});
 }
