@@ -28,7 +28,7 @@ export function launchProduction() {
 		
 		const exe = await resolveExecutable(lastVersion.fsPath);
 		
-		await launch(exe, remote.process.cwd(), myArgs(), {
+		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			VSCODE_PATH: lastVersion.fsPath,
 		});
 	}, 'launch application');
@@ -40,14 +40,14 @@ export function launchSource(data: ISelfConfig) {
 		const sourceRoot = ideSourceRoot(data);
 		const exe = await ideSourceCmdline(sourceRoot);
 		
-		await launch(exe, remote.process.cwd(), myArgs(), {
+		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			IS_SOURCE_RUN: 'yes',
 			VSCODE_PATH: sourceRoot,
 		});
 	}, 'launch application');
 }
 
-async function launch(exe: string|string[], cwd: string, args: string[], env: any) {
+export async function launchIDE(exe: string|string[], cwd: string, args: string[], env: any) {
 	console.info('LAUNCH', exe, cwd, args, env);
 	const msg = `${exe} ${args.join(' ')}\nwd: ${cwd}`;
 	logger.debug(msg);

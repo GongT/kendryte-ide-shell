@@ -5,8 +5,6 @@ import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
 
-export const SELF_VERSION = '20181219-0001';
-
 const winSlash = /\\/g;
 
 export const isBuilt = /[\/\\]resources[\/\\]app(?:\.asar)?[\/\\]/i.test(__dirname);
@@ -23,6 +21,8 @@ export const configFile = resolve(contentRoot, configFileName);
 console.log(`configFile=${configFile}`);
 
 export const resourceLocation = is.macos? 'Contents/Resources/app' : 'resources/app';
+
+export const SELF_VERSION = require(isBuilt? resolve(__dirname, '../package.json') : resolve(__dirname, '../../package.json')).releaseDate;
 
 export function myArgs() {
 	const args = [...remote.process.argv];

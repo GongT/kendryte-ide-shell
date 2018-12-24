@@ -1,6 +1,6 @@
 import { is } from 'electron-util';
 import { createWriteStream, ensureDir, ftruncate, open } from 'fs-extra';
-import { contentRoot, configFile, isBuilt, myProfilePath, nativePath } from './environment';
+import { configFile, contentRoot, isBuilt, myProfilePath, nativePath } from './environment';
 import { registerCleanup } from './lifecycle';
 
 const CLS_INFINITY = 'infinite';
@@ -15,6 +15,60 @@ export interface ILogger {
 	sub2(message: string): void;
 	progress(percent: number): void;
 	readonly currentAction: string;
+}
+
+let cc: string,
+	cvDebug: string,
+	cvLog: string,
+	cvError: string;
+
+if (typeof window === 'undefined') {
+	cc = 's';
+	cvDebug = '\x1B[38;5;244m';
+	cvLog = '\x1B[38;5;0m';
+	cvError = '\x1B[38;5;9m';
+} else {
+	cc = 'c';
+	cvDebug = 'color:grey';
+	cvLog = 'color:black';
+	cvError = 'color:red';
+}
+
+class ConsoleLogger implements ILogger {
+	private _currentAction: string;
+	
+	get currentAction(): string {
+		return this._currentAction;
+	}
+	
+	public debug(message: string): void {
+		console.log(`%${cc}[DEBUG] ${message}`, cvDebug);
+	}
+	
+	public log(message: string): void {
+		console.log(`${cc}[  LOG] ${message}`, cvLog);
+	}
+	
+	public error(message: string): void {
+		console.log(`${cc}[ERROR] ${message}`, cvError);
+	}
+	
+	public action(message: string, subMessage?: string): void {
+		this._currentAction = message;
+		this.sub1(subMessage);
+	}
+	
+	public sub1(message: string): void {
+		console.log(`${cc}[ERROR] ${message}`, cvError);
+	}
+	
+	public sub2(message: string): void {
+		console.log(`${cc}[ERROR] ${message}`, cvError);
+	}
+	
+	public progress(percent: number): void {
+		process.stdout.write(`Progress: ${percent}%\r`);
+	}
 }
 
 class Logger implements ILogger {
@@ -148,6 +202,6 @@ export async function createLogger(
 	});
 }
 
-export let logger: ILogger;
+export let logger: ILogger = new ConsoleLogger();
 
 
