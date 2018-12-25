@@ -52,8 +52,9 @@ export const releaseTasks = everyPlatform('release', [cleanReleaseTask, asarTask
 	                     .pipe(filter([
 		                     '**',
 		                     '!**/node_modules/7zip-bin/**',
-		                     `**/node_modules/7zip-bin/${platform}/7za`, // mac
-		                     `**/node_modules/7zip-bin/${platform}/x64/**`, // other
+		                     `**/node_modules/7zip-bin/win/x64/7za.exe`,
+		                     `**/node_modules/7zip-bin/linux/x64/7za`,
+		                     `**/node_modules/7zip-bin/darwin/7za`,
 	                     ]))
 	                     .pipe(asarResultEditor[platform]());
 	

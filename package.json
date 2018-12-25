@@ -1,7 +1,7 @@
 {
 	"name": "KendryteUpdater",
 	"version": "1.0.0",
-	"releaseDate": "20181221.0001",
+	"releaseTag": "* auto set *",
 	"repository": "git@github.com:GongT/kendryte-ide-shell.git",
 	"author": "GongT <admin@gongt.me>",
 	"license": "MIT",

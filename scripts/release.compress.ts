@@ -1,5 +1,6 @@
 import { everyPlatform, run } from './gulp';
 import { releaseTasks } from './release.electron';
+import { createReleaseTag } from './releaseTag';
 import { getReleaseChannel } from './root';
 
 export const compressTasks = everyPlatform('compress', [releaseTasks], (platform, root) => {
@@ -11,7 +12,7 @@ export const compressTasks = everyPlatform('compress', [releaseTasks], (platform
 		'-mx8',
 		'-mmt',
 		'-ssc',
-		`../../${getReleaseChannel()}.${platform}.7z`,
+		`../updater.${getReleaseChannel()}.${createReleaseTag()}.${platform}.7z`,
 		'KendryteIDE',
 	].join(' ');
 	return run(szCmd, {cwd: root})();

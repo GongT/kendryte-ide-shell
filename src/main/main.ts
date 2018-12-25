@@ -39,7 +39,7 @@ export async function startMainLogic(data: ISelfConfig) {
 	
 	logger.progress(NaN);
 	
-	if (isBuilt && registry.updaterVersion !== SELF_VERSION) {
+	if (isBuilt && registry.updaterVersion + '' !== SELF_VERSION) {
 		console.log('remote:', registry.updaterVersion);
 		console.log('local:', SELF_VERSION);
 		logger.action('Outdated !', 'please download newest version.');

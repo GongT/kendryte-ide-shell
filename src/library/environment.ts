@@ -22,7 +22,7 @@ console.log(`configFile=${configFile}`);
 
 export const resourceLocation = is.macos? 'Contents/Resources/app' : 'resources/app';
 
-export const SELF_VERSION = require(isBuilt? resolve(__dirname, '../package.json') : resolve(__dirname, '../../package.json')).releaseDate;
+export const SELF_VERSION: string = '' + require(isBuilt? resolve(__dirname, '../package.json') : resolve(__dirname, '../../package.json')).releaseTag;
 
 export function myArgs() {
 	const args = [...remote.process.argv];
