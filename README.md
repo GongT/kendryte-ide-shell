@@ -1,5 +1,13 @@
 # portable-electron-update
 
+**Use `yarn install --ignore-scripts` to init the project!**
+
+gulp tasks:
+* default - compile once
+* watch - watch change and compile
+* release:<win32, linux, darwin> - create released electron app
+* release - create released app for all platform
+* build - create release, and then compress them
 
 #### # TODO
 1. 启动时检查更新

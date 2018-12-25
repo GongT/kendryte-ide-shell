@@ -1,3 +1,5 @@
+///<reference path="event-stream.d.ts"/>
+
 import * as es from 'event-stream';
 import * as _rimraf from 'rimraf';
 import * as VinylFile from 'vinyl';
@@ -27,5 +29,6 @@ export function skipDirectories(): NodeJS.ReadWriteStream {
 		if (!f.isDirectory()) {
 			return f;
 		}
+		return void 0;
 	});
 }

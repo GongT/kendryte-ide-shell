@@ -1,17 +1,16 @@
 'use strict';
 
-import { remote } from 'electron';
-import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from './library/constants';
+import { WINDOW_WIDTH } from './library/constants';
 import { doCleanup } from './library/lifecycle';
 import { createLogger } from './library/logger';
+import { toggleLoggerVisible } from './library/showLogger';
 import { timeout } from './library/timeout';
 import { ISelfConfig, loadApplicationData } from './main/appdata';
 import { handleError } from './main/error';
 import { startMainLogic } from './main/main';
 
-const container: HTMLDivElement = document.querySelector('div.container');
 document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';
-resizing(false);
+toggleLoggerVisible(false);
 
 window.scrollTo(0, 0);
 window.addEventListener('beforeUnload', () => {
@@ -29,37 +28,7 @@ function userCancel() {
 	});
 }
 
-function resizing(shown: boolean = document.body.classList.toggle('showLog')) {
-	const diff = Math.ceil((WINDOW_WIDTH_WITH_LOG - WINDOW_WIDTH) / 2);
-	const w = remote.getCurrentWindow();
-	const [original] = w.getSize();
-	let newSize: number;
-	if (shown) {
-		newSize = WINDOW_WIDTH_WITH_LOG;
-	} else {
-		newSize = WINDOW_WIDTH;
-	}
-	
-	container.style.width = (newSize - 20) + 'px';
-	w.setSize(newSize, WINDOW_HEIGHT);
-	
-	if (newSize === original) {
-		return;
-	}
-	
-	const pos = w.getPosition();
-	if (pos[0] <= 0) {
-		return;
-	}
-	if (shown) {
-		pos[0] -= diff;
-	} else {
-		pos[0] += diff;
-	}
-	w.setPosition(pos[0], pos[1]);
-}
-
-document.getElementById('btnLog').addEventListener('click', () => resizing());
+document.getElementById('btnLog').addEventListener('click', () => toggleLoggerVisible());
 if (document.readyState === 'complete') {
 	bootstrap();
 } else {

@@ -34,7 +34,7 @@ export function startUpdater() {
 			nodeIntegration: true,
 		},
 	});
-	win.webContents.openDevTools({mode: 'detach'});
+	// win.webContents.openDevTools({mode: 'detach'});
 	
 	const handleRedirect = (e: Event, url: string) => {
 		if (url != win.webContents.getURL()) {

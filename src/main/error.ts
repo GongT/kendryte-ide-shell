@@ -2,6 +2,7 @@ import { remote } from 'electron';
 import { myArgs } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
+import { toggleLoggerVisible } from '../library/showLogger';
 import { launchIDE, resolveExecutable } from './launch';
 
 export function handleError(error: Error) {
@@ -13,31 +14,35 @@ export function handleError(error: Error) {
 	}
 	
 	logger.error(error.stack);
-	logger.sub1('Failed! Check log for more info.');
-	logger.sub2(error.message);
+	logger.action('Fail to Start', 'try to start latest working version.');
 	logger.progress(NaN);
 	
-	finalTry();
+	toggleLoggerVisible(true);
+	
+	finalTry(error.stack);
 	
 	return false;
 }
 
-function finalTry() {
+function finalTry(sub2: string) {
 	readLocalVersions().then(async (versions) => {
 		if (versions && versions.length) {
-			
 			const lastVersion = versions.pop();
-			if (!lastVersion) {
-				return;
-			}
+			
+			logger.sub2('try start previous version: ' + lastVersion);
 			
 			const exe = await resolveExecutable(lastVersion.fsPath);
 			
 			await launchIDE(exe, remote.process.cwd(), myArgs(), {
 				VSCODE_PATH: lastVersion.fsPath,
 			});
+			// launchIDE will trigger event to show other thing, nothing to do there
+		} else {
+			throw new Error('no installed version to try');
 		}
 	}).catch((e) => {
 		console.error('Error while final try: ', e);
+		logger.action('Fail to Start', e.message);
+		logger.sub2('Sorry, please report this to us.');
 	});
 }
