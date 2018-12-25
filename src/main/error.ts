@@ -1,12 +1,21 @@
 import { remote } from 'electron';
+import { DEVELOPER_PREVENT_START } from '../library/debug';
 import { myArgs } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
-import { toggleLoggerVisible } from '../library/showLogger';
 import { launchIDE, resolveExecutable } from './launch';
 
 export function handleError(error: Error) {
-	console.error(error.stack);
+	if (error.message === DEVELOPER_PREVENT_START) {
+		logger.action('Start prevented');
+		logger.sub2('');
+		return false;
+	}
+	debugger;
+	
+	setTimeout(() => {
+		throw error;
+	}, 0);
 	if (!logger) {
 		alert('Sorry, we run into a serious bug. please contact us to resolve.');
 		require('electron').remote.getCurrentWebContents().openDevTools({mode: 'detach'});
@@ -16,8 +25,6 @@ export function handleError(error: Error) {
 	logger.error(error.stack);
 	logger.action('Fail to Start', 'try to start latest working version.');
 	logger.progress(NaN);
-	
-	toggleLoggerVisible(true);
 	
 	finalTry(error.stack);
 	

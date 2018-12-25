@@ -3,6 +3,12 @@
 <head>
 	<link rel="stylesheet" href="assets/styles/index.css">
 	<link rel="stylesheet" href="../node_modules/@fortawesome/fontawesome-free/css/all.css">
+	<script type="text/javascript">
+	console.log('hello world');
+	window.onerror = function (error, url, line) {
+		require('electron').remote.getCurrentWebContents().openDevTools({mode: 'detach'});
+	};
+	</script>
 </head>
 <body>
 <a href="###" id="btnQuit"></a>
@@ -51,4 +57,11 @@
 </div>
 </body>
 </html>
-<script type="text/javascript">require('./electron-browser.js');</script>
+<script type="text/javascript">
+try {
+	require('./electron-browser.js').main();
+} catch (e) {
+	alert(e.stack);
+	throw e;
+}
+</script>

@@ -34,7 +34,11 @@ export function startUpdater() {
 			nodeIntegration: true,
 		},
 	});
-	// win.webContents.openDevTools({mode: 'detach'});
+	
+	console.log(win.webContents.openDevTools({mode: 'detach'}));
+	win.webContents.on('console-message', (e, level: number, message: string, line: number, sourceId: string) => {
+		console.error('[console][%s] %s', level, message);
+	});
 	
 	const handleRedirect = (e: Event, url: string) => {
 		if (url != win.webContents.getURL()) {

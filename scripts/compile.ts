@@ -8,34 +8,40 @@ const TASK_WATCH = 'develop:watch';
 
 interface ISourceType {
 	sourceTypes: string[];
-	task(p: NodeJS.ReadWriteStream): NodeJS.ReadWriteStream;
+	task(): (p: NodeJS.ReadWriteStream) => NodeJS.ReadWriteStream;
 }
 
 const scssTask: ISourceType = {
 	sourceTypes: ['scss'],
-	task(p: NodeJS.ReadWriteStream) {
-		return p.pipe(sourcemaps.init({includeContent: true}))
-		        .pipe(sass().on('error', sass.logError))
-		        .pipe(sourcemaps.write(''));
+	task() {
+		const compile = sass().on('error', sass.logError);
+		return (p: NodeJS.ReadWriteStream) => {
+			return p.pipe(sourcemaps.init({includeContent: true}))
+			        .pipe(compile)
+			        .pipe(sourcemaps.write(''));
+		};
 	},
 };
 
 const tsTask: ISourceType = {
 	sourceTypes: ['ts'],
-	task(p: NodeJS.ReadWriteStream) {
+	task() {
 		const tsProject = typescript.createProject('src/tsconfig.json', {
 			declaration: false,
+			rootDir: BUILD_ROOT + 'src',
 		});
-		return p.pipe(sourcemaps.init({includeContent: true}))
-		        .pipe(tsProject())
-		        .pipe(sourcemaps.write(''));
+		return (p: NodeJS.ReadWriteStream) => {
+			return p.pipe(sourcemaps.init({includeContent: true}))
+			        .pipe(tsProject())
+			        .pipe(sourcemaps.write(''));
+		};
 	},
 };
 
 const assetTask: ISourceType = {
 	sourceTypes: ['html', 'svg', 'ico', 'icns'],
-	task(p: NodeJS.ReadWriteStream) {
-		return p;
+	task() {
+		return (p: NodeJS.ReadWriteStream) => p;
 	},
 };
 
@@ -53,9 +59,10 @@ function createCompileTask(
 	dependencies: ISingleTask[],
 	isBuild = false,
 ) {
+	const process = taskConfig.task();
 	return task(taskName(isBuild? 'build:compile' : TASK_COMPILE, taskConfig.sourceTypes), dependencies, () => {
-		return taskConfig.task(gulp.src(createGlob(taskConfig.sourceTypes), {base: BUILD_ROOT + 'src'}))
-		                 .pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : BUILD_OUTPUT));
+		return process(gulp.src(createGlob(taskConfig.sourceTypes), {base: BUILD_ROOT + 'src'}))
+			.pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : BUILD_OUTPUT));
 	});
 }
 
@@ -63,6 +70,7 @@ function createWatchTask(
 	taskConfig: ISourceType,
 	dependencies: ISingleTask[],
 ) {
+	const process = taskConfig.task();
 	return task(
 		taskName(TASK_WATCH, taskConfig.sourceTypes),
 		[
@@ -72,9 +80,9 @@ function createWatchTask(
 		() => {
 			const p = watch(createGlob(taskConfig.sourceTypes), {base: BUILD_ROOT + 'src', ignoreInitial: false})
 				.pipe(plumber());
-			return taskConfig.task(p)
-			                 .pipe(plumber.stop())
-			                 .pipe(gulp.dest(BUILD_OUTPUT));
+			return process(p)
+				.pipe(plumber.stop())
+				.pipe(gulp.dest(BUILD_OUTPUT));
 		});
 }
 
@@ -82,6 +90,7 @@ function createWatchCallbackTask(
 	taskConfig: ISourceType,
 	dependencies: ISingleTask[],
 ) {
+	const process = taskConfig.task();
 	return task(taskName(TASK_WATCH, taskConfig.sourceTypes),
 		[
 			...dependencies,
@@ -89,13 +98,16 @@ function createWatchCallbackTask(
 		],
 		() => {
 			const sources = createGlob(taskConfig.sourceTypes);
-			return watch(sources, {base: BUILD_ROOT + 'src'}, (o: VinylFile) => {
+			const sourceRoot = BUILD_ROOT + 'src';
+			return watch(sources, {base: sourceRoot}, (o: VinylFile) => {
 				console.log('\x1Bcfile has change: ', o.path);
+				const rel = o.dirname.replace(sourceRoot, '');
+				
 				const p = gulp.src(o.path)
-				              .pipe(plumber(() => {}));
-				return taskConfig.task(p)
-				                 .pipe(plumber.stop())
-				                 .pipe(gulp.dest(BUILD_OUTPUT))
+				              .pipe(plumber(() => {
+				              }));
+				return process(p).pipe(plumber.stop())
+				                 .pipe(gulp.dest(BUILD_OUTPUT + rel))
 				                 .on('end', () => {
 					                 console.log('complile complete.');
 				                 });

@@ -1,5 +1,6 @@
 'use strict';
 
+import { clipboard, ipcRenderer } from 'electron';
 import { WINDOW_WIDTH } from './library/constants';
 import { doCleanup } from './library/lifecycle';
 import { createLogger } from './library/logger';
@@ -8,14 +9,6 @@ import { timeout } from './library/timeout';
 import { ISelfConfig, loadApplicationData } from './main/appdata';
 import { handleError } from './main/error';
 import { startMainLogic } from './main/main';
-
-document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';
-toggleLoggerVisible(false);
-
-window.scrollTo(0, 0);
-window.addEventListener('beforeUnload', () => {
-	window.scrollTo(0, 0);
-});
 
 const userCancelError = new Error('user cancel');
 
@@ -28,11 +21,36 @@ function userCancel() {
 	});
 }
 
-document.getElementById('btnLog').addEventListener('click', () => toggleLoggerVisible());
-if (document.readyState === 'complete') {
-	bootstrap();
-} else {
-	document.addEventListener('DOMContentLoaded', bootstrap);
+export function main() {
+	document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';
+	toggleLoggerVisible(false);
+	
+	window.scrollTo(0, 0);
+	window.addEventListener('beforeUnload', () => {
+		window.scrollTo(0, 0);
+	});
+	
+	document.getElementById('btnLog').addEventListener('click', () => toggleLoggerVisible());
+	document.addEventListener('auxclick', (e: MouseEvent) => {
+		if (e.which === 2) { // middle
+			e.preventDefault();
+		} else if (e.which === 3) {
+			ipcRenderer.send('contextmenu');
+		}
+	}, false);
+	
+	Object.defineProperty(window, 'copyLog', {
+		value() {
+			const ele: HTMLDivElement = document.querySelector('#viewLog>div.logText');
+			clipboard.writeText(ele.innerText);
+		},
+	});
+	
+	if (document.readyState === 'complete') {
+		bootstrap();
+	} else {
+		document.addEventListener('DOMContentLoaded', bootstrap);
+	}
 }
 
 function bootstrap() {

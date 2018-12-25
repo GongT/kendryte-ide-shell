@@ -1,9 +1,11 @@
 import { spawn } from 'child_process';
+import { BrowserWindow, dialog, MessageBoxOptions } from 'electron';
 import { createWriteStream } from 'fs-extra';
 import { tmpdir } from 'os';
 import { format } from 'util';
 import { alwaysPromise } from '../library/alwaysPromise';
 import { createLogPack } from '../library/createLogPack';
+import { DEVELOPER_PREVENT_START } from '../library/debug';
 import { contentRoot, isBuilt, localPackagePath, myProfilePath, nativePath, userDataPath } from '../library/environment';
 import { registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
@@ -108,15 +110,36 @@ enum LogLevel {
 	ERROR = 'ERROR',
 }
 
-export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, exe = ''): Promise<void> {
+export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, exe = '', opener?: BrowserWindow): Promise<void> {
 	if (isQuitting()) {
 		return;
 	}
 	
-	await executableResolved;
+	if (!exe) {
+		await executableResolved;
+	}
 	
 	if (!exe) {
 		[exe, args] = makeAppArg(exe, args);
+	}
+	
+	console.log('spawnIDE:\n  exe=%s\n  args=%j\n  cwd=%s\n  env=%j)', exe, args, cwd, envVars);
+	if (!isBuilt) {
+		await new Promise((resolve, reject) => {
+			dialog.showMessageBox(opener, {
+				type: 'question',
+				buttons: ['Prevent start', 'Really start',],
+				defaultId: 1,
+				title: 'Development message',
+				message: 'running in development mode.\nIDE start progress paused.',
+			} as MessageBoxOptions, (shoudContinue) => {
+				if (shoudContinue) {
+					resolve();
+				} else {
+					reject(new Error(DEVELOPER_PREVENT_START));
+				}
+			});
+		});
 	}
 	
 	await ensureIpcServer();
