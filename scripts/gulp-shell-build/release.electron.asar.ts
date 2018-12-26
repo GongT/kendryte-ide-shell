@@ -1,15 +1,15 @@
-import { resolve } from 'path';
+import { join } from 'path';
+import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, } from '../library/environment';
+import { filter, gulp, task } from '../library/gulp';
+import { createAsar } from '../vscode/asar';
 import { cleanAsarTask } from './cleanup';
-import { filter, gulp, task } from './gulp';
 import { releaseMakeTask } from './release.sources';
-import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, } from './root';
-import { createAsar } from './vscode/asar';
 
 export const asarTask = task('release:app.asar', [releaseMakeTask, cleanAsarTask], () => {
-	return gulp.src(BUILD_DIST_SOURCE + '/**', {base: '.', dot: true})
+	return gulp.src([BUILD_DIST_SOURCE, BUILD_DIST_SOURCE + '**'], {base: '.', dot: true})
 	           .pipe(filter(['**', '!**/.bin']))
 	           .pipe(createAsar(
-		           resolve(process.cwd(), BUILD_DIST_SOURCE),
+		           BUILD_DIST_SOURCE,
 		           [
 			           '**/*.node',
 			           '**/*.exe',
@@ -17,7 +17,7 @@ export const asarTask = task('release:app.asar', [releaseMakeTask, cleanAsarTask
 			           '**/7zip-bin/linux/x64/7za',
 			           '**/7zip-bin/mac/7za',
 		           ],
-		           resolve(process.cwd(), BUILD_DIST_ROOT, 'resources/app.asar'),
+		           join(BUILD_DIST_SOURCE + 'app.asar'),
 	           ))
-	           .pipe(gulp.dest(resolve(BUILD_DIST_ROOT, 'resources')));
+	           .pipe(gulp.dest(join(BUILD_DIST_ROOT, 'resources')));
 });

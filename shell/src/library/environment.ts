@@ -5,13 +5,15 @@ import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
 
+console.log(`__dirname=${__dirname}`);
+
 const winSlash = /\\/g;
 
 export const isBuilt = /[\/\\]resources[\/\\]app(?:\.asar)?[\/\\]/i.test(__dirname);
 console.log(`isBuilt=${isBuilt} (%s)`, __dirname);
 
-// from src/library:                   app/resources/electronRoot/wrapper                src/sourceRoot/DebugContents
-export const appRoot = isBuilt? resolve(__dirname, '../../../../') : resolve(__dirname, '../..');
+// from src/library:                   app/resources/electronRoot/wrapper          src/shell/workspace(/DebugContents
+export const appRoot = isBuilt? resolve(__dirname, '../../../../') : resolve(__dirname, '../../..');
 console.log(`appRoot=${appRoot}`);
 
 export const contentRoot = isBuilt? appRoot : resolve(appRoot, 'DebugContents');

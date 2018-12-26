@@ -1,9 +1,13 @@
 {
 	"extends": "../node_modules/@gongt/single-dog/package/tsconfig.json",
 	"compilerOptions": {
-		"outDir": "../dist/gulp"
+		"outDir": "../build/gulp",
+		"typeRoots": [
+			"node_modules/@types",
+			"../node_modules/@types"
+		]
 	},
 	"files": [
-		"gulpfile.ts"
+		"gulp-shell-build/gulpfile.ts"
 	]
 }

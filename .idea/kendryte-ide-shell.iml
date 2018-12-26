@@ -5,6 +5,11 @@
       <excludeFolder url="file://$MODULE_DIR$/DebugContents" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/kendryte-freertos-demo" />
+      <excludeFolder url="file://$MODULE_DIR$/kendryte-freertos-sdk" />
+      <excludeFolder url="file://$MODULE_DIR$/kendryte-standalone-demo" />
+      <excludeFolder url="file://$MODULE_DIR$/kendryte-standalone-sdk" />
+      <excludeFolder url="file://$MODULE_DIR$/shell/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

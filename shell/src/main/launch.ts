@@ -91,7 +91,7 @@ export function ideSourceRoot(data: ISelfConfig) {
 	if (process.env.APPLICATION_RUN_SOURCE) {
 		return nativePath(appRoot, process.env.APPLICATION_RUN_SOURCE);
 	} else if (data.channel === 'sourcecode') {
-		return nativePath(appRoot, data.sourceRoot);
+		return nativePath(appRoot, data.sourceRoot || 'kendryte-ide');
 	}
 	return null;
 }

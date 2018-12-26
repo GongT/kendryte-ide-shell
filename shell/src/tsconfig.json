@@ -1,5 +1,5 @@
 {
-	"extends": "../node_modules/@gongt/single-dog/package/tsconfig.json",
+	"extends": "../../node_modules/@gongt/single-dog/package/tsconfig.json",
 	"compilerOptions": {
 		"lib": [
 			"esnext",
@@ -9,6 +9,11 @@
 		"baseUrl": ".",
 		"sourceRoot": ".",
 		"outDir": "../dist",
+		"typeRoots": [
+			"../node_modules/@types",
+			"../../node_modules/@types",
+			"../../node_modules"
+		],
 		"types": [
 			"electron",
 			"node"

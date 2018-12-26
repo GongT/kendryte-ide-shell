@@ -1,7 +1,7 @@
 import { VinylFile } from 'gulp-typescript/release/types';
+import { BUILD_DIST_SOURCE, BUILD_ROOT, SHELL_OUTPUT, SHELL_ROOT, SHELL_SOURCE } from '../library/environment';
+import { gulp, ISingleTask, jeditor, plumber, sass, sourcemaps, task, typescript, watch } from '../library/gulp';
 import { cleanBuildTask, cleanDevelopTask } from './cleanup';
-import { gulp, ISingleTask, jeditor, plumber, sass, sourcemaps, task, typescript, watch } from './gulp';
-import { BUILD_DIST_SOURCE, BUILD_OUTPUT, BUILD_ROOT } from './root';
 
 const TASK_COMPILE = 'develop:compile';
 const TASK_WATCH = 'develop:watch';
@@ -26,9 +26,9 @@ const scssTask: ISourceType = {
 const tsTask: ISourceType = {
 	sourceTypes: ['ts'],
 	task() {
-		const tsProject = typescript.createProject('src/tsconfig.json', {
+		const tsProject = typescript.createProject(SHELL_SOURCE + 'tsconfig.json', {
 			declaration: false,
-			rootDir: BUILD_ROOT + 'src',
+			rootDir: '.',
 		});
 		return (p: NodeJS.ReadWriteStream) => {
 			return p.pipe(sourcemaps.init({includeContent: true}))
@@ -51,7 +51,7 @@ function taskName(prefix: string, src: string[]) {
 
 function createGlob(src: string[]) {
 	const srcGlob = src.length > 1? '{' + src.join(',') + '}' : src[0];
-	return './src/**/*.' + srcGlob;
+	return SHELL_SOURCE + '**/*.' + srcGlob;
 }
 
 function createCompileTask(
@@ -61,8 +61,8 @@ function createCompileTask(
 ) {
 	const process = taskConfig.task();
 	return task(taskName(isBuild? 'build:compile' : TASK_COMPILE, taskConfig.sourceTypes), dependencies, () => {
-		return process(gulp.src(createGlob(taskConfig.sourceTypes), {base: BUILD_ROOT + 'src'}))
-			.pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : BUILD_OUTPUT));
+		return process(gulp.src(createGlob(taskConfig.sourceTypes), {base: SHELL_SOURCE}))
+			.pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : SHELL_OUTPUT));
 	});
 }
 
@@ -78,11 +78,11 @@ function createWatchTask(
 			taskName(TASK_COMPILE, taskConfig.sourceTypes),
 		],
 		() => {
-			const p = watch(createGlob(taskConfig.sourceTypes), {base: BUILD_ROOT + 'src', ignoreInitial: false})
+			const p = watch(createGlob(taskConfig.sourceTypes), {base: SHELL_SOURCE, ignoreInitial: false})
 				.pipe(plumber());
 			return process(p)
 				.pipe(plumber.stop())
-				.pipe(gulp.dest(BUILD_OUTPUT));
+				.pipe(gulp.dest(SHELL_OUTPUT));
 		});
 }
 
@@ -98,16 +98,15 @@ function createWatchCallbackTask(
 		],
 		() => {
 			const sources = createGlob(taskConfig.sourceTypes);
-			const sourceRoot = BUILD_ROOT + 'src';
-			return watch(sources, {base: sourceRoot}, (o: VinylFile) => {
+			return watch(sources, {base: SHELL_SOURCE}, (o: VinylFile) => {
 				console.log('\x1Bcfile has change: ', o.path);
-				const rel = o.dirname.replace(sourceRoot, '');
+				const rel = o.dirname.replace(SHELL_SOURCE, '');
 				
 				const p = gulp.src(o.path)
 				              .pipe(plumber(() => {
 				              }));
 				return process(p).pipe(plumber.stop())
-				                 .pipe(gulp.dest(BUILD_OUTPUT + rel))
+				                 .pipe(gulp.dest(SHELL_OUTPUT + rel))
 				                 .on('end', () => {
 					                 console.log('complile complete.');
 				                 });
@@ -128,9 +127,9 @@ export const developmentTask = task(TASK_COMPILE, [
 ]);
 
 export const copyDevelopChannelTask = task('develop:channel.json', [cleanDevelopTask], () => {
-	return gulp.src(BUILD_ROOT + 'channel.json').pipe(jeditor({
+	return gulp.src(SHELL_ROOT + 'channel.json').pipe(jeditor({
 		channel: 'sourcecode',
-		sourceRoot: '../kendryte-ide',
+		sourceRoot: process.env.SOURCE_CODE_DIR || 'kendryte-ide',
 	})).pipe(gulp.dest(BUILD_ROOT + 'DebugContents'));
 });
 

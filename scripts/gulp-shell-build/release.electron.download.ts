@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
-import { basename, resolve } from 'path';
-import { download, everyPlatform, gulp } from './gulp';
-import { BUILD_DIST_ROOT, ELECTRON_VERSION, } from './root';
+import { basename, join } from 'path';
+import { BUILD_DIST_ROOT, ELECTRON_VERSION, } from '../library/environment';
+import { download, everyPlatform, gulp } from '../library/gulp';
 
 function buildElectronUrl(platform: string) {
 	const v = ELECTRON_VERSION.replace(/^v/, '');
@@ -9,7 +9,7 @@ function buildElectronUrl(platform: string) {
 }
 
 function whereToSave(url: string) {
-	return resolve('./build/download', basename(url));
+	return join(BUILD_DIST_ROOT + 'download', basename(url));
 }
 
 export function getElectronZipPath(platform: string) {
@@ -18,9 +18,13 @@ export function getElectronZipPath(platform: string) {
 
 export const downloadTask = everyPlatform('electron:download', (platform) => {
 	const url = buildElectronUrl(platform);
-	if (!existsSync(whereToSave(url))) {
+	const saveTo = whereToSave(url);
+	if (!existsSync(saveTo)) {
+		console.error('download electron from %s to %s', url, saveTo);
 		return download(url)
 			.pipe(gulp.dest(BUILD_DIST_ROOT + 'download'));
+	} else {
+		console.error('electron exists: %s', saveTo);
 	}
 	return null;
 });

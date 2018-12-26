@@ -1,8 +1,8 @@
 import { TaskFunc } from 'orchestrator';
-import { resolve } from 'path';
+import { join } from 'path';
 import * as Q from 'q';
 import * as stream from 'stream';
-import { BUILD_DIST_TARGETS } from './root';
+import { BUILD_DIST_TARGETS } from './environment';
 
 export const gulp = require('gulp');
 export const watch = require('gulp-watch');
@@ -15,10 +15,13 @@ export const plumber = require('gulp-plumber');
 export const yarn = require('gulp-yarn');
 export const download = require('gulp-download2');
 export const filter = require('gulp-filter');
+export const debug = require('gulp-debug');
 export const zip = require('gulp-vinyl-zip');
 export const es = require('event-stream');
 export const rename = require('gulp-rename');
 export const run = require('gulp-run-command').default;
+export const aws = require('gulp-aws');
+export const log = require('fancy-log');
 
 export type ISingleTask = string;
 export type ITaskPlatform = ISingleTask&IPlatformMap<ISingleTask>;
@@ -84,7 +87,7 @@ export function everyPlatform(task: string, deps: ITask[], cb?: IMyTaskFunc): IT
 export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyTaskFunc): ITask {
 	const ret: IPlatformMap<ITask> = {} as any;
 	for (const platform of platforms) {
-		const currentPlatformDir = resolve(process.cwd(), BUILD_DIST_TARGETS, platform);
+		const currentPlatformDir = join(process.cwd(), BUILD_DIST_TARGETS, platform);
 		if (!cb) {
 			cb = deps as IMyTaskFunc;
 			deps = [];
