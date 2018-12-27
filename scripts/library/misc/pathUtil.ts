@@ -1,5 +1,5 @@
 import { normalize, resolve } from 'path';
-import { RELEASE_ROOT } from '../../environment';
+import { BUILD_DIST_ROOT, BUILD_ROOT_ABSOLUTE, nativePath, RELEASE_ROOT } from '../../environment';
 import { mkdirpSync } from './fsUtil';
 
 export function chdir(d: string) {
@@ -18,4 +18,8 @@ export function ensureChdir(p: string) {
 
 export function yarnPackageDir(what: string) {
 	return resolve(RELEASE_ROOT, 'yarn-dir', what);
+}
+
+export function sourcePath(path: string) {
+	return nativePath(path).replace(resolve(BUILD_ROOT_ABSOLUTE, BUILD_DIST_ROOT, 'gulp'), resolve(BUILD_ROOT_ABSOLUTE, 'scripts'));
 }

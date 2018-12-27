@@ -1,0 +1,29 @@
+import { existsSync } from 'fs';
+import { basename } from 'path';
+import { BUILD_DIST_ROOT } from '../environment';
+import { download, everyPlatform, gulp, log, mergeStream } from '../library/gulp';
+import { streamTransform } from '../library/gulp/transform';
+import { walkRegistry } from './3rd-registry';
+import { savePath } from './paths';
+import { registryTask } from './registry';
+
+export const downloadTask = everyPlatform('offpack:download', [registryTask], (platform) => {
+	const downloads: NodeJS.ReadableStream[] = [];
+	for (const task of walkRegistry(platform)) {
+		const saveBase = BUILD_DIST_ROOT + 'download/';
+		const zipPath = savePath(task.name, task.platform, task.version);
+		if (existsSync(zipPath)) {
+			log.info('Exists file: %s', zipPath);
+			continue;
+		}
+		const stream = streamTransform((file) => {
+			file.basename = basename(zipPath);
+			return file;
+		});
+		
+		downloads.push(
+			download(task.url).pipe(stream).pipe(gulp.dest(saveBase)),
+		);
+	}
+	return mergeStream(...downloads);
+});

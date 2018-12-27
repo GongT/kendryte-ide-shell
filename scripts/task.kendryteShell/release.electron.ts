@@ -1,10 +1,10 @@
 import { resolve } from 'path';
+import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT, getReleaseChannel, } from '../environment';
+import { everyPlatform, filter, gulp, jeditor, mergeStream, rename, zip } from '../library/gulp';
+import { skipDirectories } from '../vscode/uitl';
 import { cleanReleaseTask } from './cleanup';
-import { es, everyPlatform, filter, gulp, jeditor, rename, zip } from '../library/gulp';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
-import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT, getReleaseChannel, } from '../environment';
-import { skipDirectories } from '../vscode/uitl';
 
 function prependMacElectronSourceRoot(): NodeJS.WritableStream&NodeJS.ReadableStream {
 	return rename((path: any) => {
@@ -67,12 +67,12 @@ export const releaseTasks = everyPlatform('release', [cleanReleaseTask, asarTask
 			channel: getReleaseChannel(),
 		}));
 	
-	return es.merge(
+	return mergeStream(
 		extractElectronSource,
 		copyAsar,
 		copyAssetsFiles,
 		createChannelJson,
 	)
-	         .pipe(skipDirectories())
-	         .pipe(gulp.dest(resolve(root, 'KendryteIDE')));
+		.pipe(skipDirectories())
+		.pipe(gulp.dest(resolve(root, 'KendryteIDE')));
 });

@@ -11,6 +11,6 @@
 		]
 	},
 	"files": [
-		"gulp-shell-build/gulpfile.ts"
+		"main-gulpfile.ts"
 	]
 }

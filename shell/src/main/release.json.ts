@@ -3,17 +3,15 @@ import { is } from 'electron-util';
 export const SYS_NAME = ideUrlPropName();
 
 export interface IDEJson {
+	version: string;
+	updaterVersion: string;
+	offlinePackageVersion: string;
 	homepageUrl: string;
+	patches: IDEPatchJson[];
+	
 	linux: string;
 	mac: string;
-	patches: IDEPatchJson[];
-	version: string;
 	windows: string;
-	allDownloads: {
-		linux: string[];
-		mac: string[];
-		windows: string[];
-	};
 }
 
 export type UrlKey = 'linux'|'mac'|'windows';

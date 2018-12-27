@@ -25,12 +25,14 @@ export function parseCommand(cmd: string, args: ReadonlyArray<string>): [string,
 }
 
 export function processPromise(cp: ChildProcess, cmd: ProcessArgsInfo, options?: SpawnOptions) {
+	const stack = new Error('save stack');
 	return new Promise<void>((resolve, reject) => {
 		const cwd = (options && options.cwd)? options.cwd : process.cwd();
 		cp.once('error', reject);
 		cp.once('exit', (code: number, signal: string) => {
 			const e = StatusCodeError(code, signal, [cmd[0], cmd[1], cwd]);
 			if (e) {
+				e.stack = e.message + '\n' + stack.stack.split('\n').slice(1).join('\n');
 				reject(e);
 			} else {
 				resolve();

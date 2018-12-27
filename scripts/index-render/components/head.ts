@@ -1,5 +1,8 @@
 import { join } from 'path';
 import { getWithCache } from '../../library/misc/httpUtil';
+import { sourcePath } from '../../library/misc/pathUtil';
+
+const {renderSync} = require('sass');
 
 export async function buildHead(pieces: string[]) {
 	const bs = await getWithCache('https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css');
@@ -12,12 +15,10 @@ export async function buildHead(pieces: string[]) {
 		'\t<style type="text/css">',
 	);
 	
-	const {renderSync} = require('sass');
-	
 	const result = renderSync({
-		file: join(__dirname, 'style.scss'),
+		file: join(sourcePath(__dirname), 'style.scss'),
 		sourceMap: false,
-		indentType: 'tab',
+		outputStyle: 'compressed',
 	});
 	
 	pieces.push(result.css.toString('utf8'), '</style>');

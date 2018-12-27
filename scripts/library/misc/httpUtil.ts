@@ -1,12 +1,13 @@
 import { createWriteStream, ftruncateSync } from 'fs';
-import { IncomingMessage, request as requestHttp } from 'http';
+import { ClientRequest, IncomingMessage, request as requestHttp } from 'http';
 import { request as requestHttps, RequestOptions } from 'https';
-import { resolve } from 'path';
+import { tmpdir } from 'os';
+import { basename, resolve } from 'path';
 import { parse } from 'url';
 import { close, isExists, open, readFile } from './fsUtil';
 import { CollectingStream, streamPromise } from './streamUtil';
 
-export function request(url: string, options: RequestOptions, callback?: (res: IncomingMessage) => void) {
+export function request(url: string, options: RequestOptions, callback?: (res: IncomingMessage) => void): ClientRequest {
 	const request = url.startsWith('https')? requestHttps : requestHttp;
 	const uri = parse(url);
 	return request({
@@ -26,7 +27,7 @@ export function requestPromise(url: string, options: RequestOptions): Promise<In
 }
 
 export async function getWithCache(url: string) {
-	const cache = resolve(process.env.TEMP, 'hash');
+	const cache = resolve(tmpdir(), basename(url));
 	if (await isExists(cache)) {
 		return await readFile(cache);
 	}

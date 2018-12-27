@@ -3,7 +3,6 @@ import { createReadStream } from 'fs';
 import { PassThrough } from 'stream';
 import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../../environment';
 import { ICompileOptions } from '../../ide/package-manager/type';
-import { log } from '../gulp';
 import { ProgressPromise } from './asyncUtil';
 import { getPackageData, getProductData } from './fsUtil';
 import { hashBuffer, hashStream } from './hashUtil';
@@ -13,11 +12,6 @@ export interface AWSLogger {
 	write?: (chunk: any, encoding?: string, callback?: () => void) => void
 	log?: (...messages: any[]) => void;
 }
-
-export const OBJKEY_IDE_JSON = 'release/IDE.' + getProductData().quality + '.json';
-export const OBJKEY_DOWNLOAD_INDEX = 'release/download/index.html';
-export const OBJKEY_PACKAGE_MANAGER_LIBRARY = 'package-manager/registry/library.json';
-export const OBJKEY_PACKAGE_MANAGER_EXAMPLE = 'package-manager/registry/example.json';
 
 export interface IProgress {
 	loaded: number;
@@ -75,11 +69,11 @@ export class ExS3 implements AWSLogger {
 	}
 	
 	write(...messages: any[]) {
-		log('write', ...messages);
+		// console.log(...messages);
 	}
 	
 	log(...messages: any[]) {
-		log('log', ...messages);
+		// console.log(...messages);
 	}
 	
 	loadText(key: string): Promise<string> {
@@ -95,6 +89,7 @@ export class ExS3 implements AWSLogger {
 	
 	downloadStream(key: string): NodeJS.ReadableStream {
 		// log('[S3] download <- %s :: %s', this.bucket, key);
+		key = key.replace(/^\//, '');
 		return this.s3.getObject(
 			{Bucket: this.bucket, Key: key},
 		).createReadStream();
@@ -134,6 +129,7 @@ export class ExS3 implements AWSLogger {
 		buffer: string|Buffer,
 		hash = true,
 	) {
+		key = key.replace(/^\//, '');
 		// globalLog('[S3] upload -> %s :: %s', Bucket, Key);
 		const url = await new Promise<string>((resolve, reject) => {
 			this.s3.upload(
@@ -156,6 +152,7 @@ export class ExS3 implements AWSLogger {
 		stream: NodeJS.ReadableStream,
 		hash = true,
 	) {
+		key = key.replace(/^\//, '');
 		// globalLog('[S3] upload -> %s', key);
 		const pass = stream.pipe(new PassThrough());
 		
@@ -166,8 +163,8 @@ export class ExS3 implements AWSLogger {
 		
 		const url = await new ProgressPromise<string, IProgress>((resolve, reject, notify) => {
 			const mup = this.s3.upload(
-				{ACL: 'public-read', Bucket: this.bucket, Key: key, Body: stream, ContentType: mime},
-				{partSize: 10 * 1024 * 1024, queueSize: 4},
+				{ACL: 'public-read', Bucket: this.bucket, Key: key, Body: pass, ContentType: mime},
+				{partSize: 10 * 1024 * 1024, queueSize: 2},
 				(err: Error, data: any) => err? reject(err) : resolve(data.Location),
 			);
 			

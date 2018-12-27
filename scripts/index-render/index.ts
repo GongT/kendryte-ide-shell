@@ -1,7 +1,12 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { compressedFileName } from '../gulp-shell-build/release.compress';
-import { createReleaseTag } from '../gulp-shell-build/releaseTag';
+import { OBJKEY_IDE_JSON } from '../environment';
+import { log } from '../library/gulp';
+import { ExS3 } from '../library/misc/awsUtil';
+import { sourcePath } from '../library/misc/pathUtil';
+import { offlinePackageFileName } from '../library/paths/offlinePackages';
+import { updaterFileName } from '../library/paths/updater';
+import { IDEJson, latestPatch } from '../library/publisher/release.json';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
 import { buildHead } from './components/head';
@@ -14,37 +19,68 @@ export async function createIndexFileContent(): Promise<string> {
 		'<html>',
 	];
 	
+	const registryFile = await ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
+	const lastPatch = latestPatch(registryFile);
+	
+	log('version=%s', registryFile.version);
+	if (lastPatch.version) {
+		log('lastPatch.version=%s', lastPatch.version);
+	} else {
+		log('lastPatch.version=No value');
+	}
+	log('updaterVersion=%s', registryFile.updaterVersion);
+	log('offlinePackageVersion=%s', registryFile.offlinePackageVersion);
+	
 	await buildHead(pieces);
 	
 	pieces.push(`<body class="en container">`);
 	pieces.push(`<div style="text-align:right;">
-<span class="en">Last update of this page:</span>
-<span class="cn">本页面更新时间：</span>
+
+<span class="en">Last update time:</span>
+<span class="cn">上次更新时间：</span>
 <span class="date">${(new Date()).toISOString()}</span>
+<span>&nbsp;&nbsp;&nbsp;</span>
+
+<span class="en" style="font-weight:bold;">Versions:</span>
+<span class="cn" style="font-weight:bold;">当前版本：</span>
+
+<span class="en">main:</span>
+<span class="cn">主程序：</span>
+<span class="badge badge-info">${registryFile.version || '???'}(${lastPatch? lastPatch.version : '???'})</span>
+<span>&nbsp;</span>
+
+<span class="en">updater:</span>
+<span class="cn">更新器：</span>
+<span class="badge badge-info">${registryFile.updaterVersion || '???'}</span>
+<span>&nbsp;</span>
+
+<span class="en">packages:</span>
+<span class="cn">依赖包：</span>
+<span class="badge badge-info">${registryFile.offlinePackageVersion || '???'}</span>
+
 </div>`);
-	pieces.push(readFileSync(join(__dirname, 'components/intro.html'), 'utf8'));
+	pieces.push(readFileSync(join(sourcePath(__dirname), 'components/intro.html'), 'utf8'));
 	pieces.push(notSupportHtml());
 	pieces.push('<div id="platformContainer" class="row">');
 	
-	const versionString = createReleaseTag();
+	const downWin32 = updaterFileName('win32', registryFile.updaterVersion);
+	const downLinux = updaterFileName('linux', registryFile.updaterVersion);
+	const downDarwin = updaterFileName('darwin', registryFile.updaterVersion);
 	
-	const downWin32 = compressedFileName('win32');
-	const packageWin32 = '';
-	const downLinux = compressedFileName('linux');
-	const packageLinux = '';
-	const downDarwin = compressedFileName('darwin');
-	const packageMac = '';
+	const packageWin32 = offlinePackageFileName('win32', registryFile.offlinePackageVersion);
+	const packageLinux = offlinePackageFileName('linux', registryFile.offlinePackageVersion);
+	const packageMac = offlinePackageFileName('darwin', registryFile.offlinePackageVersion);
 	
 	pieces.push(
-		createCard('Windows', versionString,
+		createCard('Windows',
 			wrapTable('application', await createReleaseDownload(downWin32)),
 			wrapTable('packages', await createUpdateDownload(packageWin32)),
 		),
-		createCard('Linux', versionString,
+		createCard('Linux',
 			wrapTable('application', await createReleaseDownload(downLinux)),
 			wrapTable('packages', await createUpdateDownload(packageLinux)),
 		),
-		createCard('Mac', versionString,
+		createCard('Mac',
 			wrapTable('application', await createReleaseDownload(downDarwin)),
 			wrapTable('packages', await createUpdateDownload(packageMac)),
 		),
@@ -52,7 +88,7 @@ export async function createIndexFileContent(): Promise<string> {
 	
 	pieces.push('</div>');
 	
-	const scriptFile = join(__dirname, 'components/script.ts');
+	const scriptFile = join(sourcePath(__dirname), 'components/script.ts');
 	const scriptData = require('typescript').transpile(
 		readFileSync(scriptFile, 'utf8'),
 		{

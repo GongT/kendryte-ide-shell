@@ -2,7 +2,7 @@ import { TaskFunc } from 'orchestrator';
 import { join } from 'path';
 import * as Q from 'q';
 import * as stream from 'stream';
-import { Transform } from 'stream';
+import { Readable, Transform } from 'stream';
 import * as File from 'vinyl';
 import { BUILD_DIST_TARGETS } from '../environment';
 
@@ -19,12 +19,41 @@ export const download = require('gulp-download2');
 export const filter = require('gulp-filter');
 export const debug = require('gulp-debug');
 export const zip = require('gulp-vinyl-zip');
-export const es = require('event-stream');
 export const rename = require('gulp-rename');
 export const run = require('gulp-run-command').default;
 export const aws = require('gulp-aws');
 export const log = require('fancy-log');
 export const remoteSrc = require('gulp-remote-src');
+export const through2Concurrent = require('through2-concurrent');
+const PluginError = require('plugin-error');
+const _mergeStream = require('merge-stream');
+
+export function mergeStream(...streams: NodeJS.ReadableStream[]) {
+	const stream = _mergeStream(...streams);
+	return stream.isEmpty()? null : stream;
+}
+
+export function pluginError(plugin: string, originalError: string|Error) {
+	if (originalError instanceof PluginError) {
+		return originalError;
+	} else {
+		return new PluginError(plugin, originalError);
+	}
+}
+
+export function limitSpeedTransform(num: number, transform: (this: Readable, obj: any) => Promise<void>) {
+	return through2Concurrent.obj(
+		{maxConcurrency: num},
+		function (this: any, chunk: any, enc: any, callback: Function) {
+			const reject = (e: Error) => {
+				callback(pluginError('limit-speed', e));
+			};
+			
+			Promise.resolve().then(transform.bind(this, chunk)).then(() => {
+				callback();
+			}, reject);
+		});
+}
 
 class SuperVerboseLog extends Transform {
 	constructor() {
@@ -132,4 +161,13 @@ export function createVinylFile(path: string, base: string, content: NodeJS.Read
 		base,
 		contents: content,
 	});
+}
+
+export function filesToStream(...files: File[]) {
+	const pass = new Readable({objectMode: true});
+	for (const f of files) {
+		pass.push(f);
+	}
+	pass.push(null);
+	return pass;
 }

@@ -1,23 +1,22 @@
-import { OBJKEY_DOWNLOAD_INDEX, OBJKEY_IDE_JSON, s3LoadJson, s3UploadJson, s3WebsiteUrl } from '../misc/awsUtil';
-import { isMac, isWin } from '../../environment';
+import { isMac, isWin, OBJKEY_DOWNLOAD_INDEX, OBJKEY_IDE_JSON } from '../../environment';
+import { ExS3 } from '../misc/awsUtil';
 
 export interface IDEJson {
 	version: string;
+	updaterVersion: string;
+	offlinePackageVersion: string;
 	homepageUrl: string;
+	patches: IDEPatchJson[];
+	
+	linux: string;
+	mac: string;
+	windows: string;
+	
 	_autoUpdateVersions: {
 		windows: {main: string; patch: string;};
 		mac: {main: string; patch: string;};
 		linux: {main: string; patch: string;};
 	},
-	patches: IDEPatchJson[];
-	linux: string;
-	mac: string;
-	windows: string;
-	allDownloads: {
-		linux: string[];
-		mac: string[];
-		windows: string[];
-	};
 }
 
 export interface IDEPatchJson {
@@ -25,6 +24,14 @@ export interface IDEPatchJson {
 	mac: {generic: string};
 	version: string;
 	windows: {generic: string};
+}
+
+export function latestPatch(state: IDEJson): null|IDEPatchJson {
+	state.patches.sort((a, b) => {
+		return parseFloat(b.version) - parseFloat(a.version);
+	});
+	
+	return state.patches[0];
 }
 
 export function storeRemoteVersion(remote: IDEJson, type: 'main'|'patch', ver: string) {
@@ -37,7 +44,7 @@ export function storeRemoteVersion(remote: IDEJson, type: 'main'|'patch', ver: s
 export function makeNewRemote(): IDEJson {
 	return {
 		version: '0.0.0',
-		homepageUrl: s3WebsiteUrl(OBJKEY_DOWNLOAD_INDEX),
+		homepageUrl: ExS3.instance().websiteUrl(OBJKEY_DOWNLOAD_INDEX),
 		patches: [],
 		_autoUpdateVersions: {},
 	} as any;
@@ -66,7 +73,7 @@ function ideUrlPropName() {
 export const SYS_NAME = ideUrlPropName();
 
 export async function loadRemoteState() {
-	const ideState = await s3LoadJson<IDEJson>(OBJKEY_IDE_JSON);
+	const ideState = await  ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
 	if (!ideState.patches) {
 		ideState.patches = [];
 	}
@@ -74,7 +81,7 @@ export async function loadRemoteState() {
 }
 
 export function saveRemoteState(remote: IDEJson) {
-	return s3UploadJson(remote, OBJKEY_IDE_JSON);
+	return ExS3.instance().putJson(OBJKEY_IDE_JSON, remote);
 }
 
 export function ensurePatchData(version: any, state: IDEJson): IDEPatchJson {

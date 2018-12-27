@@ -1,29 +1,31 @@
 import { IncomingMessage } from 'http';
 import { extname } from 'path';
+import { AWS_RELEASE_PACKAGES_PATH, AWS_RELEASE_UPDATER_PATH } from '../../environment';
 import { log } from '../../library/gulp';
 import { humanSize } from '../../library/humanSize';
 import { ExS3 } from '../../library/misc/awsUtil';
-import { hashStream } from '../../library/misc/hashUtil';
 import { request } from '../../library/misc/httpUtil';
 
-export async function createReleaseDownload(downloadUrl: string) {
+export async function createReleaseDownload(name: string) {
+	const key = name? `${AWS_RELEASE_UPDATER_PATH}${name}` : name;
 	return `<tr>
 	<th colspan="3">
 		<span>Kendryte IDE</span>
 	</th>
 </tr>
-${await createDownload(downloadUrl, 'btn-primary')}
+${await createDownload(key, 'btn-primary')}
 `;
 }
 
-export async function createUpdateDownload(downloadUrl: string) {
+export async function createUpdateDownload(name: string) {
+	const key = name? `${AWS_RELEASE_PACKAGES_PATH}${name}` : name;
 	return `<tr>
 	<th colspan="3">
 		<span class="en">Offline Dependency Packages</span>
 		<span class="cn">离线依赖包</span>
 	</th>
 </tr>
-${await createDownload(downloadUrl, 'btn-primary')}
+${await createDownload(key, 'btn-primary')}
 `;
 }
 
@@ -59,10 +61,10 @@ async function createDownload(key: string, btnClass: string) {
 }
 
 async function getFileInfo(key: string): Promise<{md5: string, size: string, time: string}> {
-	log('Get hash-file of file: %s', key);
+	log('Get information of file: %s', ExS3.instance().websiteUrl(key));
 	const md5FileKey = key + '.md5';
-	log('Requesting file size: %s', key);
-	let {size, time} = await getHeadInfo(ExS3.instance().url(key)).catch(() => {
+	let {size, time} = await getHeadInfo(ExS3.instance().websiteUrl(key)).catch((e) => {
+		log.warn('Failed with error: ', e.message);
 		return {} as any;
 	});
 	if (!time) {
@@ -72,7 +74,7 @@ async function getFileInfo(key: string): Promise<{md5: string, size: string, tim
 	log('    size: %s', size);
 	log('    time: %s', time);
 	if (!size) {
-		log('Temporary unavailable.');
+		log('    md5: Temporary unavailable.');
 		return {
 			md5: 'Temporary unavailable.',
 			size: '???',
@@ -80,27 +82,14 @@ async function getFileInfo(key: string): Promise<{md5: string, size: string, tim
 		};
 	}
 	
-	let md5 = await ExS3.instance().loadText(md5FileKey).catch((e: Error) => '');
+	let md5 = await ExS3.instance().loadText(md5FileKey).catch((e: Error) => {
+		log.warn('Failed with error: ', e.message);
+		return 'Temporary unavailable.';
+	});
 	log('    md5: %s', md5);
-	if (md5) {
-		return {
-			md5,
-			size,
-			time,
-		};
-	}
-	
-	log('Downloading file: %s', key);
-	const stream = ExS3.instance().downloadStream(key);
-	md5 = await hashStream(stream);
-	log('    re-calc md5: %s', md5);
-	
-	log('Upload md5-file: %s', md5);
-	await ExS3.instance().putText(md5FileKey,md5);
-	
 	return {
-		size,
 		md5,
+		size,
 		time,
 	};
 }
