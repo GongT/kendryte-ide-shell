@@ -1,5 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { compressedFileName } from '../gulp-shell-build/release.compress';
+import { createReleaseTag } from '../gulp-shell-build/releaseTag';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
 import { buildHead } from './components/head';
@@ -24,18 +26,27 @@ export async function createIndexFileContent(): Promise<string> {
 	pieces.push(notSupportHtml());
 	pieces.push('<div id="platformContainer" class="row">');
 	
+	const versionString = createReleaseTag();
+	
+	const downWin32 = compressedFileName('win32');
+	const packageWin32 = '';
+	const downLinux = compressedFileName('linux');
+	const packageLinux = '';
+	const downDarwin = compressedFileName('darwin');
+	const packageMac = '';
+	
 	pieces.push(
-		createCard('Windows', config.versionString,
-			wrapTable('application', await createReleaseDownload(config.windows)),
-			wrapTable('packages', await createUpdateDownload(config.windowsPackage)),
+		createCard('Windows', versionString,
+			wrapTable('application', await createReleaseDownload(downWin32)),
+			wrapTable('packages', await createUpdateDownload(packageWin32)),
 		),
-		createCard('Linux', config.versionString,
-			wrapTable('application', await createReleaseDownload(config.linux)),
-			wrapTable('packages', await createUpdateDownload(config.linuxPackage)),
+		createCard('Linux', versionString,
+			wrapTable('application', await createReleaseDownload(downLinux)),
+			wrapTable('packages', await createUpdateDownload(packageLinux)),
 		),
-		createCard('Mac', config.versionString,
-			wrapTable('application', await createReleaseDownload(config.mac)),
-			wrapTable('packages', await createUpdateDownload(config.macPackage)),
+		createCard('Mac', versionString,
+			wrapTable('application', await createReleaseDownload(downDarwin)),
+			wrapTable('packages', await createUpdateDownload(packageMac)),
 		),
 	);
 	

@@ -2,7 +2,11 @@ let created: string;
 
 export function createReleaseTag() {
 	if (!created) {
-		created = create();
+		if (process.env.BUILD_BUILDNUMBER) {
+			created = '' + process.env.BUILD_BUILDNUMBER;
+		} else {
+			created = create();
+		}
 	}
 	return created;
 }

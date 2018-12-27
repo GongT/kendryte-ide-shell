@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { task } from '../library/gulp';
-import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, SHELL_OUTPUT } from '../library/environment';
+import { BUILD_DIST_ROOT, BUILD_DIST_SOURCE, SHELL_OUTPUT } from '../environment';
 import { rimraf } from '../vscode/uitl';
 
 export const cleanDevelopTask = task('cleanup:dev-output', rimraf(SHELL_OUTPUT));

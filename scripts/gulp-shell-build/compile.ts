@@ -1,5 +1,5 @@
 import { VinylFile } from 'gulp-typescript/release/types';
-import { BUILD_DIST_SOURCE, BUILD_ROOT, SHELL_OUTPUT, SHELL_ROOT, SHELL_SOURCE } from '../library/environment';
+import { BUILD_DIST_SOURCE, BUILD_ROOT, SHELL_OUTPUT, SHELL_ROOT, SHELL_SOURCE } from '../environment';
 import { gulp, ISingleTask, jeditor, plumber, sass, sourcemaps, task, typescript, watch } from '../library/gulp';
 import { cleanBuildTask, cleanDevelopTask } from './cleanup';
 

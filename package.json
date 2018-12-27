@@ -9,6 +9,6 @@
 		"scripts"
 	],
 	"resolutions": {
-		"**/@types/node": "^8.0.24"
+		"**/@types/node": "^8.10.39"
 	}
 }

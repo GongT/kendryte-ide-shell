@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { BUILD_ARTIFACTS_DIR, BUILD_ROOT_ABSOLUTE, getReleaseChannel } from '../library/environment';
+import { BUILD_ARTIFACTS_DIR, BUILD_ROOT_ABSOLUTE, getReleaseChannel } from '../environment';
 import { everyPlatform, run } from '../library/gulp';
 import { releaseTasks } from './release.electron';
 import { createReleaseTag } from './releaseTag';

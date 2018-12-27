@@ -2,7 +2,9 @@ import { TaskFunc } from 'orchestrator';
 import { join } from 'path';
 import * as Q from 'q';
 import * as stream from 'stream';
-import { BUILD_DIST_TARGETS } from './environment';
+import { Transform } from 'stream';
+import * as File from 'vinyl';
+import { BUILD_DIST_TARGETS } from '../environment';
 
 export const gulp = require('gulp');
 export const watch = require('gulp-watch');
@@ -22,6 +24,25 @@ export const rename = require('gulp-rename');
 export const run = require('gulp-run-command').default;
 export const aws = require('gulp-aws');
 export const log = require('fancy-log');
+export const remoteSrc = require('gulp-remote-src');
+
+class SuperVerboseLog extends Transform {
+	constructor() {
+		super({objectMode: true});
+	}
+	
+	_transform(chunk: File, encoding: string, callback: Function) {
+		log.warn((chunk.contents as any).toString(encoding));
+		this.push(chunk);
+		callback();
+	}
+}
+
+export function printFileContent(): Transform {
+	return new SuperVerboseLog();
+}
+
+export const VinylFile: typeof File = File;
 
 export type ISingleTask = string;
 export type ITaskPlatform = ISingleTask&IPlatformMap<ISingleTask>;
@@ -100,4 +121,15 @@ export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyT
 	taskCreator(task, Array.from(Object.values(ret)));
 	
 	return Object.assign(new String(task), ret) as any;
+}
+
+export function createVinylFile(path: string, base: string, content: NodeJS.ReadableStream|string|Buffer): File {
+	if (typeof content === 'string') {
+		content = Buffer.from(content, 'utf8');
+	}
+	return new VinylFile({
+		path,
+		base,
+		contents: content,
+	});
 }

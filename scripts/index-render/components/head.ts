@@ -1,7 +1,5 @@
-import { IncomingMessage } from 'http';
 import { join } from 'path';
-import { getWithCache, request } from '../../misc/httpUtil';
-import { CollectingStream } from '../../misc/streamUtil';
+import { getWithCache } from '../../library/misc/httpUtil';
 
 export async function buildHead(pieces: string[]) {
 	const bs = await getWithCache('https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css');
@@ -24,13 +22,4 @@ export async function buildHead(pieces: string[]) {
 	
 	pieces.push(result.css.toString('utf8'), '</style>');
 	pieces.push('</head>');
-}
-
-function download(url: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		request(url, {method: 'HEAD'}, (res: IncomingMessage) => {
-			const body = res.pipe(new CollectingStream());
-			body.promise().then(resolve, reject);
-		}).end();
-	});
 }

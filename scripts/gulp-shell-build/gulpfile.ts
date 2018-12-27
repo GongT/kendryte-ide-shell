@@ -2,8 +2,8 @@ require('source-map-support/register');
 
 import { log } from 'util';
 import { task } from '../library/gulp';
-import { awsCreateIndexTask, awsModifyJsonTask } from './aws.json';
 import { copyDevelopChannelTask, developmentTask, watchTask } from './compile';
+import { awsModifyJsonTask } from './release.aws';
 import { compressTasks } from './release.compress';
 
 /* dev section */
@@ -22,8 +22,7 @@ task('build', [
 });
 task('release', [
 	awsModifyJsonTask,
-	awsCreateIndexTask,
 ], () => {
-	log('Kendryte shell (updater) release success.');
+	log('Kendryte shell (updater) release version success.');
 });
 

@@ -1,33 +1,29 @@
 import { IncomingMessage } from 'http';
 import { extname } from 'path';
-import { humanSize } from '../../codeblocks/humanSize';
-import { s3BucketUrl, s3DownloadStream, s3LoadText, s3UploadBuffer } from '../../misc/awsUtil';
-import { globalLog } from '../../misc/globalOutput';
-import { hashStream } from '../../misc/hashUtil';
-import { request } from '../../misc/httpUtil';
+import { log } from '../../library/gulp';
+import { humanSize } from '../../library/humanSize';
+import { ExS3 } from '../../library/misc/awsUtil';
+import { hashStream } from '../../library/misc/hashUtil';
+import { request } from '../../library/misc/httpUtil';
 
-type info = {
-	sevenZip?: string;
-};
-
-export async function createReleaseDownload({sevenZip}: info) {
+export async function createReleaseDownload(downloadUrl: string) {
 	return `<tr>
 	<th colspan="3">
 		<span>Kendryte IDE</span>
 	</th>
 </tr>
-${await createDownload(sevenZip, 'btn-primary')}
+${await createDownload(downloadUrl, 'btn-primary')}
 `;
 }
 
-export async function createUpdateDownload({sevenZip}: info) {
+export async function createUpdateDownload(downloadUrl: string) {
 	return `<tr>
 	<th colspan="3">
 		<span class="en">Offline Dependency Packages</span>
 		<span class="cn">离线依赖包</span>
 	</th>
 </tr>
-${await createDownload(sevenZip, 'btn-primary')}
+${await createDownload(downloadUrl, 'btn-primary')}
 `;
 }
 
@@ -45,7 +41,7 @@ async function createDownload(key: string, btnClass: string) {
 	const {md5, size, time} = await getFileInfo(key);
 	const sizeStr = humanSize(size);
 	
-	const url = s3BucketUrl(key);
+	const url = ExS3.instance().websiteUrl(key);
 	return `<tr>
 	<td>
 		<a class="en btn ${btnClass}" href="${url}">Download</a>
@@ -63,20 +59,20 @@ async function createDownload(key: string, btnClass: string) {
 }
 
 async function getFileInfo(key: string): Promise<{md5: string, size: string, time: string}> {
-	globalLog('Get hash-file of file: %s', key);
+	log('Get hash-file of file: %s', key);
 	const md5FileKey = key + '.md5';
-	globalLog('Requesting file size: %s', key);
-	let {size, time} = await getHeadInfo(s3BucketUrl(key)).catch(() => {
+	log('Requesting file size: %s', key);
+	let {size, time} = await getHeadInfo(ExS3.instance().url(key)).catch(() => {
 		return {} as any;
 	});
 	if (!time) {
 		time = 'Unknown';
 	}
 	
-	globalLog('    size: %s', size);
-	globalLog('    time: %s', time);
+	log('    size: %s', size);
+	log('    time: %s', time);
 	if (!size) {
-		globalLog('Temporary unavailable.');
+		log('Temporary unavailable.');
 		return {
 			md5: 'Temporary unavailable.',
 			size: '???',
@@ -84,8 +80,8 @@ async function getFileInfo(key: string): Promise<{md5: string, size: string, tim
 		};
 	}
 	
-	let md5 = await s3LoadText(md5FileKey).catch(e => '');
-	globalLog('    md5: %s', md5);
+	let md5 = await ExS3.instance().loadText(md5FileKey).catch((e: Error) => '');
+	log('    md5: %s', md5);
 	if (md5) {
 		return {
 			md5,
@@ -94,16 +90,13 @@ async function getFileInfo(key: string): Promise<{md5: string, size: string, tim
 		};
 	}
 	
-	globalLog('Downloading file: %s', key);
-	const stream = s3DownloadStream(key);
+	log('Downloading file: %s', key);
+	const stream = ExS3.instance().downloadStream(key);
 	md5 = await hashStream(stream);
-	globalLog('    re-calc md5: %s', md5);
+	log('    re-calc md5: %s', md5);
 	
-	globalLog('Upload md5-file: %s', md5);
-	await s3UploadBuffer({
-		stream: Buffer.from(md5, 'utf8'),
-		mime: 'text/plain',
-	}, md5FileKey);
+	log('Upload md5-file: %s', md5);
+	await ExS3.instance().putText(md5FileKey,md5);
 	
 	return {
 		size,

@@ -17,3 +17,9 @@
 	path = kendryte-standalone-demo
 	url = https://github.com/kendryte/kendryte-standalone-demo.git
 	branch = develop
+	
+[submodule "kendryte-ide"]
+	path = kendryte-ide
+	url = https://github.com/kendryte/kendryte-ide.git
+	branch = development
+

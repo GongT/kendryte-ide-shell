@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { BUILD_DIST_SOURCE, SHELL_ROOT } from '../library/environment';
+import { BUILD_DIST_SOURCE, SHELL_ROOT } from '../environment';
 import { es, gulp, jeditor, task, yarn } from '../library/gulp';
 import { cleanBuildTask } from './cleanup';
 import { productionTask } from './compile';

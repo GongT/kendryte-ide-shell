@@ -3,7 +3,7 @@ import { cleanReleaseTask } from './cleanup';
 import { es, everyPlatform, filter, gulp, jeditor, rename, zip } from '../library/gulp';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
-import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT, getReleaseChannel, } from '../library/environment';
+import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT, getReleaseChannel, } from '../environment';
 import { skipDirectories } from '../vscode/uitl';
 
 function prependMacElectronSourceRoot(): NodeJS.WritableStream&NodeJS.ReadableStream {

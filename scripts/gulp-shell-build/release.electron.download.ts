@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { basename, join } from 'path';
-import { BUILD_DIST_ROOT, ELECTRON_VERSION, } from '../library/environment';
+import { BUILD_DIST_ROOT, ELECTRON_VERSION, } from '../environment';
 import { download, everyPlatform, gulp } from '../library/gulp';
 
 function buildElectronUrl(platform: string) {
