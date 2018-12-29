@@ -1,13 +1,17 @@
 import { existsSync, renameSync } from 'fs';
 import { basename, join } from 'path';
-import { DOWNLOAD_PATH } from '../environment';
+import { DOWNLOAD_PATH, isCI } from '../environment';
 import { download, everyPlatform, gulp, log } from '../library/gulp';
 import { resolvePath } from '../library/misc/pathUtil';
 import { UPDATER_ELECTRON_VERSION } from '../library/releaseInfo/electronVersion';
 
 function buildElectronUrl(platform: string) {
-	const v = UPDATER_ELECTRON_VERSION.replace(/^v/, '');
-	return `https://npm.taobao.org/mirrors/electron/${v}/electron-${UPDATER_ELECTRON_VERSION}-${platform}-x64.zip`;
+	if (isCI) {
+		return `https://github.com/electron/electron/releases/download/${UPDATER_ELECTRON_VERSION}/electron-${UPDATER_ELECTRON_VERSION}-${platform}-x64.zip`;
+	} else {
+		const v = UPDATER_ELECTRON_VERSION.replace(/^v/, '');
+		return `https://npm.taobao.org/mirrors/electron/${v}/electron-${UPDATER_ELECTRON_VERSION}-${platform}-x64.zip`;
+	}
 }
 
 function whereToSave(url: string) {

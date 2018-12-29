@@ -1,6 +1,7 @@
 import { platform } from 'os';
 import { normalize, resolve } from 'path';
 
+export const isCI = !!process.env.SYSTEM_COLLECTIONID; // azure
 export const isWin = platform() === 'win32';
 export const isMac = platform() === 'darwin';
 export const isLinux = platform() === 'linux';
@@ -51,17 +52,21 @@ let PATHS = [
 	resolve(DEBUG_APP_ROOT, 'LocalPackage/toolchain/bin'),
 	resolve(DEBUG_APP_ROOT, 'LocalPackage/cmake/bin'),
 ];
-if (platform() === 'win32') {
-	sp = ';';
-	PATHS.push('C:/WINDOWS/system32', 'C:/WINDOWS', 'C:/WINDOWS/System32/Wbem', 'C:/WINDOWS/System32/WindowsPowerShell/v1.0');
-	PATHS.push(resolve(process.env.USERPROFILE, '.windows-build-tools/python27'));
-} else if (platform() === 'darwin') {
-	sp = ':';
-	PATHS.push('/bin', '/usr/bin');
-	PATHS.push('/usr/local/opt/coreutils/libexec/gnubin', '/usr/local/bin');
+if (isCI) {
+	PATHS.push(ORIGINAL_PATH);
 } else {
-	sp = ':';
-	PATHS.push('/bin', '/usr/bin');
+	if (platform() === 'win32') {
+		sp = ';';
+		PATHS.push('C:/WINDOWS/system32', 'C:/WINDOWS', 'C:/WINDOWS/System32/Wbem', 'C:/WINDOWS/System32/WindowsPowerShell/v1.0');
+		PATHS.push(resolve(process.env.USERPROFILE, '.windows-build-tools/python27'));
+	} else if (platform() === 'darwin') {
+		sp = ':';
+		PATHS.push('/bin', '/usr/bin');
+		PATHS.push('/usr/local/opt/coreutils/libexec/gnubin', '/usr/local/bin');
+	} else {
+		sp = ':';
+		PATHS.push('/bin', '/usr/bin');
+	}
 }
 export const PATH = process.env.PATH = PATHS.map(normalize).join(sp);
 
