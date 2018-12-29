@@ -10,8 +10,12 @@ export async function listExtension(): Promise<string[]> {
 	const list = await readdir(sourceRoot);
 	for (const item of list) {
 		const abs = resolve(sourceRoot, item);
+		const base = basename(abs);
+		if (base === 'compiler') {
+			continue;
+		}
 		if (await isExists(resolve(abs, 'package.json'))) {
-			ret.push(basename(abs));
+			ret.push(base);
 		}
 	}
 	return ret;

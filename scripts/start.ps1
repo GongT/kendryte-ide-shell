@@ -29,10 +29,7 @@ Set-Item -Path function:global:prompt -Value {
 }.GetNewClosure()
 
 #TODO: argument - run command
-node "$MY_SCRIPT_ROOT\init-script\help.js" --what-is-this
-Set-Item -Path function:global:show-help -Value {
-	node "$MY_SCRIPT_ROOT\init-script\help.js" --what-is-this
-}.GetNewClosure()
+node "$MY_SCRIPT_ROOT_BUILT\init-script\help.js" --what-is-this
 
 Write-Host " > The anwser is 42 <" -ForegroundColor Green
 

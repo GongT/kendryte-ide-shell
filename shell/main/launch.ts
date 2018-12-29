@@ -1,7 +1,7 @@
 import { ipcRenderer, remote } from 'electron';
 import { is } from 'electron-util';
 import { ensureDir, pathExistsSync, readJson } from 'fs-extra';
-import { appRoot, myArgs, nativePath, resourceLocation, userDataPath } from '../library/environment';
+import { myArgs, nativePath, resourceLocation, userDataPath } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { registerWork, workTitle } from '../library/work';
@@ -42,7 +42,7 @@ export function launchSource(data: ISelfConfig) {
 		const sourceRoot = ideSourceRoot(data);
 		const exe = await ideSourceCmdline(sourceRoot);
 		
-		rememberThisVersion(sourceRoot);
+		rememberThisVersion(null);
 		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			IS_SOURCE_RUN: 'yes',
 			VSCODE_PATH: sourceRoot,
@@ -76,25 +76,20 @@ export async function launchIDE(exe: string|string[], cwd: string, args: string[
 }
 
 export function isRunSource(data: ISelfConfig): boolean {
-	return !!ideSourceRoot(data);
+	return data.channel === 'sourcecode';
 }
 
 async function ideSourceCmdline(sourceRoot: string) {
 	logger.debug('try to find IDE source code at: ' + sourceRoot);
-	if (!await pathExistsSync(sourceRoot)) {
-		throw new Error('Unable to detect IDE source code.');
+	if (!await pathExistsSync(nativePath(sourceRoot, 'kendryte-ide/package.json'))) {
+		throw new Error('Unable to detect IDE source code. Did you checked it out?');
 	}
 	return [
-		nativePath(sourceRoot, 'my-scripts/start.' + (is.windows? 'ps1' : 'sh')),
+		nativePath(sourceRoot, 'scripts/start.' + (is.windows? 'ps1' : 'sh')),
 		'start-debug',
 	];
 }
 
 export function ideSourceRoot(data: ISelfConfig) {
-	if (process.env.APPLICATION_RUN_SOURCE) {
-		return nativePath(appRoot, process.env.APPLICATION_RUN_SOURCE);
-	} else if (data.channel === 'sourcecode') {
-		return nativePath(appRoot, data.sourceRoot || 'kendryte-ide');
-	}
-	return null;
+	return data.sourceRoot;
 }

@@ -23,6 +23,8 @@ function toPrintHelp() {
 				process.exit(0);
 			}, 1000);
 			
+			defaultOutput.write(whatError);
+			
 			defaultOutput.write('\n\n');
 			for (const list of registry.values()) {
 				if (!list.length) {
@@ -81,6 +83,12 @@ export function whatIsThisHidden(file: string = stack()) {
 
 export function currentCommand() {
 	return firstWhat;
+}
+
+let whatError = '';
+
+export function whatIsError(message: string) {
+	whatError += message;
 }
 
 export function whatIsThis(en: string, cn: string, file: string = stack()) {

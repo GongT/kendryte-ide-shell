@@ -1,13 +1,8 @@
 import { OutputStreamControl } from '@gongt/stillalive';
-import { copy, mkdirp, symlink, unlink } from 'fs-extra';
+import { copy, mkdirp, symlink } from 'fs-extra';
 import { resolve } from 'path';
-import { MY_SCRIPT_ROOT } from '../../environment';
-import { isExists, lstat } from '../../library/misc/fsUtil';
-import { removeDirectory } from '../codeblocks/removeDir';
 import { listExtension } from './list';
 import { getExtensionPath, IExtensionPath } from './path';
-
-const myConfig = resolve(MY_SCRIPT_ROOT, '../tsconfig.json');
 
 export async function prepareLinkForDev(output: NodeJS.WritableStream) {
 	const {targetRoot, sourceRoot} = getExtensionPath(false);
@@ -15,29 +10,11 @@ export async function prepareLinkForDev(output: NodeJS.WritableStream) {
 		output.write(extName + ':\n');
 		const source = resolve(sourceRoot, extName);
 		const target = resolve(targetRoot, extName);
-		if (await isExists(target)) {
-			output.write('   remove target\n');
-			const stat = await lstat(target);
-			if (stat.isSymbolicLink()) {
-				await unlink(target);
-			} else {
-				await removeDirectory(target, output);
-			}
-		}
-		
-		const jsconfigFile = resolve(source, 'tsconfig.json');
-		if (await isExists(jsconfigFile)) {
-			output.write(`   remove ${jsconfigFile}\n`);
-			await unlink(jsconfigFile);
-		}
-		
-		output.write(`   copy ${myConfig} to ${source}\n`);
-		await copy(myConfig, jsconfigFile);
 		
 		output.write(`   copy items from ${source} to ${target}\n`);
 		await mkdirp(target);
 		await copy(resolve(source, 'package.json'), resolve(target, 'package.json'));
-		await copy(resolve(source, 'yarn.lock'), resolve(target, 'yarn.lock'));
+		await copy(resolve(source, '../yarn.lock'), resolve(target, 'yarn.lock'));
 		
 		output.write(`   link node_modules from ${source} to ${target}\n`);
 		await symlink(resolve(source, 'node_modules'), resolve(target, 'node_modules'));
@@ -50,12 +27,9 @@ export async function prepareLinkForProd(output: OutputStreamControl, {targetRoo
 		const source = resolve(sourceRoot, extName);
 		const target = resolve(targetRoot, extName);
 		
-		output.writeln(`   copy ${myConfig} to ${source}`);
-		await copy(myConfig, resolve(source, 'tsconfig.json'));
-		
 		output.writeln(`   copy items from ${source} to ${target}`);
 		await mkdirp(target);
 		await copy(resolve(source, 'package.json'), resolve(target, 'package.json'));
-		await copy(resolve(source, 'yarn.lock'), resolve(target, 'yarn.lock'));
+		await copy(resolve(source, '../yarn.lock'), resolve(target, 'yarn.lock'));
 	}
 }

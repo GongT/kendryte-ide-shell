@@ -90,6 +90,7 @@ runMain(async () => {
 	output.success('Bundle extensions production dependencies resolved');
 	await buildExtension(output, getExtensionPath(true, wantDirPath), false);
 	output.success('Bundle extensions built');
+	chdir(RELEASE_ROOT);
 	
 	const timeZip = timing();
 	output.log('Creating zip packages...');

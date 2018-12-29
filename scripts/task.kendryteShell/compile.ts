@@ -1,5 +1,5 @@
 import { VinylFile } from 'gulp-typescript/release/types';
-import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, SHELL_OUTPUT, SHELL_ROOT, VSCODE_ROOT } from '../environment';
+import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, SHELL_OUTPUT, SHELL_ROOT, WORKSPACE_ROOT } from '../environment';
 import {
 	debug,
 	gulp,
@@ -73,7 +73,7 @@ const channelJsonTask: ISourceType = {
 				channel: CHANNEL,
 			};
 			if (CHANNEL === 'sourcecode') {
-				modify.sourceRoot = process.env.SOURCE_CODE_DIR || VSCODE_ROOT;
+				modify.sourceRoot = WORKSPACE_ROOT;
 			}
 			return p.pipe(jeditor(modify));
 		};
@@ -161,6 +161,7 @@ function createWatchCallbackTask(
 			              }));
 			return process(p).pipe(plumber.stop())
 			                 .pipe(gulp.dest(SHELL_OUTPUT + rel))
+			                 .pipe(debug({title: 'write:'}))
 			                 .on('end', () => {
 				                 console.log('compile complete.');
 			                 });

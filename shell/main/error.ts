@@ -32,7 +32,9 @@ export function handleError(error: Error) {
 	logger.action('Fail to Start', 'try to start latest working version.');
 	logger.progress(NaN);
 	
-	finalTry(error.stack);
+	if (lastRun !== null) { // null means run from source code
+		finalTry(error.stack);
+	}
 	
 	return false;
 }

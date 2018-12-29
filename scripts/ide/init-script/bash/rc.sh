@@ -55,7 +55,7 @@ export PROMPT_COMMAND="prompt"
 
 if [ -z "${BS_RUN_SCRIPT}" ]; then
 	echo -e "\ec"
-	show-help
+	node "$MY_SCRIPT_ROOT_BUILT/init-script/help.js" -- --what-is-this
 	echo
 	echo -e "\e[38;5;10m > The anwser is 42 <\e[0m"
 	echo

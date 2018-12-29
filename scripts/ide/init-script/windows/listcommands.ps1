@@ -1,19 +1,3 @@
-Get-ChildItem -Path "$MY_SCRIPT_ROOT\commands" -File -Filter '*.ts' -Name | Foreach-Object {
-	$command = $_.Replace('.ts', '')
-	Set-Item -Path function:global:$command -Value {
-		try {
-			Push-Location
-			Set-Location $MY_SCRIPT_ROOT_BUILT
-			node "init-script\load-command.js" "${command}" @args
-			if (!$?) {
-				throw "Command failed with code ${LastExitCode}"
-			}
-		} finally {
-			Pop-Location
-		}
-	}.GetNewClosure()
-}
-
 function Fork {
 	param (
 		[parameter(Mandatory = $false)] [String[]] $Action,
