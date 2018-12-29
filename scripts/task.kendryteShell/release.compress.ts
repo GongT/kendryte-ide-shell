@@ -5,7 +5,7 @@ import { updaterFileName } from '../library/paths/updater';
 import { releaseTasks } from './release.electron';
 
 export const compressTasks = everyPlatform('compress', [releaseTasks], (platform, root) => {
-	const szCmd = [
+	const szCmdArr = [
 		require('7zip-bin').path7za,
 		'a',
 		'-y',
@@ -13,9 +13,20 @@ export const compressTasks = everyPlatform('compress', [releaseTasks], (platform
 		'-mx8',
 		'-mmt',
 		'-ssc',
+	];
+	/* TODO
+	if (isWin) {
+		szCmdArr.push('"-sfx7z.sfx"'); // self extraction
+	} else {
+		szCmdArr.push('-sfx7zCon.sfx'); // self extraction
+	}
+	*/
+	szCmdArr.push(
 		resolvePath(BUILD_ARTIFACTS_DIR, updaterFileName(platform)),
 		'KendryteIDE',
-	].join(' ');
+	);
+	
+	const szCmd = szCmdArr.join(' ');
 	log.info('Compress: ' + szCmd);
 	return run(szCmd, {
 		cwd: root,

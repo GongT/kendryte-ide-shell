@@ -10,7 +10,7 @@ import { chdir, ensureChdir } from '../../library/misc/pathUtil';
 import { createTempPath, downloadFile } from '../codeblocks/downloadFile';
 import { removeDirectory } from '../codeblocks/removeDir';
 import { releaseZipStorageFolder, un7zip } from '../codeblocks/zip';
-import { CURRENT_PLATFORM_TYPES, releaseFileName } from '../codeblocks/zip.name';
+import { releaseFileName, TYPE_ZIP_FILE } from '../codeblocks/zip.name';
 
 const patchingDir = resolve(RELEASE_ROOT, 'create-patch');
 const {compress} = require('targz');
@@ -57,7 +57,7 @@ async function downloadAndExtractOldVersion(output: OutputStreamControl, remote:
 async function createDiffWithGit(output: OutputStreamControl, remote: IDEJson) {
 	const oldVersion = await downloadAndExtractOldVersion(output, remote);
 	
-	const compileResult = resolve(releaseZipStorageFolder(), releaseFileName(platform(), CURRENT_PLATFORM_TYPES[0]));
+	const compileResult = resolve(releaseZipStorageFolder(), releaseFileName(platform(), TYPE_ZIP_FILE));
 	const newVersion = await extractVersion(output, compileResult, 'new-version');
 	
 	chdir(oldVersion);

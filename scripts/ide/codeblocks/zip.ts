@@ -45,27 +45,6 @@ const zipLzma2Args = [
 	'-md=256m', // dictionary size
 	'-mfb=64', // word size
 ];
-const zipSfxArgs = [
-	...zipLzma2Args,
-];
-if (isWin) {
-	zipSfxArgs.push('"-sfx7z.sfx"'); // self extraction
-} else {
-	zipSfxArgs.push('-sfx7zCon.sfx'); // self extraction
-}
-
-async function createWindowsSfx(
-	output: NodeJS.WritableStream,
-	stderr: NodeJS.WritableStream,
-	whatToZip: string,
-	zipFileName: string,
-	...zipArgs: string[]
-) {
-	output.write('creating windows 7z sfx exe...\n');
-	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
-	await removeIfExists(zipFileName);
-	return invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
-}
 
 async function createWindows7z(
 	output: NodeJS.WritableStream,
@@ -78,19 +57,6 @@ async function createWindows7z(
 	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
 	await removeIfExists(zipFileName);
 	return invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
-}
-
-async function createPosixSfx(
-	output: NodeJS.WritableStream,
-	stderr: NodeJS.WritableStream,
-	whatToZip: string,
-	zipFileName: string,
-	...zipArgs: string[]
-) {
-	output.write('creating posix 7z sfx bin...\n');
-	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
-	await invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
-	await chmod(zipFileName, '777');
 }
 
 async function createPosix7z(
@@ -159,12 +125,10 @@ export async function creatingUniversalZip(output: OutputStreamControl, sourceDi
 		const convert = TransformEncode();
 		convert.pipe(output, endArg(output));
 		
-		await createWindowsSfx(convert, stderr, sourceDir, await namer('exe'));
 		await createWindows7z(convert, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 		
 		convert.end();
 	} else {
-		await createPosixSfx(output, stderr, sourceDir, await namer('7z.bin'));
 		await createPosix7z(output, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 	}
 }

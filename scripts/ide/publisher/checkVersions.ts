@@ -5,7 +5,7 @@ import { cmp } from 'semver';
 import { getRemoteVersion, IDEJson } from '../../library/jsonDefine/releaseRegistry';
 import { getPackageData, isExists } from '../../library/misc/fsUtil';
 import { releaseZipStorageFolder } from '../codeblocks/zip';
-import { CURRENT_PLATFORM_TYPES, releaseFileName } from '../codeblocks/zip.name';
+import { releaseFileName, TYPE_ZIP_FILE } from '../codeblocks/zip.name';
 
 export async function checkBaseIsDifferent(remote: IDEJson) {
 	const packData = getPackageData();
@@ -32,19 +32,14 @@ export async function checkPatchIsDifferent(remote: IDEJson) {
 }
 
 export async function ensureBuildComplete(output: OutputStreamControl) {
-	const zips = CURRENT_PLATFORM_TYPES.map(type => resolve(releaseZipStorageFolder(), releaseFileName(platform(), type)));
-	output.writeln('check build result zips exists:\n\t- %s' + zips.join('\n\t- '));
-	const exists = await Promise.all(zips.map(isExists));
-	if (exists.every(isTrue)) {
+	const zip = resolve(releaseZipStorageFolder(), releaseFileName(platform(), TYPE_ZIP_FILE));
+	output.writeln('check build result zips exists:\n\t- %s' + zip);
+	if (await isExists(zip)) {
 		output.success('Build state is ok.');
 	} else {
 		output.writeln('no, something missing.');
 		
-		output.warn('these files must exists: \n\t- ' + zips.join('\n\t- '));
+		output.warn('these files must exists: \n\t- ' + zip);
 		throw new Error('Not complete build process. please run `build` first.');
 	}
-}
-
-function isTrue(b: boolean) {
-	return b === true;
 }
