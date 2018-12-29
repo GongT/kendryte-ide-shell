@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
 import { basename } from 'path';
-import { BUILD_DIST_ROOT } from '../environment';
+import { DOWNLOAD_PATH } from '../environment';
 import { download, everyPlatform, gulp, log, mergeStream } from '../library/gulp';
 import { simpleTransformStream } from '../library/gulp/transform';
 import { resolvePath } from '../library/misc/pathUtil';
@@ -11,7 +11,7 @@ import { registryTask } from './registry';
 export const downloadTask = everyPlatform('offpack:download', [registryTask], (platform) => {
 	const downloads: NodeJS.ReadableStream[] = [];
 	for (const task of walkRegistry(platform)) {
-		const saveBase = resolvePath(BUILD_DIST_ROOT, 'download/');
+		const saveBase = resolvePath(DOWNLOAD_PATH);
 		const zipPath = savePath(task.name, task.platform, task.version);
 		if (existsSync(zipPath)) {
 			log.info('Exists file: %s', zipPath);

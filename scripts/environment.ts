@@ -86,11 +86,10 @@ process.chdir(process.env.GULP_BOOTSTRAP_CWD || process.cwd());
 export const SHELL_ROOT = resolve(WORKSPACE_ROOT, 'shell');
 export const SHELL_OUTPUT = resolve(DEBUG_APP_ROOT, 'Updater/resources/app');
 
-export const BUILD_DIST_ROOT = resolve(BUILD_ROOT, 'build');
 export const BUILD_DIST_SOURCE = resolve(BUILD_ROOT, 'shell-build/source');
 export const BUILD_ASAR_DIR = resolve(BUILD_ROOT, 'shell-build/asar');
 export const BUILD_DIST_TARGETS = resolve(BUILD_ROOT, 'shell-build/platform-dists');
-export const BUILD_ARTIFACTS_DIR = resolve(BUILD_DIST_ROOT, 'artifact');
+export const BUILD_ARTIFACTS_DIR = resolve(BUILD_ROOT, 'artifact');
 
 export const UILanguage = process.env.LANG || process.env.LANGUAGE || process.env.LC_ALL || '';
 process.env.LANG = 'C';
