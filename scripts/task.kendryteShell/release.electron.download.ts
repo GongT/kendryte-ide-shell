@@ -1,4 +1,5 @@
 import { existsSync, renameSync } from 'fs';
+import { mkdirpSync } from 'fs-extra';
 import { basename, join } from 'path';
 import { DOWNLOAD_PATH, isCI } from '../environment';
 import { download, everyPlatform, gulp, log } from '../library/gulp';
@@ -32,6 +33,7 @@ export const downloadTask = everyPlatform('electron:download', (platform) => {
 			.pipe(gulp.dest(DOWNLOAD_PATH + '.tmp'))
 			.on('end', () => {
 				const temp = resolvePath(DOWNLOAD_PATH + '.tmp', basename(saveTo));
+				mkdirpSync(DOWNLOAD_PATH);
 				renameSync(temp, saveTo);
 			});
 	} else {

@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
-import { MY_SCRIPT_ROOT } from '../environment';
+import { myScriptSourcePath } from '../environment';
 import { log } from '../library/gulp';
+import { IDEJson, latestPatch } from '../library/jsonDefine/releaseRegistry';
 import { ExS3 } from '../library/misc/awsUtil';
+import { resolvePath } from '../library/misc/pathUtil';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { updaterFileName } from '../library/paths/updater';
-import { IDEJson, latestPatch } from '../library/jsonDefine/releaseRegistry';
 import { OBJKEY_IDE_JSON } from '../library/releaseInfo/s3Keys';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
@@ -59,7 +59,7 @@ export async function createIndexFileContent(): Promise<string> {
 <span class="badge badge-info">${registryFile.offlinePackageVersion || '???'}</span>
 
 </div>`);
-	pieces.push(readFileSync(join(MY_SCRIPT_ROOT, 'index-render/components/intro.html'), 'utf8'));
+	pieces.push(readFileSync(resolvePath(myScriptSourcePath(__dirname), 'components/intro.html'), 'utf8'));
 	pieces.push(notSupportHtml());
 	pieces.push('<div id="platformContainer" class="row">');
 	
@@ -88,7 +88,7 @@ export async function createIndexFileContent(): Promise<string> {
 	
 	pieces.push('</div>');
 	
-	const scriptFile = join(MY_SCRIPT_ROOT, 'index-render/components/script.ts');
+	const scriptFile = resolvePath(myScriptSourcePath(__dirname), 'components/script.ts');
 	const scriptData = require('typescript').transpile(
 		readFileSync(scriptFile, 'utf8'),
 		{

@@ -1,6 +1,6 @@
-import { join } from 'path';
 import { myScriptSourcePath } from '../../environment';
 import { getWithCache } from '../../library/misc/httpUtil';
+import { resolvePath } from '../../library/misc/pathUtil';
 
 const {renderSync} = require('sass');
 
@@ -16,7 +16,7 @@ export async function buildHead(pieces: string[]) {
 	);
 	
 	const result = renderSync({
-		file: join(myScriptSourcePath(__dirname), 'style.scss'),
+		file: resolvePath(myScriptSourcePath(__dirname), 'style.scss'),
 		sourceMap: false,
 		outputStyle: 'compressed',
 	});
