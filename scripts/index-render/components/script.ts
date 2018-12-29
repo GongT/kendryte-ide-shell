@@ -7,7 +7,7 @@
 })();
 (() => {
 	const container = document.getElementById('platformContainer');
-	let current;
+	let current: HTMLDivElement;
 	if (navigator.platform === 'MacIntel') {
 		current = container.querySelector('#colMac');
 	} else if (navigator.platform.startsWith('Linux x86_64')) {
@@ -40,7 +40,7 @@
 	const ad = getA(current, '.application a');
 	if (ad.href) {
 		am.href = ad.href;
-		am.innerText += current.querySelector('.card-title').innerText.trim();
+		am.innerText += (current.querySelector('.card-title') as HTMLAnchorElement).innerText.trim();
 	} else {
 		console.log('main not ready');
 		const aa = getA(current, '.packages a');

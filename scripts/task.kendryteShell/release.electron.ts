@@ -1,6 +1,8 @@
 import { resolve } from 'path';
-import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT, getReleaseChannel, } from '../environment';
+import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT } from '../environment';
 import { everyPlatform, filter, gulp, jeditor, mergeStream, rename, zip } from '../library/gulp';
+import { resolvePath } from '../library/misc/pathUtil';
+import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
 import { skipDirectories } from '../vscode/uitl';
 import { cleanReleaseTask } from './cleanup';
 import { asarTask } from './release.electron.asar';
@@ -48,7 +50,7 @@ export const releaseTasks = everyPlatform('release', [cleanReleaseTask, asarTask
 		.pipe(filter(['**', '!**/default_app.asar']))
 		.pipe(zipResultEditor[platform]());
 	
-	const copyAsar = gulp.src(BUILD_DIST_ROOT + 'resources/**', {base: BUILD_DIST_ROOT})
+	const copyAsar = gulp.src(resolvePath(BUILD_DIST_ROOT, 'resources/**'), {base: BUILD_DIST_ROOT})
 	                     .pipe(filter([
 		                     '**',
 		                     '!**/node_modules/7zip-bin/**',
@@ -59,10 +61,10 @@ export const releaseTasks = everyPlatform('release', [cleanReleaseTask, asarTask
 	                     .pipe(asarResultEditor[platform]());
 	
 	const copyAssetsFiles = gulp
-		.src(BUILD_RELEASE_FILES + platform + '/**', {base: BUILD_RELEASE_FILES + platform});
+		.src(resolvePath(BUILD_RELEASE_FILES, platform, '/**'), {base: BUILD_RELEASE_FILES + platform});
 	
 	const createChannelJson = gulp
-		.src(BUILD_ROOT + 'channel.json')
+		.src(resolvePath(BUILD_ROOT, 'channel.json'))
 		.pipe(jeditor({
 			channel: getReleaseChannel(),
 		}));

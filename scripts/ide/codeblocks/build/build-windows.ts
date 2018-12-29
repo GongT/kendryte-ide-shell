@@ -1,8 +1,7 @@
 import { OutputStreamControl } from '@gongt/stillalive';
-import { copy } from 'fs-extra';
 import { resolve } from 'path';
-import { pipeCommandOut } from '../../childprocess/complex';
 import { RELEASE_ROOT } from '../../../environment';
+import { pipeCommandOut } from '../../../library/childprocess/complex';
 import { gulpCommands } from '../gulp';
 
 export async function windowsBuild(output: OutputStreamControl) {
@@ -10,7 +9,6 @@ export async function windowsBuild(output: OutputStreamControl) {
 	await pipeCommandOut(output, 'node', ...gulpCommands(), 'vscode-win32-x64-copy-inno-updater');
 	
 	const compiledResult = resolve(RELEASE_ROOT, 'VSCode-win32-x64');
-	await copy('my-scripts/staff/skel/.', compiledResult);
 	
 	return compiledResult;
 }

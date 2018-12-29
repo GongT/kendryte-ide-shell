@@ -18,6 +18,8 @@ import { remove } from 'fs-extra';
 import { resolve } from 'path';
 import { promisify } from 'util';
 import { isMac, VSCODE_ROOT } from '../../environment';
+import { IPackageJson } from '../jsonDefine/package.json';
+import { IProductJson } from '../jsonDefine/product.json';
 
 export function mkdirpSync(p: string) {
 	if (!p) {
@@ -89,24 +91,12 @@ export function writeFile(path: string, data: Buffer|string): Promise<void> {
 	});
 }
 
-export const unlink = promisify(unlinkAsync);
-export const rmdir = promisify(rmdirAsync);
-export const open = promisify(openAsync);
-export const close = promisify(closeAsync);
-export const rename = promisify(renameAsync);
-export const readlink = promisify(readlinkAsync);
-
-export interface IProduction {
-	applicationName: string;
-	nameLong: string;
-	nameShort: string;
-	quality: string;
-}
-
-export interface IPackage {
-	patchVersion: string;
-	version: string;
-}
+/**@deprecated*/export const unlink = promisify(unlinkAsync);
+/**@deprecated*/export const rmdir = promisify(rmdirAsync);
+/**@deprecated*/export const open = promisify(openAsync);
+/**@deprecated*/export const close = promisify(closeAsync);
+/**@deprecated*/export const rename = promisify(renameAsync);
+/**@deprecated*/export const readlink = promisify(readlinkAsync);
 
 export function calcCompileFolderName() {
 	const product = getProductData();
@@ -119,7 +109,7 @@ export function calcCompileRootFolderName() {
 
 const cache: {[fn: string]: any} = {};
 
-export function getProductData(alterRoot: string = VSCODE_ROOT): IProduction {
+export function getProductData(alterRoot: string = VSCODE_ROOT): IProductJson {
 	const productFile = resolve(alterRoot, 'product.json');
 	if (cache[productFile]) {
 		return cache[productFile];
@@ -132,7 +122,7 @@ export function getProductData(alterRoot: string = VSCODE_ROOT): IProduction {
 	}
 }
 
-export function getPackageData(alterRoot: string = VSCODE_ROOT): IPackage {
+export function getPackageData(alterRoot: string = VSCODE_ROOT): IPackageJson {
 	const packageFile = resolve(alterRoot, 'package.json');
 	if (cache[packageFile]) {
 		return cache[packageFile];

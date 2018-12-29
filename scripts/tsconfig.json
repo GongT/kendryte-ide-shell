@@ -1,7 +1,7 @@
 {
 	"extends": "../node_modules/@gongt/single-dog/package/tsconfig.json",
 	"compilerOptions": {
-		"outDir": "../build/gulp",
+		"outDir": "../build/MyScriptBuildResult",
 		"typeRoots": [
 			"node_modules/@types",
 			"node_modules",
@@ -9,8 +9,5 @@
 			"../node_modules",
 			"./typings"
 		]
-	},
-	"files": [
-		"main-gulpfile.ts"
-	]
+	}
 }

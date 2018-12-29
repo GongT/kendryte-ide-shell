@@ -1,8 +1,8 @@
 import { OutputStreamControl } from '@gongt/stillalive';
 import { readdir } from 'fs-extra';
 import { resolve } from 'path';
-import { pipeCommandOut } from '../../childprocess/complex';
-import { installDependency } from '../../childprocess/yarn';
+import { pipeCommandOut } from '../../../library/childprocess/complex';
+import { installDependency } from '../../../library/childprocess/yarn';
 import { ARCH_RELEASE_ROOT } from '../../../environment';
 import { isExists, rename, unlink } from '../../../library/misc/fsUtil';
 import { chdir, ensureChdir } from '../../../library/misc/pathUtil';

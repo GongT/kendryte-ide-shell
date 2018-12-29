@@ -1,6 +1,6 @@
-import { resolve as resolveUrl } from 'url';
 import { IPlatformMap, IPlatformTypes } from '../library/gulp';
 import { ExS3 } from '../library/misc/awsUtil';
+import { resolveUrl } from '../library/misc/pathUtil';
 
 let registry: IThirdPartyRegistry;
 

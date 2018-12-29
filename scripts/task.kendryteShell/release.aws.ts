@@ -1,7 +1,9 @@
-import { AWS_RELEASE_UPDATER_PATH, BUILD_ARTIFACTS_DIR, getReleaseChannel } from '../environment';
+import { BUILD_ARTIFACTS_DIR } from '../environment';
 import { gulp, jeditor, task } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { updaterFileName } from '../library/paths/updater';
+import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
+import { AWS_RELEASE_UPDATER_PATH } from '../library/releaseInfo/s3Keys';
 import { compressTasks } from './release.compress';
 import { createReleaseTag } from './releaseTag';
 

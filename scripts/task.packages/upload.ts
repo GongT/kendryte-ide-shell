@@ -1,7 +1,9 @@
-import { AWS_RELEASE_PACKAGES_PATH, BUILD_ARTIFACTS_DIR, getReleaseChannel } from '../environment';
+import { BUILD_ARTIFACTS_DIR } from '../environment';
 import { debug, everyPlatform, gulp, jeditor, task, } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
+import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
+import { AWS_RELEASE_PACKAGES_PATH } from '../library/releaseInfo/s3Keys';
 import { createReleaseTag } from '../task.kendryteShell/releaseTag';
 import { createZipFiles } from './compress';
 

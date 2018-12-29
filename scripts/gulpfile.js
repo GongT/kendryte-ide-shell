@@ -17,6 +17,7 @@ if (r.signal) {
 	process.kill(process.pid, r.signal);
 	return;
 }
-const gulpfile = require('path').resolve(__dirname, '../build/gulp/main-gulpfile');
+const outDir = require('path').resolve(__dirname, require(__dirname + '/tsconfig.json').compilerOptions.outDir);
+const gulpfile = require('path').resolve(outDir, 'main-gulpfile');
 console.log('\x1B[38;5;14musing gulpfile: %s\x1B[0m', gulpfile);
 require(gulpfile);

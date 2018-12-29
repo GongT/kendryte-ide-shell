@@ -1,7 +1,7 @@
 import { resolve } from 'path';
-import { muteCommandOut, pipeCommandOut } from '../childprocess/complex';
-import { requireEnvPath, VSCODE_ROOT } from '../../environment';
-import { chdir } from '../../library/misc/pathUtil';
+import { VSCODE_ROOT } from '../../environment';
+import { muteCommandOut, pipeCommandOut } from '../../library/childprocess/complex';
+import { chdir, requireEnvPath } from '../../library/misc/pathUtil';
 import { gulpCommands } from './gulp';
 
 export function showElectronNoticeInChina() {

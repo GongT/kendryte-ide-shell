@@ -2,8 +2,8 @@ import { OutputStreamControl } from '@gongt/stillalive';
 import { spawn, SpawnOptions } from 'child_process';
 import { isAbsolute } from 'path';
 import { format } from 'util';
-import { ProgramError } from '../../ide/childprocess/error';
-import { parseCommand, processPromise } from '../../ide/childprocess/handlers';
+import { ProgramError } from '../childprocess/error';
+import { parseCommand, processPromise } from '../childprocess/handlers';
 
 let globalLogTarget: NodeJS.WritableStream = process.stderr;
 

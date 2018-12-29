@@ -1,6 +1,6 @@
 import { createReadStream, createWriteStream, ftruncateSync, openSync, ReadStream, WriteStream } from 'fs';
 import { resolve } from 'path';
-import { RELEASE_ROOT } from '../../environment';
+import { BUILD_ROOT } from '../../environment';
 import { mkdirpSync } from './fsUtil';
 import { currentCommand, WIT } from './help';
 import { streamPromise } from './streamUtil';
@@ -90,7 +90,7 @@ export function runMain(main: () => Promise<void|number>) {
 }
 
 export function useWriteFileStream(file: string): WriteStream {
-	file = resolve(RELEASE_ROOT, file);
+	file = resolve(BUILD_ROOT, file);
 	mkdirpSync(resolve(file, '..'));
 	const fd = openSync(file, 'w');
 	ftruncateSync(fd);
@@ -102,7 +102,7 @@ export function useWriteFileStream(file: string): WriteStream {
 	return stream;
 }
 
-export function readFileStream(file): ReadStream {
+export function readFileStream(file: string): ReadStream {
 	const fd = openSync(file, 'r+');
 	const stream = createReadStream(file, {encoding: 'utf8', fd});
 	mainDispose((error: Error) => {

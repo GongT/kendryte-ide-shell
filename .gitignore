@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 *.log
 dist/
 /build/
@@ -9,5 +9,3 @@ dist/
 !.idea/vcs.xml
 !.idea/modules.xml
 !.idea/codeStyles/
-
-DebugContents/*

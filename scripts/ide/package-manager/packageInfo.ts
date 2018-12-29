@@ -1,7 +1,7 @@
 import { OutputStreamControl } from '@gongt/stillalive';
 import { resolve } from 'path';
 import { readFile } from '../../library/misc/fsUtil';
-import { ICompileOptions } from './type';
+import { ICompileOptions } from '../../library/jsonDefine/packageRegistry';
 
 export async function readPackageInfo(output: OutputStreamControl, packRoot: string) {
 	const jsonFile = resolve(packRoot, 'kendryte-package.json');

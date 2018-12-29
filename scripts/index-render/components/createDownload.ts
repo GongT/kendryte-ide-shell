@@ -1,10 +1,10 @@
 import { IncomingMessage } from 'http';
 import { extname } from 'path';
-import { AWS_RELEASE_PACKAGES_PATH, AWS_RELEASE_UPDATER_PATH } from '../../environment';
 import { log } from '../../library/gulp';
 import { humanSize } from '../../library/humanSize';
 import { ExS3 } from '../../library/misc/awsUtil';
 import { request } from '../../library/misc/httpUtil';
+import { AWS_RELEASE_PACKAGES_PATH, AWS_RELEASE_UPDATER_PATH } from '../../library/releaseInfo/s3Keys';
 
 export async function createReleaseDownload(name: string) {
 	const key = name? `${AWS_RELEASE_UPDATER_PATH}${name}` : name;

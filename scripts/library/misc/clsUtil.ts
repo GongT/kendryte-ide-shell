@@ -1,5 +1,5 @@
 import { Writable } from 'stream';
-import { shellExec, shellExecAsync } from '../../ide/childprocess/simple';
+import { shellExec, shellExecAsync } from '../childprocess/simple';
 import { isWin } from '../../environment';
 
 export function cleanScreen() {

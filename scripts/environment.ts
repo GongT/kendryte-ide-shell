@@ -1,107 +1,108 @@
-import { readFileSync } from 'fs';
 import { platform } from 'os';
-import { resolve } from 'path';
-import { getProductData } from './library/misc/fsUtil';
+import { normalize, resolve } from 'path';
+import { nativePath } from './library/misc/pathUtil';
+
+export const isWin = platform() === 'win32';
+export const isMac = platform() === 'darwin';
+export const isLinux = platform() === 'linux';
+
+export const ORIGINAL_HOME = process.env.ORIGINAL_HOME || process.env.HOME;
+process.env.ORIGINAL_HOME = ORIGINAL_HOME;
+
+export const ORIGINAL_PATH = process.env.ORIGINAL_PATH || process.env.PATH;
+process.env.ORIGINAL_PATH = ORIGINAL_PATH;
+
+const buildTo = __dirname;
+const sourceFrom = resolve(__dirname, '../../scripts');
+
+export function myScriptSourcePath(path: string) {
+	return resolve(buildTo, path).replace(buildTo, sourceFrom);
+}
+
+export const WORKSPACE_ROOT = resolve(myScriptSourcePath(__dirname), '..');
+export const MY_SCRIPT_ROOT = resolve(WORKSPACE_ROOT, 'scripts/ide');
+export const MY_SCRIPT_ROOT_BUILT = resolve(buildTo, 'ide');
+export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, 'kendryte-ide');
+export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
+export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
+export const DOWNLOAD_PATH = resolve(BUILD_ROOT, 'download');
+export const RELEASE_ROOT = resolve(BUILD_ROOT, 'release');
+export const ARCH_RELEASE_ROOT = resolve(RELEASE_ROOT, 'release/kendryte-ide-release-x64');
+export const FAKE_HOME = resolve(BUILD_ROOT, 'FAKE_HOME');
+
+if (!process.env.ORIGINAL_HOME) {
+	process.env.ORIGINAL_HOME = process.env.HOME;
+}
+export const HOME = process.env.HOME = FAKE_HOME;
+
+export const NODEJS_INSTALL = resolve(BUILD_ROOT, 'nodejs');
+export const NODEJS = isWin? 'node.ps1' : 'node';
+
+export const YARN_FOLDER = resolve(BUILD_ROOT, 'yarn');
+export const PREFIX = YARN_FOLDER;
+export const YARN_CACHE_FOLDER = resolve(YARN_FOLDER, 'cache');
+
+export const PRIVATE_BINS = resolve(BUILD_ROOT, 'wrapping-bins');
+
+const LocalNodePath = resolve(WORKSPACE_ROOT, 'node_modules/.bin');
+let sp = '';
+let PATHS = [
+	PRIVATE_BINS,
+	LocalNodePath,
+	resolve(DEBUG_APP_ROOT, 'LocalPackage/toolchain/bin'),
+	resolve(DEBUG_APP_ROOT, 'LocalPackage/cmake/bin'),
+];
+if (platform() === 'win32') {
+	sp = ';';
+	PATHS.push('C:/WINDOWS/system32', 'C:/WINDOWS', 'C:/WINDOWS/System32/Wbem', 'C:/WINDOWS/System32/WindowsPowerShell/v1.0');
+	PATHS.push(resolve(process.env.USERPROFILE, '.windows-build-tools/python27'));
+} else if (platform() === 'darwin') {
+	sp = ':';
+	PATHS.push('/bin', '/usr/bin');
+	PATHS.push('/usr/local/opt/coreutils/libexec/gnubin', '/usr/local/bin');
+} else {
+	sp = ':';
+	PATHS.push('/bin', '/usr/bin');
+}
+export const PATH = process.env.PATH = PATHS.map(normalize).join(sp);
+
+if (process.env.KENDRYTE_PROXY) {
+	process.env.HTTP_PROXY = process.env.KENDRYTE_PROXY;
+}
+
+if (process.env.HTTP_PROXY) {
+	process.env.HTTPS_PROXY = process.env.ALL_PROXY = process.env.HTTP_PROXY;
+} else {
+	delete process.env.HTTP_PROXY;
+	delete process.env.HTTPS_PROXY;
+	delete process.env.ALL_PROXY;
+}
+
+export const TMP = resolve(BUILD_ROOT, 'tmp');
+/**@deprecated*/export const TEMP = TMP;
+process.env.TEMP = process.env.TMP = TMP;
 
 process.chdir(process.env.GULP_BOOTSTRAP_CWD || process.cwd());
 
-export const BUILD_ROOT_ABSOLUTE = process.cwd();
-export const BUILD_ROOT = './';
+export const SHELL_ROOT = nativePath(WORKSPACE_ROOT, 'shell');
+export const SHELL_OUTPUT = nativePath(DEBUG_APP_ROOT, 'Updater/resources/app');
+export const BUILD_RELEASE_FILES = nativePath(BUILD_ROOT, 'release-assets');
 
-export const SHELL_ROOT = BUILD_ROOT + 'shell/';
-export const SHELL_SOURCE = SHELL_ROOT + 'src/';
-export const SHELL_OUTPUT = SHELL_ROOT + 'dist/';
-export const BUILD_RELEASE_FILES = BUILD_ROOT + 'release-assets/';
-
-export const BUILD_DIST_ROOT = BUILD_ROOT + 'build/';
-export const BUILD_DIST_SOURCE = BUILD_DIST_ROOT + 'source/';
-export const BUILD_DIST_TARGETS = BUILD_DIST_ROOT + 'release/';
-export const BUILD_ARTIFACTS_DIR = BUILD_DIST_ROOT + 'artifact/';
-export const BUILD_IDE_ROOT = BUILD_ROOT + 'build/ide';
-
-export const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
-export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-export const AWS_REGION = process.env.AWS_REGION;
-export const AWS_BUCKET = process.env.AWS_BUCKET;
-
-export const ELECTRON_VERSION = parseElectronVer(BUILD_ROOT + 'scripts/package.json');
-
-export function getReleaseChannel() {
-	let channel = '' + process.env.CHANNEL;
-	switch (channel) {
-	case 'a':
-	case 'alpha':
-		channel = 'alpha';
-		break;
-	case 'b':
-	case 'beta':
-		channel = 'beta';
-		break;
-	case 's':
-	case 'stable':
-		channel = 'stable';
-		break;
-	default:
-		try {
-			return getProductData().quality;
-		} catch (e) {
-			console.error('Please checkout submodule `kendryte-ide`.\nOr set env `CHANNEL` to "alpha" or "beta" or "stable". (or a/b/s)');
-			process.exit(1);
-		}
-	}
-	return channel;
-}
-
-export function getProjectName() {
-	return process.env.SYSTEM_TEAMPROJECT || 'kendryte-ide';
-}
-
-function parseElectronVer(pkgFile: string) {
-	const pkg = JSON.parse(readFileSync(pkgFile, 'utf8'));
-	let v = '';
-	if (pkg.dependencies && pkg.dependencies.electron) {
-		v = pkg.dependencies.electron;
-	} else if (pkg.devDependencies && pkg.devDependencies.electron) {
-		v = pkg.devDependencies.electron;
-	}
-	if (/^\d/.test(v)) {
-		return 'v' + v;
-	} else {
-		return 'v' + v.slice(1);
-	}
-}
-
-export const isWin = platform() === 'win32';
+export const BUILD_DIST_ROOT = nativePath(BUILD_ROOT, 'build');
+export const BUILD_DIST_SOURCE =  nativePath(BUILD_ROOT, 'shell-build/resources');
+export const BUILD_DIST_TARGETS = nativePath(BUILD_DIST_ROOT, 'release');
+export const BUILD_ARTIFACTS_DIR = nativePath(BUILD_DIST_ROOT, 'artifact');
+export const BUILD_IDE_ROOT = nativePath(BUILD_ROOT, 'build/releas');
 
 export const UILanguage = process.env.LANG || process.env.LANGUAGE || process.env.LC_ALL || '';
 process.env.LANG = 'C';
 process.env.LC_ALL = 'C';
 
-export const VSCODE_ROOT = resolve(BUILD_ROOT_ABSOLUTE, 'kendryte-ide');
-export const RELEASE_ROOT = resolve(BUILD_ROOT_ABSOLUTE, BUILD_IDE_ROOT);
-export const ARCH_RELEASE_ROOT = resolve(BUILD_ROOT_ABSOLUTE, BUILD_IDE_ROOT, `kendryte-ide-${platform()}-x64`);
+export const ALL_PROXY = process.env.ALL_PROXY;
+export const HTTP_PROXY = process.env.HTTP_PROXY;
+export const HTTPS_PROXY = process.env.HTTPS_PROXY;
 
-export const isMac = platform() === 'darwin';
-
-export function nativePath(p: string) {
-	return p.replace(/^\/cygdrive\/([a-z])/i, (m0, drv) => {
-		return drv.toUpperCase() + ':';
-	});
-}
-
-export function requireEnvPath(name: string): string {
-	if (!process.env[name]) {
-		throw new Error('Env ' + name + ' not set');
-	}
-	return nativePath(process.env[name]);
-}
-
-export const AWS_RELEASE_UPDATER_PATH = `release/updater/`;
-export const AWS_RELEASE_PACKAGES_PATH = `3rd-party/offline/`;
-export const AWS_RELEASE_PACKAGES_REGISTRY = `3rd-party/offline/index-creation-file.json`;
-
-export const OBJKEY_IDE_JSON = 'release/IDE.' + getProductData().quality + '.json';
-export const OBJKEY_DOWNLOAD_INDEX = 'index.html';
-export const OBJKEY_PACKAGE_MANAGER_LIBRARY = 'package-manager/registry/library.json';
-export const OBJKEY_PACKAGE_MANAGER_EXAMPLE = 'package-manager/registry/example.json';
-
+export const npm_config_arch = 'x64';
+export const npm_config_cache = nativePath(TMP, 'npm-cache');
+export const npm_config_disturl = 'https://atom.io/download/electron';
+export const npm_config_runtime = 'electron';

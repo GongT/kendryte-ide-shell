@@ -2,7 +2,10 @@
 	"private": true,
 	"scripts": {
 		"start": "yarn workspace shell run start",
-		"script": "yarn workspace scripts run gulp"
+		"watch": "yarn workspace scripts run gulp watch",
+		"script": "yarn workspace scripts run gulp",
+		"preinstall": "node build/MyScriptBuildResult/npm/preinstall.js",
+		"postinstall": "node build/MyScriptBuildResult/npm/postinstall.js"
 	},
 	"workspaces": [
 		"shell",
@@ -10,5 +13,11 @@
 	],
 	"resolutions": {
 		"**/@types/node": "^8.10.39"
+	},
+	"husky": {
+		"hooks": {
+			"post-checkout": "node build/MyScriptBuildResult/npm/update-help.js",
+			"post-merge": "node build/MyScriptBuildResult/npm/update-help.js"
+		}
 	}
 }

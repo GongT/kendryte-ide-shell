@@ -2,7 +2,7 @@ import { OutputStreamControl } from '@gongt/stillalive';
 import { createWriteStream } from 'fs';
 import { mkdirp } from 'fs-extra';
 import { dirname, extname, resolve } from 'path';
-import { muteCommandOut, pipeCommandBoth } from '../childprocess/complex';
+import { muteCommandOut, pipeCommandBoth } from '../../library/childprocess/complex';
 import { promiseToBool } from '../../library/misc/asyncUtil';
 import { isExists, rename } from '../../library/misc/fsUtil';
 import { streamPromise } from '../../library/misc/streamUtil';
@@ -10,6 +10,19 @@ import { md5 } from './statusHash';
 
 const request = require('request');
 const progress = require('request-progress');
+
+export interface IRequestProgressState {
+	percent: number,               // Overall percent (between 0 to 1)
+	speed: number,              // The download speed in bytes/sec
+	size: {
+		total: number,        // The total payload size in bytes
+		transferred: number   // The transferred payload size in bytes
+	},
+	time: {
+		elapsed: number,        // The total elapsed seconds since the start (3 decimals)
+		remaining: number       // The remaining seconds to finish (3 decimals)
+	}
+}
 
 export function createTempPath(url: string) {
 	return resolve(process.env.TEMP, md5(url) + extname(url));
@@ -44,7 +57,7 @@ function nodeDown(output: OutputStreamControl, from: string, saveTo: NodeJS.Writ
 		// throttle: 2000,                    // Throttle the progress event to 2000ms, defaults to 1000ms
 		// delay: 1000,                       // Only start to emit after 1000ms delay, defaults to 0ms
 		// lengthHeader: 'x-transfer-length'  // Length header to use, defaults to content-length
-	}).on('progress', function (state) {
+	}).on('progress', function (state: IRequestProgressState) {
 		// The state is an object that looks like this:
 		// {
 		//     percent: 0.5,               // Overall percent (between 0 to 1)

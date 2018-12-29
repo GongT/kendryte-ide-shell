@@ -2,7 +2,7 @@ import { lstat, readFile, readlink } from './fsUtil';
 
 const gitdirReg = /^gitdir:\s*(.+)$/mg;
 
-export async function resolveGitDir(path: string) {
+export async function resolveGitDir(path: string): Promise<string> {
 	const ls = await lstat(path);
 	if (!ls) {
 		throw new Error(path + ' folder not exists.');

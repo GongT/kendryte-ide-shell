@@ -1,8 +1,8 @@
 import { S3 } from 'aws-sdk';
 import { createReadStream } from 'fs';
 import { PassThrough } from 'stream';
-import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../../environment';
-import { ICompileOptions } from '../../ide/package-manager/type';
+import { ICompileOptions } from '../jsonDefine/packageRegistry';
+import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../releaseInfo/s3Keys';
 import { ProgressPromise } from './asyncUtil';
 import { getPackageData, getProductData } from './fsUtil';
 import { hashBuffer, hashStream } from './hashUtil';
@@ -21,6 +21,24 @@ export interface IProgress {
 export interface S3Upload<T> {
 	mime: string;
 	stream: T;
+}
+
+export function getMime(base: string) {
+	if (/\.json$/.test(base)) {
+		return {mime: 'application/json', hash: false};
+	} else if (/\.html$/.test(base)) {
+		return {mime: 'text/html', hash: false};
+	} else if (/\.exe$/.test(base)) {
+		return {mime: 'application/vnd.microsoft.portable-executable.', hash: true};
+	} else if (/\.bin$/.test(base)) {
+		return {mime: 'application/x-executable', hash: true};
+	} else if (/\.zip$/.test(base)) {
+		return {mime: 'application/zip', hash: true};
+	} else if (/\.t?gz$/.test(base)) {
+		return {mime: 'application/x-gzip', hash: true};
+	} else {
+		return {mime: 'application/octet-stream', hash: true};
+	}
 }
 
 export class ExS3 implements AWSLogger {
@@ -117,10 +135,10 @@ export class ExS3 implements AWSLogger {
 	
 	async uploadLocalFile(
 		key: string,
-		mime: string,
 		fileName: string,
 	) {
-		return this.uploadStream(key, mime, createReadStream(fileName), true);
+		const {mime, hash} = getMime(fileName);
+		return this.uploadStream(key, mime, createReadStream(fileName), hash);
 	}
 	
 	async uploadBuffer(

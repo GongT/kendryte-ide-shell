@@ -39,7 +39,7 @@ function toPrintHelp() {
 	}
 }
 
-interface WhatIsThis {
+export interface WhatIsThis {
 	file: string;
 	title: string;
 	category: string;
@@ -57,7 +57,7 @@ function stack() {
 	return frame[1];
 }
 
-const cates = {
+const cates: {[id: string]: [string, string]} = {
 	unknown: ['No Category', '未分类'],
 	packages: ['Component Packages', '三方组件包'],
 	pm: ['Package Manager', '包管理器'],

@@ -1,0 +1,28 @@
+{
+	"extends": "../node_modules/@gongt/single-dog/package/tsconfig.json",
+	"compilerOptions": {
+		"lib": [
+			"esnext",
+			"dom"
+		],
+		"inlineSources": true,
+		"baseUrl": "./src",
+		"sourceRoot": ".",
+		"outDir": "../build/DebugContents/Updater/resources/app",
+		"typeRoots": [
+			"node_modules",
+			"node_modules/@types",
+			"../node_modules",
+			"../node_modules/@types"
+		],
+		"types": [
+			"electron",
+			"node"
+		]
+	},
+	"files": [
+		"boot.ts",
+		"electron-main.ts",
+		"electron-browser.ts"
+	]
+}

@@ -2,13 +2,13 @@ import { OutputStreamControl } from '@gongt/stillalive';
 import { readFileSync, rename, writeFileSync } from 'fs';
 import { copy, mkdir } from 'fs-extra';
 import { resolve } from 'path';
-import { pipeCommandOut } from '../childprocess/complex';
-import { installDependency, yarn } from '../childprocess/yarn';
-import { VSCODE_ROOT } from '../../environment';
+import { MY_SCRIPT_ROOT, VSCODE_ROOT } from '../../environment';
 import { isExists, writeFile } from '../../library/misc/fsUtil';
 import { resolveGitDir } from '../../library/misc/git';
 import { chdir, ensureChdir, yarnPackageDir } from '../../library/misc/pathUtil';
 import { timing } from '../../library/misc/timeUtil';
+import { pipeCommandOut } from '../../library/childprocess/complex';
+import { installDependency, yarn } from '../../library/childprocess/yarn';
 import { gulpCommands } from './gulp';
 import { removeDirectory } from './removeDir';
 
@@ -90,20 +90,20 @@ export async function packWindows(output: OutputStreamControl) {
 	log('create ASAR package');
 	chdir(root);
 	const timeOutZip = timing();
-	await pipeCommandOut(output, 'node', ...gulpCommands(), '--gulpfile', 'my-scripts/gulpfile/pack-win.js');
+	await pipeCommandOut(output, 'node', ...gulpCommands(), '--gulpfile', resolve(MY_SCRIPT_ROOT, 'gulpfile/pack-win.js'));
 	output.success('ASAR created.' + timeOutZip());
 	
 	log('move ASAR package to source root');
 	chdir(root);
 	await new Promise((_resolve, reject) => {
-		const wrappedCallback = (err) => err? reject(err) : _resolve();
+		const wrappedCallback = (err: Error) => err? reject(err) : _resolve();
 		rename(
 			resolve(prodDepsDir, 'node_modules.asar.unpacked'),
 			resolve(root, 'node_modules.asar.unpacked'),
 			wrappedCallback);
 	});
 	await new Promise((_resolve, reject) => {
-		const wrappedCallback = (err) => err? reject(err) : _resolve();
+		const wrappedCallback = (err: Error) => err? reject(err) : _resolve();
 		rename(
 			resolve(prodDepsDir, 'node_modules.asar'),
 			resolve(root, 'node_modules.asar'),

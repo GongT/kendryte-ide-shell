@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { BUILD_ARTIFACTS_DIR, BUILD_ROOT_ABSOLUTE } from '../environment';
+import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../environment';
 import { everyPlatform, log, run } from '../library/gulp';
 import { updaterFileName } from '../library/paths/updater';
 import { releaseTasks } from './release.electron';
@@ -13,7 +13,7 @@ export const compressTasks = everyPlatform('compress', [releaseTasks], (platform
 		'-mx8',
 		'-mmt',
 		'-ssc',
-		join(BUILD_ROOT_ABSOLUTE, BUILD_ARTIFACTS_DIR, updaterFileName(platform)),
+		join(BUILD_ROOT, BUILD_ARTIFACTS_DIR, updaterFileName(platform)),
 		'KendryteIDE',
 	].join(' ');
 	log.info('Compress: ' + szCmd);

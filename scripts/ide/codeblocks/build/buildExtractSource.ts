@@ -4,7 +4,7 @@ import { createWriteStream } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
 import { extract } from 'tar-fs';
-import { getOutputCommand, muteCommandOut, pipeCommandBoth } from '../../childprocess/complex';
+import { getOutputCommand, muteCommandOut, pipeCommandBoth } from '../../../library/childprocess/complex';
 import { ARCH_RELEASE_ROOT, RELEASE_ROOT, VSCODE_ROOT } from '../../../environment';
 import { isExists, rename } from '../../../library/misc/fsUtil';
 import { chdir } from '../../../library/misc/pathUtil';
@@ -117,9 +117,4 @@ async function getCurrentVersion(output: OutputStreamControl) {
 	}
 	output.success(`Git Current Version: ${currentVersion}.`);
 	return knownVersion = currentVersion;
-}
-
-function gitGetLastCommit(output: OutputStreamControl) {
-	output.writeln(`Get last commit.`);
-	return getOutputCommand('git', 'rev-parse', '--verify', 'HEAD');
 }

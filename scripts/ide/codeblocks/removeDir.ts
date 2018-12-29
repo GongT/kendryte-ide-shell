@@ -9,13 +9,13 @@ function wrapFs(of: Function, output: NodeJS.WritableStream): Function {
 	if (output.hasOwnProperty('screen')) {
 		output = (output as any).screen;
 	}
-	return ((...args) => {
+	return ((...args: string[]) => {
 		output.write(`${of.name}: ${args[0]}\n`);
 		return of.apply(undefined, args);
 	}) as any;
 }
 
-export async function removeDirectory(path: string, output: NodeJS.WritableStream, verbose = true) {
+export async function removeDirectory(path: string, output: NodeJS.WritableStream, verbose = true): Promise<void> {
 	output.write(`removing directory: ${path}...\n`);
 	
 	if (process.cwd().indexOf(path) === 0) {
@@ -29,7 +29,7 @@ export async function removeDirectory(path: string, output: NodeJS.WritableStrea
 	}
 	
 	await new Promise<void>((resolve, reject) => {
-		const wrappedCallback = (err) => err? reject(err) : resolve();
+		const wrappedCallback = (err: Error) => err? reject(err) : resolve();
 		
 		rimraf(path, {
 			maxBusyTries: 20,

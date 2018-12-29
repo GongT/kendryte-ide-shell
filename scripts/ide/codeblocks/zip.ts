@@ -3,10 +3,10 @@ import { spawnSync } from 'child_process';
 import { chmod, mkdirp } from 'fs-extra';
 import { decodeStream } from 'iconv-lite';
 import { join, resolve } from 'path';
-import { Transform, TransformCallback } from 'stream';
-import { pipeCommandBoth, pipeCommandOut } from '../childprocess/complex';
-import { mergeEnv } from '../childprocess/env';
+import { Transform } from 'stream';
 import { isWin, RELEASE_ROOT } from '../../environment';
+import { pipeCommandBoth, pipeCommandOut } from '../../library/childprocess/complex';
+import { mergeEnv } from '../../library/childprocess/env';
 import { calcCompileFolderName, removeIfExists } from '../../library/misc/fsUtil';
 import { chdir } from '../../library/misc/pathUtil';
 import { endArg } from '../../library/misc/streamUtil';
@@ -45,12 +45,27 @@ const zipLzma2Args = [
 	'-md=256m', // dictionary size
 	'-mfb=64', // word size
 ];
-
-const zipDeflateArgs = [
-	...commonArgs,
-	'-tzip', // compress to xxx.zip
-	'-mx6', // more compress
+const zipSfxArgs = [
+	...zipLzma2Args,
 ];
+if (isWin) {
+	zipSfxArgs.push('"-sfx7z.sfx"'); // self extraction
+} else {
+	zipSfxArgs.push('-sfx7zCon.sfx'); // self extraction
+}
+
+async function createWindowsSfx(
+	output: NodeJS.WritableStream,
+	stderr: NodeJS.WritableStream,
+	whatToZip: string,
+	zipFileName: string,
+	...zipArgs: string[]
+) {
+	output.write('creating windows 7z sfx exe...\n');
+	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
+	await removeIfExists(zipFileName);
+	return invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
+}
 
 async function createWindows7z(
 	output: NodeJS.WritableStream,
@@ -63,6 +78,19 @@ async function createWindows7z(
 	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
 	await removeIfExists(zipFileName);
 	return invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
+}
+
+async function createPosixSfx(
+	output: NodeJS.WritableStream,
+	stderr: NodeJS.WritableStream,
+	whatToZip: string,
+	zipFileName: string,
+	...zipArgs: string[]
+) {
+	output.write('creating posix 7z sfx bin...\n');
+	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
+	await invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
+	await chmod(zipFileName, '777');
 }
 
 async function createPosix7z(
@@ -116,7 +144,7 @@ function TransformEncode() {
 class ProgressStream extends Transform {
 	public noEnd = true;
 	
-	_transform(chunk: Buffer, encoding: string, callback: TransformCallback): void {
+	_transform(chunk: Buffer, encoding: string, callback: Function): void {
 		const str = chunk.toString('ascii').replace(/[\x08\x0d]+/g, '\n').replace(/^ +| +$/g, '');
 		this.push(str, 'utf8');
 		callback();
@@ -131,10 +159,12 @@ export async function creatingUniversalZip(output: OutputStreamControl, sourceDi
 		const convert = TransformEncode();
 		convert.pipe(output, endArg(output));
 		
+		await createWindowsSfx(convert, stderr, sourceDir, await namer('exe'));
 		await createWindows7z(convert, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 		
 		convert.end();
 	} else {
+		await createPosixSfx(output, stderr, sourceDir, await namer('7z.bin'));
 		await createPosix7z(output, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 	}
 }

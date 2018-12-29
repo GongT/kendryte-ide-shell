@@ -18,7 +18,7 @@ export function request(url: string, options: RequestOptions, callback?: (res: I
 	}, callback);
 }
 
-export function requestPromise(url: string, options: RequestOptions): Promise<IncomingMessage> {
+function requestPromise(url: string, options: RequestOptions): Promise<IncomingMessage> {
 	return new Promise((resolve, reject) => {
 		request(url, options, (res) => {
 			resolve(res);

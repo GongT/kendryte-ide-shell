@@ -3,23 +3,13 @@ import { join, resolve } from 'path';
 import { Readable, Transform } from 'stream';
 import * as File from 'vinyl';
 import { createVinylFile, limitSpeedTransform, log, pluginError } from '../gulp';
-import { ExS3 } from '../misc/awsUtil';
+import { ExS3, getMime } from '../misc/awsUtil';
 import { CollectingStream, streamPromise } from '../misc/streamUtil';
 
 const temp = tmpdir();
 
 export interface MimeSetter {
 	(fileName: string): string;
-}
-
-function getMime(base: string) {
-	if (/\.json$/.test(base)) {
-		return {mime: 'application/json', hash: false};
-	} else if (/\.html$/.test(base)) {
-		return {mime: 'text/html', hash: false};
-	} else {
-		return {mime: 'application/octet-stream', hash: true};
-	}
 }
 
 function downloadQueue(opts: gulpS3.DestOptions) {

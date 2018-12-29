@@ -1,9 +1,11 @@
 import { platform } from 'os';
 import { normalize } from 'path';
+import { isWin } from '../../environment';
 import { getPackageData, getProductData } from '../../library/misc/fsUtil';
 
 export const TYPE_ZIP_FILE = '7z';
-export const CURRENT_PLATFORM_TYPES = [TYPE_ZIP_FILE];
+export const TYPE_SFX_FILE = isWin? 'exe' : '7z.bin';
+export const CURRENT_PLATFORM_TYPES = [TYPE_SFX_FILE, TYPE_ZIP_FILE];
 
 export function releaseFileName(platform: string, type: string): string {
 	const product = getProductData();
