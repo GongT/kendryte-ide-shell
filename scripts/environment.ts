@@ -1,6 +1,5 @@
 import { platform } from 'os';
 import { normalize, resolve } from 'path';
-import { nativePath } from './library/misc/pathUtil';
 
 export const isWin = platform() === 'win32';
 export const isMac = platform() === 'darwin';
@@ -20,8 +19,8 @@ export function myScriptSourcePath(path: string) {
 }
 
 export const WORKSPACE_ROOT = resolve(myScriptSourcePath(__dirname), '..');
-export const MY_SCRIPT_ROOT = resolve(WORKSPACE_ROOT, 'scripts/ide');
-export const MY_SCRIPT_ROOT_BUILT = resolve(buildTo, 'ide');
+/**@deprecated*/ export const MY_SCRIPT_ROOT = resolve(WORKSPACE_ROOT, 'scripts/ide');
+/**@deprecated*/ export const MY_SCRIPT_ROOT_BUILT = resolve(buildTo, 'ide');
 export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, 'kendryte-ide');
 export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
 export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
@@ -84,15 +83,14 @@ process.env.TEMP = process.env.TMP = TMP;
 
 process.chdir(process.env.GULP_BOOTSTRAP_CWD || process.cwd());
 
-export const SHELL_ROOT = nativePath(WORKSPACE_ROOT, 'shell');
-export const SHELL_OUTPUT = nativePath(DEBUG_APP_ROOT, 'Updater/resources/app');
-export const BUILD_RELEASE_FILES = nativePath(BUILD_ROOT, 'release-assets');
+export const SHELL_ROOT = resolve(WORKSPACE_ROOT, 'shell');
+export const SHELL_OUTPUT = resolve(DEBUG_APP_ROOT, 'Updater/resources/app');
 
-export const BUILD_DIST_ROOT = nativePath(BUILD_ROOT, 'build');
-export const BUILD_DIST_SOURCE =  nativePath(BUILD_ROOT, 'shell-build/resources');
-export const BUILD_DIST_TARGETS = nativePath(BUILD_DIST_ROOT, 'release');
-export const BUILD_ARTIFACTS_DIR = nativePath(BUILD_DIST_ROOT, 'artifact');
-export const BUILD_IDE_ROOT = nativePath(BUILD_ROOT, 'build/releas');
+export const BUILD_DIST_ROOT = resolve(BUILD_ROOT, 'build');
+export const BUILD_DIST_SOURCE = resolve(BUILD_ROOT, 'shell-build/source');
+export const BUILD_ASAR_DIR = resolve(BUILD_ROOT, 'shell-build/asar');
+export const BUILD_DIST_TARGETS = resolve(BUILD_ROOT, 'shell-build/platform-dists');
+export const BUILD_ARTIFACTS_DIR = resolve(BUILD_DIST_ROOT, 'artifact');
 
 export const UILanguage = process.env.LANG || process.env.LANGUAGE || process.env.LC_ALL || '';
 process.env.LANG = 'C';
@@ -103,6 +101,6 @@ export const HTTP_PROXY = process.env.HTTP_PROXY;
 export const HTTPS_PROXY = process.env.HTTPS_PROXY;
 
 export const npm_config_arch = 'x64';
-export const npm_config_cache = nativePath(TMP, 'npm-cache');
+export const npm_config_cache = resolve(TMP, 'npm-cache');
 export const npm_config_disturl = 'https://atom.io/download/electron';
 export const npm_config_runtime = 'electron';

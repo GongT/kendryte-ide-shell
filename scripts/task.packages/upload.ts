@@ -1,5 +1,5 @@
 import { BUILD_ARTIFACTS_DIR } from '../environment';
-import { debug, everyPlatform, gulp, jeditor, task, } from '../library/gulp';
+import { everyPlatform, gulp, jeditor, task, } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
@@ -15,10 +15,8 @@ const uploadPackage = everyPlatform('offpack:upload', [createZipFiles], (platfor
 export const modifyJsonTask = task('offpack:update.json', [uploadPackage], () => {
 	const version = createReleaseTag();
 	return gulpS3.src(`release/IDE.${getReleaseChannel()}.json`)
-	             .pipe(debug({title: 'down'}))
 	             .pipe(jeditor({
 		             offlinePackageVersion: version,
 	             }))
-	             .pipe(debug({title: 'up'}))
 	             .pipe(gulpS3.dest());
 });

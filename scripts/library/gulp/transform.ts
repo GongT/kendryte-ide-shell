@@ -2,10 +2,17 @@ import File = require('vinyl');
 import { Transform } from 'stream';
 import { pluginError } from '../gulp';
 
-export function streamTransform(
+export function simpleTransformStream(
 	trans: (file: File) => Promise<File>|File,
-	title: string = 'simple-transform',
-) {
+	title?: string,
+): Transform {
+	if (!title) {
+		if ((trans as any).title) {
+			title = (trans as any).title;
+		} else {
+			title = 'simple-transform';
+		}
+	}
 	return new class GulpTransform extends Transform {
 		constructor() {
 			super({objectMode: true});
@@ -13,7 +20,9 @@ export function streamTransform(
 		
 		_transform(file: File, _: any, callback: Function) {
 			Promise.resolve(trans(file)).then((f) => {
-				this.push(f);
+				if (f) {
+					this.push(f);
+				}
 				callback();
 			}, (e) => {
 				callback(pluginError(title, e));

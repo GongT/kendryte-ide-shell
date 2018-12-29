@@ -1,10 +1,11 @@
 import { TaskFunc } from 'orchestrator';
-import { join } from 'path';
+import { join, relative } from 'path';
 import * as Q from 'q';
 import * as stream from 'stream';
 import { Readable, Transform } from 'stream';
 import * as File from 'vinyl';
-import { BUILD_DIST_TARGETS } from '../environment';
+import { BUILD_DIST_TARGETS, WORKSPACE_ROOT } from '../environment';
+import { resolvePath } from './misc/pathUtil';
 
 export const gulp = require('gulp');
 export const watch = require('gulp-watch');
@@ -137,7 +138,7 @@ export function everyPlatform(task: string, deps: ITask[], cb?: IMyTaskFunc): IT
 export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyTaskFunc): ITask {
 	const ret: IPlatformMap<ITask> = {} as any;
 	for (const platform of platforms) {
-		const currentPlatformDir = join(process.cwd(), BUILD_DIST_TARGETS, platform);
+		const currentPlatformDir = resolvePath(BUILD_DIST_TARGETS, platform);
 		if (!cb) {
 			cb = deps as IMyTaskFunc;
 			deps = [];
@@ -170,4 +171,29 @@ export function filesToStream(...files: File[]) {
 	}
 	pass.push(null);
 	return pass;
+}
+
+export function gulpSrc(base: string, glob: string[]|string) {
+	// const rel = relative(WORKSPACE_ROOT, base);
+	return gulp.src(wrapGlob(base, glob), {base: base + '/', cwd: base, dot: true});
+}
+
+export function normalizePath(f: File) {
+	f.path = f.path.replace(f.base, '.');
+	// f.base = '';
+	return f;
+}
+
+export function gulpChokidar(base: string, glob: string[]|string, eventHandler: (file: File) => any) {
+	const rel = relative(WORKSPACE_ROOT, base);
+	return watch(wrapGlob(rel, glob), {base: rel, dot: true}, eventHandler);
+}
+
+function wrapGlob(rel: string, glob: string[]|string): string[] {
+	if (!Array.isArray(glob)) {
+		glob = [glob];
+	}
+	return glob.map((g) => {
+		return join(rel, g);
+	});
 }

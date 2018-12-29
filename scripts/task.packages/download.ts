@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { basename } from 'path';
 import { BUILD_DIST_ROOT } from '../environment';
 import { download, everyPlatform, gulp, log, mergeStream } from '../library/gulp';
-import { streamTransform } from '../library/gulp/transform';
+import { simpleTransformStream } from '../library/gulp/transform';
 import { resolvePath } from '../library/misc/pathUtil';
 import { walkRegistry } from './3rd-registry';
 import { savePath } from './paths';
@@ -17,7 +17,7 @@ export const downloadTask = everyPlatform('offpack:download', [registryTask], (p
 			log.info('Exists file: %s', zipPath);
 			continue;
 		}
-		const stream = streamTransform((file) => {
+		const stream = simpleTransformStream((file) => {
 			file.basename = basename(zipPath);
 			return file;
 		});

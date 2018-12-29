@@ -1,13 +1,13 @@
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../environment';
 import { everyPlatform, log, run } from '../library/gulp';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { cleanArtifactTask } from '../task.kendryteShell/cleanup';
 import { extractPackages } from './extract';
-import { packagesExtractPath } from './paths';
+import { getPackagesExtractRoot } from './paths';
 
 export const createZipFiles = everyPlatform('offpack:compress', [cleanArtifactTask, extractPackages], (platform) => {
-	const extraTo = resolve(BUILD_ROOT, packagesExtractPath, platform);
+	const extraTo = getPackagesExtractRoot(platform);
 	const szCmd = [
 		require('7zip-bin').path7za,
 		'a',

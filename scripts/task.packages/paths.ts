@@ -9,4 +9,11 @@ export function savePath(name: string, platform: string, version: string) {
 	return resolvePath(BUILD_ROOT, BUILD_DIST_ROOT, 'download', saveName(platform, name, version));
 }
 
-export const packagesExtractPath = resolvePath(BUILD_DIST_ROOT, 'offline-package-temp') + '/';
+export function createPackagesExtractPath(platform: string, packageName: string) {
+	return resolvePath(BUILD_DIST_ROOT, 'offline-package-temp', platform, 'KendryteIDE/LocalPackage', packageName);
+	
+}
+
+export function getPackagesExtractRoot(platform: string) {
+	return resolvePath(BUILD_DIST_ROOT, 'offline-package-temp', platform);
+}

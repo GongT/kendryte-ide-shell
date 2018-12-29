@@ -1,20 +1,12 @@
 import { resolve } from 'path';
-import { BUILD_DIST_ROOT, BUILD_RELEASE_FILES, BUILD_ROOT } from '../environment';
-import { everyPlatform, filter, gulp, jeditor, mergeStream, rename, zip } from '../library/gulp';
-import { resolvePath } from '../library/misc/pathUtil';
+import { BUILD_ASAR_DIR, myScriptSourcePath, SHELL_ROOT } from '../environment';
+import { everyPlatform, filter, gulp, gulpSrc, jeditor, mergeStream, rename, zip } from '../library/gulp';
+import { nativePath } from '../library/misc/pathUtil';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
-import { skipDirectories } from '../vscode/uitl';
+import { skipDirectories } from '../library/vscode/uitl';
 import { cleanReleaseTask } from './cleanup';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
-
-function prependMacElectronSourceRoot(): NodeJS.WritableStream&NodeJS.ReadableStream {
-	return rename((path: any) => {
-		path.dirname = path.dirname.replace(/(\.\/)?resources/, (m0: string, prep: string) => {
-			return (prep || '') + 'Updater.app/Contents/Resources';
-		});
-	});
-}
 
 function changeMacOsZip(): NodeJS.WritableStream&NodeJS.ReadableStream {
 	return rename((path: any) => {
@@ -26,45 +18,58 @@ function changeMacOsZip(): NodeJS.WritableStream&NodeJS.ReadableStream {
 	});
 }
 
-function prependUpdater(): NodeJS.WritableStream&NodeJS.ReadableStream {
+function moveMyAppToUpdaterResourceFolder(): NodeJS.WritableStream&NodeJS.ReadableStream {
+	return rename((path: any) => {
+		path.dirname = 'Updater/resources/' + path.dirname;
+	});
+}
+
+function macMoveMyAppToUpdaterResourceFolder(): NodeJS.WritableStream&NodeJS.ReadableStream {
+	return rename((path: any) => {
+		path.dirname = 'Updater.app/Contents/Resources/' + path.dirname;
+	});
+}
+
+function moveElectronToUpdaterFolder(): NodeJS.WritableStream&NodeJS.ReadableStream {
 	return rename((path: any) => {
 		path.dirname = 'Updater/' + path.dirname;
 	});
 }
 
 const zipResultEditor = {
-	win32: prependUpdater,
-	linux: prependUpdater,
+	win32: moveElectronToUpdaterFolder,
+	linux: moveElectronToUpdaterFolder,
 	darwin: changeMacOsZip,
 };
 
 const asarResultEditor = {
-	win32: prependUpdater,
-	linux: prependUpdater,
-	darwin: prependMacElectronSourceRoot,
+	win32: moveMyAppToUpdaterResourceFolder,
+	linux: moveMyAppToUpdaterResourceFolder,
+	darwin: macMoveMyAppToUpdaterResourceFolder,
 };
 
-export const releaseTasks = everyPlatform('release', [cleanReleaseTask, asarTask, downloadTask], (platform, root) => {
+export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, asarTask, downloadTask], (platform, root) => {
 	const extractElectronSource = zip
 		.src(getElectronZipPath(platform))
 		.pipe(filter(['**', '!**/default_app.asar']))
 		.pipe(zipResultEditor[platform]());
 	
-	const copyAsar = gulp.src(resolvePath(BUILD_DIST_ROOT, 'resources/**'), {base: BUILD_DIST_ROOT})
-	                     .pipe(filter([
-		                     '**',
-		                     '!**/node_modules/7zip-bin/**',
-		                     `**/node_modules/7zip-bin/win/x64/7za.exe`,
-		                     `**/node_modules/7zip-bin/linux/x64/7za`,
-		                     `**/node_modules/7zip-bin/darwin/7za`,
-	                     ]))
-	                     .pipe(asarResultEditor[platform]());
+	let platform7Z = '';
+	if (platform === 'win32') {
+		platform7Z = `**/node_modules/7zip-bin/win/x64/7za.exe`;
+	} else if (platform === 'linux') {
+		platform7Z = `**/node_modules/7zip-bin/linux/x64/7za`;
+	} else if (platform === 'darwin') {
+		platform7Z = `**/node_modules/7zip-bin/mac/7za`;
+	}
 	
-	const copyAssetsFiles = gulp
-		.src(resolvePath(BUILD_RELEASE_FILES, platform, '/**'), {base: BUILD_RELEASE_FILES + platform});
+	const copyAsar = gulpSrc(BUILD_ASAR_DIR, ['app.asar', platform7Z])
+		.pipe(asarResultEditor[platform]());
+	const selfDir = nativePath(myScriptSourcePath(__dirname), 'release-assets', platform);
 	
-	const createChannelJson = gulp
-		.src(resolvePath(BUILD_ROOT, 'channel.json'))
+	const copyAssetsFiles = gulpSrc(selfDir, '**');
+	
+	const createChannelJson = gulpSrc(SHELL_ROOT, 'channel.json')
 		.pipe(jeditor({
 			channel: getReleaseChannel(),
 		}));

@@ -1,6 +1,6 @@
 import { task } from '../library/gulp';
-import { rimraf } from '../vscode/uitl';
-import { packagesExtractPath } from './paths';
+import { rimraf } from '../library/vscode/uitl';
+import { getPackagesExtractRoot } from './paths';
 
-export const cleanupTask = task('offpack:cleanup', rimraf(packagesExtractPath));
+export const cleanupTask = task('offpack:cleanup', rimraf(getPackagesExtractRoot('.')));
 

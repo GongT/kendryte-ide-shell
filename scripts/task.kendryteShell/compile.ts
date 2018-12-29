@@ -1,6 +1,19 @@
 import { VinylFile } from 'gulp-typescript/release/types';
 import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, SHELL_OUTPUT, SHELL_ROOT, VSCODE_ROOT } from '../environment';
-import { gulp, ISingleTask, jeditor, log, plumber, sass, sourcemaps, task, typescript, watch } from '../library/gulp';
+import {
+	debug,
+	gulp,
+	gulpChokidar,
+	gulpSrc,
+	ISingleTask,
+	jeditor,
+	log,
+	plumber,
+	sass,
+	sourcemaps,
+	task,
+	typescript,
+} from '../library/gulp';
 import { resolvePath } from '../library/misc/pathUtil';
 import { cleanBuildTask, cleanDevelopTask } from './cleanup';
 
@@ -86,12 +99,12 @@ function taskName(prefix: string, obj: ISourceType) {
 	}
 }
 
-function createGlob(root: string, src: string[]|string) {
+function createGlob(src: string[]|string) {
 	if (Array.isArray(src)) {
 		const srcGlob = src.length > 1? '{' + src.join(',') + '}' : src[0];
-		return resolvePath(root, '**/*.' + srcGlob);
+		return '**/*.' + srcGlob;
 	} else {
-		return resolvePath(root, src);
+		return src;
 	}
 }
 
@@ -102,7 +115,7 @@ function createCompileTask(
 ) {
 	const process = taskConfig.task();
 	return task(taskName(isBuild? 'build:compile' : TASK_COMPILE, taskConfig), dependencies, () => {
-		return process(gulp.src(createGlob(SHELL_ROOT, taskConfig.sourceFiles), {base: SHELL_ROOT}))
+		return process(gulpSrc(SHELL_ROOT, createGlob(taskConfig.sourceFiles)))
 			.pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : taskConfig.output || SHELL_OUTPUT));
 	});
 }
@@ -112,19 +125,20 @@ function createWatchTask(
 	dependencies: ISingleTask[],
 ) {
 	const process = taskConfig.task();
-	return task(
-		taskName(TASK_WATCH, taskConfig),
-		[
-			...dependencies,
-			taskName(TASK_COMPILE, taskConfig),
-		],
-		() => {
-			const p = watch(createGlob(SHELL_ROOT, taskConfig.sourceFiles), {base: SHELL_ROOT, ignoreInitial: false})
-				.pipe(plumber());
-			return process(p)
-				.pipe(plumber.stop())
-				.pipe(gulp.dest(taskConfig.output || SHELL_OUTPUT));
-		});
+	const watchName = taskName(TASK_WATCH, taskConfig);
+	return task(watchName, [
+		...dependencies,
+		taskName(TASK_COMPILE, taskConfig),
+	], () => {
+		const p = gulpChokidar(SHELL_ROOT, createGlob(taskConfig.sourceFiles), (o) => {
+			console.log('\x1Bc[%s] file has change: ', watchName, o.path);
+			return o;
+		}).pipe(plumber());
+		return process(p)
+			.pipe(plumber.stop())
+			.pipe(gulp.dest(taskConfig.output || SHELL_OUTPUT))
+			.pipe(debug({title: 'write:'}));
+	});
 }
 
 function createWatchCallbackTask(
@@ -132,27 +146,26 @@ function createWatchCallbackTask(
 	dependencies: ISingleTask[],
 ) {
 	const process = taskConfig.task();
-	return task(taskName(TASK_WATCH, taskConfig),
-		[
-			...dependencies,
-			taskName(TASK_COMPILE, taskConfig),
-		],
-		() => {
-			const sources = createGlob(SHELL_ROOT, taskConfig.sourceFiles);
-			return watch(sources, {base: SHELL_ROOT}, (o: VinylFile) => {
-				console.log('\x1Bcfile has change: ', o.path);
-				const rel = o.dirname.replace(SHELL_ROOT, '');
-				
-				const p = gulp.src(o.path)
-				              .pipe(plumber(() => {
-				              }));
-				return process(p).pipe(plumber.stop())
-				                 .pipe(gulp.dest(SHELL_OUTPUT + rel))
-				                 .on('end', () => {
-					                 console.log('compile complete.');
-				                 });
-			});
+	const watchName = taskName(TASK_WATCH, taskConfig);
+	return task(watchName, [
+		...dependencies,
+		taskName(TASK_COMPILE, taskConfig),
+	], () => {
+		const sources = createGlob(taskConfig.sourceFiles);
+		return gulpChokidar(SHELL_ROOT, sources, (o: VinylFile) => {
+			console.log('\x1Bc[%s] file has change: ', watchName, o.path);
+			const rel = o.dirname.replace(SHELL_ROOT, '');
+			
+			const p = gulp.src(o.path)
+			              .pipe(plumber(() => {
+			              }));
+			return process(p).pipe(plumber.stop())
+			                 .pipe(gulp.dest(SHELL_OUTPUT + rel))
+			                 .on('end', () => {
+				                 console.log('compile complete.');
+			                 });
 		});
+	});
 }
 
 export const productionTask = task('build:compile', [

@@ -2,14 +2,13 @@ import { spawn } from 'child_process';
 import { readdir, rename, rmdir } from 'fs-extra';
 import { resolve } from 'path';
 import { Transform } from 'stream';
-import { BUILD_ROOT } from '../environment';
 import { processPromise } from '../library/childprocess/handlers';
 import { createVinylFile, everyPlatform, filesToStream, gulp, log, mergeStream, pluginError } from '../library/gulp';
 import { mkdirpSync, writeFile } from '../library/misc/fsUtil';
 import { getBundledVersions } from './3rd-registry';
 import { cleanupTask } from './cleanup';
 import { downloadTask } from './download';
-import { packagesExtractPath, savePath } from './paths';
+import { createPackagesExtractPath, getPackagesExtractRoot, savePath } from './paths';
 
 const p7z = require('7zip-bin').path7za;
 
@@ -64,7 +63,7 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	const handle = new ExtractStream();
 	
 	for (const [name, version] of Object.entries(bundledVersions)) {
-		const extraTo = resolve(BUILD_ROOT, packagesExtractPath, platform, name);
+		const extraTo = createPackagesExtractPath(platform, name);
 		const zipFile = savePath(name, platform, version);
 		handle.write({zipFile, extraTo});
 	}
@@ -73,6 +72,6 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	return mergeStream(
 		handle,
 		filesToStream(createVinylFile('bundled-versions.json', undefined, JSON.stringify(bundledVersions)))
-			.pipe(gulp.dest(packagesExtractPath + platform)),
+			.pipe(gulp.dest(getPackagesExtractRoot(platform))),
 	);
 });
