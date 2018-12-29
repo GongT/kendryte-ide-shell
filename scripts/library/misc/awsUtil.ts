@@ -1,6 +1,5 @@
 import { S3 } from 'aws-sdk';
 import { createReadStream } from 'fs';
-import { PassThrough } from 'stream';
 import { ICompileOptions } from '../jsonDefine/packageRegistry';
 import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../releaseInfo/s3Keys';
 import { ProgressPromise } from './asyncUtil';
@@ -138,7 +137,12 @@ export class ExS3 implements AWSLogger {
 		fileName: string,
 	) {
 		const {mime, hash} = getMime(fileName);
-		return this.uploadStream(key, mime, createReadStream(fileName), hash);
+		return this.uploadStream(
+			key,
+			mime,
+			createReadStream(fileName),
+			hash? createReadStream(fileName) : null,
+		);
 	}
 	
 	async uploadBuffer(
@@ -168,20 +172,19 @@ export class ExS3 implements AWSLogger {
 		key: string,
 		mime: string,
 		stream: NodeJS.ReadableStream,
-		hash = true,
+		hash?: NodeJS.ReadableStream,
 	) {
 		key = key.replace(/^\//, '');
 		// globalLog('[S3] upload -> %s', key);
-		const pass = stream.pipe(new PassThrough());
 		
 		let hashPromise: Promise<string>;
 		if (hash) {
-			hashPromise = hashStream(pass);
+			hashPromise = hashStream(hash);
 		}
 		
 		const url = await new ProgressPromise<string, IProgress>((resolve, reject, notify) => {
 			const mup = this.s3.upload(
-				{ACL: 'public-read', Bucket: this.bucket, Key: key, Body: pass, ContentType: mime},
+				{ACL: 'public-read', Bucket: this.bucket, Key: key, Body: stream, ContentType: mime},
 				{partSize: 10 * 1024 * 1024, queueSize: 2},
 				(err: Error, data: any) => err? reject(err) : resolve(data.Location),
 			);

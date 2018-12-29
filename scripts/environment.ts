@@ -26,8 +26,8 @@ export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, 'kendryte-ide');
 export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
 export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
 export const DOWNLOAD_PATH = resolve(BUILD_ROOT, 'download');
-export const RELEASE_ROOT = resolve(BUILD_ROOT, 'release');
-export const ARCH_RELEASE_ROOT = resolve(RELEASE_ROOT, 'release/kendryte-ide-release-x64');
+export const RELEASE_ROOT = resolve(BUILD_ROOT, 'ide-main-release');
+export const ARCH_RELEASE_ROOT = resolve(RELEASE_ROOT, 'kendryte-ide-release-x64');
 export const FAKE_HOME = resolve(BUILD_ROOT, 'FAKE_HOME');
 
 if (!process.env.ORIGINAL_HOME) {

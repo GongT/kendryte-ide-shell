@@ -23,7 +23,7 @@ export async function createIndexFileContent(): Promise<string> {
 	const lastPatch = latestPatch(registryFile);
 	
 	log('version=%s', registryFile.version);
-	if (lastPatch.version) {
+	if (lastPatch && lastPatch.version) {
 		log('lastPatch.version=%s', lastPatch.version);
 	} else {
 		log('lastPatch.version=No value');

@@ -28,11 +28,15 @@ export interface IDEPatchJson {
 }
 
 export function latestPatch(state: IDEJson): null|IDEPatchJson {
+	if (!state.patches) {
+		return null;
+	}
+	
 	state.patches.sort((a, b) => {
 		return parseFloat(b.version) - parseFloat(a.version);
 	});
 	
-	return state.patches[0];
+	return state.patches[0] || null;
 }
 
 export function storeRemoteVersion(remote: IDEJson, type: 'main'|'patch', ver: string) {

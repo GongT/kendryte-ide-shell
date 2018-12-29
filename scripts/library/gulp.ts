@@ -42,7 +42,7 @@ export function pluginError(plugin: string, originalError: string|Error) {
 	}
 }
 
-export function limitSpeedTransform(num: number, transform: (this: Readable, obj: any) => Promise<void>) {
+export function limitSpeedTransform(num: number, transform: (this: Readable, obj: any, self: Readable) => Promise<void>) {
 	return through2Concurrent.obj(
 		{maxConcurrency: num},
 		function (this: any, chunk: any, enc: any, callback: Function) {
@@ -50,7 +50,7 @@ export function limitSpeedTransform(num: number, transform: (this: Readable, obj
 				callback(pluginError('limit-speed', e));
 			};
 			
-			Promise.resolve().then(transform.bind(this, chunk)).then(() => {
+			Promise.resolve().then(transform.bind(this, chunk, this)).then(() => {
 				callback();
 			}, reject);
 		});

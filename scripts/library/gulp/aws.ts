@@ -12,9 +12,9 @@ export interface MimeSetter {
 	(fileName: string): string;
 }
 
-function downloadQueue(opts: gulpS3.DestOptions) {
+function uploadQueue(opts: gulpS3.DestOptions) {
 	const {s3, base} = opts;
-	return limitSpeedTransform(2, (file: File): Promise<void> => {
+	return limitSpeedTransform(2, function (this: Readable, file: File): Promise<void> {
 		if (file.isDirectory() || file.isNull()) {
 			return Promise.resolve();
 		}
@@ -24,17 +24,20 @@ function downloadQueue(opts: gulpS3.DestOptions) {
 		
 		const {mime, hash} = getMime(file.basename);
 		const path = resolve('/', base? base : '.', file.relative);
-		log('Upload file to S3: %s.', path);
 		let p: Promise<any>;
 		if (file.isStream()) {
-			// console.log('isStream');
-			p = s3.uploadStream(path, mime, file.contents, hash);
+			log('Upload file (stream, %s KB) to S3: %s.', file.stat.size / 1000, path);
+			p = s3.uploadStream(path, mime, file.contents, hash? file.clone().contents : null);
 		} else if (file.isBuffer()) {
-			// console.log('isBuffer');
+			log('Upload file (buffer, %s KB) to S3: %s.', file.contents.length / 1000, path);
 			p = s3.uploadBuffer(path, mime, file.contents, hash);
 		} else {
 			return Promise.reject(pluginError('s3-upload', new Error('failed to upload, not support file type.')));
 		}
+		
+		p.then(() => {
+			this.push(file);
+		});
 		
 		return p.catch((e: Error) => {
 			throw pluginError('s3-upload', e);
@@ -57,7 +60,7 @@ export namespace gulpS3 {
 			opts.s3 = ExS3.instance();
 		}
 		
-		return downloadQueue(opts);
+		return uploadQueue(opts);
 	}
 	
 	export interface SrcOptions {
