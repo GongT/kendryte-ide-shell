@@ -1,14 +1,14 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { resolve } from 'path';
-import { readFile } from '../../library/misc/fsUtil';
+import { log } from '../../library/gulp';
 import { ICompileOptions } from '../../library/jsonDefine/packageRegistry';
+import { readFile } from '../../library/misc/fsUtil';
 
-export async function readPackageInfo(output: OutputStreamControl, packRoot: string) {
+export async function readPackageInfo(packRoot: string) {
 	const jsonFile = resolve(packRoot, 'kendryte-package.json');
-	output.writeln('read package info from: ' + jsonFile);
+	log('read package info from: ' + jsonFile);
 	
 	const data: ICompileOptions = (void 0 || eval)('data=' + await readFile(jsonFile) + ';');
-	output.writeln(JSON.stringify(data, null, 2));
+	log(JSON.stringify(data, null, 2));
 	
 	return data;
 }

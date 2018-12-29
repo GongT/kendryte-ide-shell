@@ -1,15 +1,16 @@
 import { basename, join, relative, resolve } from 'path';
 import { pipeCommandOut } from '../../library/childprocess/complex';
+import { log } from '../../library/gulp';
 import { chdir } from '../../library/misc/pathUtil';
 import { listExtension } from './list';
 import { IExtensionPath } from './path';
 
-export async function buildExtension(output: NodeJS.WritableStream, {targetRoot, sourceRoot}: IExtensionPath, watch: boolean) {
+export async function buildExtension({targetRoot, sourceRoot}: IExtensionPath, watch: boolean) {
 	chdir(sourceRoot);
-	output.write('build extensions: \n');
-	output.write('  From: ' + sourceRoot + '\n');
-	output.write('    To: ' + targetRoot + '\n');
-	output.write(' Watch: ' + (watch? 'True' : 'False') + '\n');
+	log('build extensions: ');
+	log('  From: ' + sourceRoot);
+	log('    To: ' + targetRoot);
+	log(' Watch: ' + (watch? 'True' : 'False'));
 	
 	const tscBin = 'tsc';
 	
@@ -31,6 +32,6 @@ export async function buildExtension(output: NodeJS.WritableStream, {targetRoot,
 	}
 	
 	await Promise.race(commands.map(async (args) => {
-		return pipeCommandOut(output, tscBin, ...args);
+		return pipeCommandOut(process.stderr, tscBin, ...args);
 	}));
 }

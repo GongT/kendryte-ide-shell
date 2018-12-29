@@ -1,5 +1,6 @@
 import { VSCODE_ROOT } from '../../environment';
 import { pipeCommandOut } from '../../library/childprocess/complex';
+import { log } from '../../library/gulp';
 import { cleanScreen, getCleanableStdout } from '../../library/misc/clsUtil';
 import { isExists } from '../../library/misc/fsUtil';
 import { useThisStream } from '../../library/misc/globalOutput';
@@ -7,7 +8,6 @@ import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
 import { TypescriptCompileOutputStream } from '../../library/misc/streamUtil';
-import { usePretty } from '../../library/misc/usePretty';
 import { buildExtension } from '../bundledExtensions/buildExtension';
 import { getExtensionPath } from '../bundledExtensions/path';
 import { prepareLinkForDev } from '../bundledExtensions/prepare';
@@ -31,17 +31,14 @@ runMain(async () => {
 	    || !await isExists('extensions/css-language-features/client/out')
 	    || !await isExists('data/extensions/kendryte-debug/gdb.js')
 	) {
-		const stream = usePretty('compile-extension');
-		
-		await prepareLinkForDev(stream);
-		await buildExtension(stream, getExtensionPath(false), false);
+		await prepareLinkForDev();
+		await buildExtension(getExtensionPath(false), false);
 		
 		chdir(VSCODE_ROOT);
-		stream.write('starting compile extensions...');
-		await pipeCommandOut(stream, 'node', ...gulpCommands(), 'compile-extensions');
-		stream.success('extensions compiled');
+		log('starting compile extensions...');
+		await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), 'compile-extensions');
+		log('extensions compiled');
 		useThisStream(process.stderr);
-		stream.end();
 	} else {
 		skipped = true;
 	}

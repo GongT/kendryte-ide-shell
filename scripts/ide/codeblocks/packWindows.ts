@@ -1,22 +1,18 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { readFileSync, rename, writeFileSync } from 'fs';
 import { copy, mkdir } from 'fs-extra';
 import { resolve } from 'path';
 import { MY_SCRIPT_ROOT, VSCODE_ROOT } from '../../environment';
+import { pipeCommandOut } from '../../library/childprocess/complex';
+import { installDependency, yarn } from '../../library/childprocess/yarn';
+import { log } from '../../library/gulp';
 import { isExists, writeFile } from '../../library/misc/fsUtil';
 import { resolveGitDir } from '../../library/misc/git';
 import { chdir, ensureChdir, yarnPackageDir } from '../../library/misc/pathUtil';
 import { timing } from '../../library/misc/timeUtil';
-import { pipeCommandOut } from '../../library/childprocess/complex';
-import { installDependency, yarn } from '../../library/childprocess/yarn';
 import { gulpCommands } from './gulp';
 import { removeDirectory } from './removeDir';
 
-export async function packWindows(output: OutputStreamControl) {
-	function log(s: string) {
-		output.write(s + '\n');
-	}
-	
+export async function packWindows() {
 	const devDepsDir = yarnPackageDir('devDependencies');
 	const prodDepsDir = yarnPackageDir('dependencies');
 	
@@ -47,8 +43,8 @@ export async function packWindows(output: OutputStreamControl) {
 	
 	/// dependencies - install
 	const timeOutProd = timing();
-	await installDependency(output, prodDepsDir);
-	output.success('production dependencies installed.' + timeOutProd());
+	await installDependency(prodDepsDir);
+	log('production dependencies installed.' + timeOutProd());
 	
 	//// devDependencies
 	log('  create devDependencies');
@@ -60,13 +56,13 @@ export async function packWindows(output: OutputStreamControl) {
 		},
 	}));
 	writeFileSync('yarn.lock', originalLock);
-	output.success('basic files write complete.');
+	log('basic files write complete.');
 	
 	//// devDependencies - husky
 	if (!await isExists('.git')) {
-		await pipeCommandOut(output, 'git', 'init', '.');
+		await pipeCommandOut(process.stderr, 'git', 'init', '.');
 		await writeFile('.gitignore', '*');
-		output.success('dummy git repo created.');
+		log('dummy git repo created.');
 	}
 	const huskyHooks = resolve(devDepsDir, '.git', 'hooks');
 	await removeDirectory(huskyHooks);
@@ -74,11 +70,11 @@ export async function packWindows(output: OutputStreamControl) {
 	
 	/// devDependencies - install
 	const timeOutDev = timing();
-	await installDependency(output, devDepsDir);
-	output.success('development dependencies installed.' + timeOutDev());
+	await installDependency(devDepsDir);
+	log('development dependencies installed.' + timeOutDev());
 	
 	//// devDependencies - husky (ensure)
-	await pipeCommandOut(output, 'node', 'node_modules/husky/bin/install.js');
+	await pipeCommandOut(process.stderr, 'node', 'node_modules/husky/bin/install.js');
 	
 	/// devDependencies - link to working tree
 	const devDepsStore = resolve(devDepsDir, 'node_modules');
@@ -90,8 +86,8 @@ export async function packWindows(output: OutputStreamControl) {
 	log('create ASAR package');
 	chdir(root);
 	const timeOutZip = timing();
-	await pipeCommandOut(output, 'node', ...gulpCommands(), '--gulpfile', resolve(MY_SCRIPT_ROOT, 'gulpfile/pack-win.js'));
-	output.success('ASAR created.' + timeOutZip());
+	await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), '--gulpfile', resolve(MY_SCRIPT_ROOT, 'gulpfile/pack-win.js'));
+	log('ASAR created.' + timeOutZip());
 	
 	log('move ASAR package to source root');
 	chdir(root);
@@ -109,16 +105,16 @@ export async function packWindows(output: OutputStreamControl) {
 			resolve(root, 'node_modules.asar'),
 			wrappedCallback);
 	});
-	output.success('ASAR moved to root.');
+	log('ASAR moved to root.');
 	
 	/// install child node_modules by default script
 	log('run post-install script');
 	chdir(root);
 	const timeOutPostInstall = timing();
-	await yarn(output, output.screen, 'postinstall');
-	output.success('Yarn postinsall success.' + timeOutPostInstall());
+	await yarn('postinstall');
+	log('Yarn postinsall success.' + timeOutPostInstall());
 	
 	await copy(huskyHooks, resolve(gitDir, 'hooks'));
 	
-	output.success('Everything complete.');
+	log('Everything complete.');
 }

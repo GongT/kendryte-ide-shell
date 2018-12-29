@@ -1,8 +1,8 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { createWriteStream } from 'fs';
 import { mkdirp } from 'fs-extra';
 import { dirname, extname, resolve } from 'path';
 import { muteCommandOut, pipeCommandOut } from '../../library/childprocess/complex';
+import { log } from '../../library/gulp';
 import { promiseToBool } from '../../library/misc/asyncUtil';
 import { isExists, rename } from '../../library/misc/fsUtil';
 import { streamPromise } from '../../library/misc/streamUtil';
@@ -28,10 +28,10 @@ export function createTempPath(url: string) {
 	return resolve(process.env.TEMP, md5(url) + extname(url));
 }
 
-export async function downloadFile(output: OutputStreamControl, url: string, localSave: string) {
-	output.writeln(`downloading file: ${url}\n  save to: ${localSave}`);
+export async function downloadFile(url: string, localSave: string) {
+	log(`downloading file: ${url}\n  save to: ${localSave}`);
 	if (await isExists(localSave)) {
-		output.writeln(`already exists...`);
+		log(`already exists...`);
 		return;
 	}
 	
@@ -40,18 +40,18 @@ export async function downloadFile(output: OutputStreamControl, url: string, loc
 	const hasWget = await promiseToBool(muteCommandOut('wget', '--version'));
 	const saveTo = createWriteStream(localSave + '.partial', {autoClose: true});
 	if (hasWget) {
-		output.writeln('Download engine: native wget');
+		log('Download engine: native wget');
 		await pipeCommandOut(saveTo, 'wget', '-O', '-', '--', url);
 		await streamPromise(saveTo);
 	} else {
-		output.writeln('Download engine: node request');
-		await nodeDown(output, url, saveTo);
+		log('Download engine: node request');
+		await nodeDown(url, saveTo);
 	}
 	
 	await rename(localSave + '.partial', localSave);
 }
 
-function nodeDown(output: OutputStreamControl, from: string, saveTo: NodeJS.WritableStream) {
+function nodeDown(from: string, saveTo: NodeJS.WritableStream) {
 	// The options argument is optional so you can omit it
 	progress(request(from), {
 		// throttle: 2000,                    // Throttle the progress event to 2000ms, defaults to 1000ms
@@ -71,13 +71,14 @@ function nodeDown(output: OutputStreamControl, from: string, saveTo: NodeJS.Writ
 		//         remaining: 81.403       // The remaining seconds to finish (3 decimals)
 		//     }
 		// }
-		output.screen.log(
+		/*
+		log(
 			'downloading [%s%]: %s/%s MB - %sKB/s',
 			state.percent,
 			(state.size.transferred / 1024 / 1024).toFixed(2),
 			(state.size.total / 1024 / 1024).toFixed(2),
 			(state.speed / 1024).toFixed(2),
-		);
+		);*/
 	}).pipe(saveTo);
 	return streamPromise(saveTo);
 }

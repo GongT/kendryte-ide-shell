@@ -11,7 +11,7 @@ export function closeStream(s: NodeJS.WritableStream) {
 	});
 }
 
-export function usePretty(save?: string, opts?: MyOptions): OutputStreamControl {
+export function usePrettyIfTty(save?: string, opts?: MyOptions): OutputStreamControl {
 	const stream = startWorking();
 	useThisStream(stream);
 	Object.assign(stream, {noEnd: true});

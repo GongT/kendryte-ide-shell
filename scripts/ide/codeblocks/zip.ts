@@ -1,4 +1,3 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { spawnSync } from 'child_process';
 import { chmod, mkdirp } from 'fs-extra';
 import { decodeStream } from 'iconv-lite';
@@ -9,7 +8,6 @@ import { pipeCommandBoth, pipeCommandOut } from '../../library/childprocess/comp
 import { mergeEnv } from '../../library/childprocess/env';
 import { calcCompileFolderName, removeIfExists } from '../../library/misc/fsUtil';
 import { chdir } from '../../library/misc/pathUtil';
-import { endArg } from '../../library/misc/streamUtil';
 import { nameReleaseFile, TYPE_ZIP_FILE } from './zip.name';
 
 const _7z = isWin? require('7zip')['7z'] : '7z';
@@ -72,17 +70,17 @@ async function createPosix7z(
 	await chmod(zipFileName, '777');
 }
 
-export async function un7zip(output: OutputStreamControl, from: string, to: string) {
+export async function un7zip(from: string, to: string) {
 	const stderr = new ProgressStream;
-	stderr.pipe(output.screen, {end: false});
+	stderr.pipe(process.stderr, {end: false});
 	
 	let stdout: NodeJS.WritableStream;
 	if (isWin) {
 		const convert = TransformEncode();
-		convert.pipe(output, endArg(output));
+		convert.pipe(process.stderr);
 		stdout = convert;
 	} else {
-		stdout = output;
+		stdout = process.stderr;
 	}
 	
 	await mkdirp(to);
@@ -117,26 +115,23 @@ class ProgressStream extends Transform {
 	}
 }
 
-export async function creatingUniversalZip(output: OutputStreamControl, sourceDir: string, namer: (type: string) => string) {
-	const stderr = new ProgressStream;
-	stderr.pipe(output.screen, {end: false});
-	
+export async function creatingUniversalZip(sourceDir: string, namer: (type: string) => string) {
 	if (isWin) {
 		const convert = TransformEncode();
-		convert.pipe(output, endArg(output));
+		convert.pipe(process.stderr);
 		
-		await createWindows7z(convert, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
+		await createWindows7z(convert, process.stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 		
 		convert.end();
 	} else {
-		await createPosix7z(output, stderr, sourceDir, await namer(TYPE_ZIP_FILE));
+		await createPosix7z(process.stdout, process.stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 	}
 }
 
-export async function creatingReleaseZip(output: OutputStreamControl) {
+export async function creatingReleaseZip() {
 	chdir(RELEASE_ROOT);
 	
-	return creatingUniversalZip(output, await calcCompileFolderName(), nameReleaseFile());
+	return creatingUniversalZip(await calcCompileFolderName(), nameReleaseFile());
 }
 
 function normalOutput(

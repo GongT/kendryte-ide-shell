@@ -3,12 +3,12 @@ import { PassThrough } from 'stream';
 import { RELEASE_ROOT, VSCODE_ROOT } from '../../environment';
 import { getOutputCommand, pipeCommandOut } from '../../library/childprocess/complex';
 import { ProgramError } from '../../library/childprocess/error';
+import { log } from '../../library/gulp';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain, useWriteFileStream } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
 import { CollectingStream } from '../../library/misc/streamUtil';
 import { timeout } from '../../library/misc/timeUtil';
-import { usePretty } from '../../library/misc/usePretty';
 import { gulpCommands } from '../codeblocks/gulp';
 
 whatIsThis(
@@ -28,10 +28,8 @@ runMain(async () => {
 	process.stderr.write('\x1Bc\r');
 	chdir(VSCODE_ROOT);
 	
-	const output = usePretty('format-all');
-	
-	output.success('running reformat on ALL source files, this will use about 1min. please wait.');
-	output.write('waiting for \'yarn gulp hygiene\'');
+	log('running reformat on ALL source files, this will use about 1min. please wait.');
+	log('waiting for \'yarn gulp hygiene\'');
 	
 	const notFormattedFiles: string[] = [];
 	const notValidFiles: string[] = [];
@@ -51,21 +49,20 @@ runMain(async () => {
 	const collector = new CollectingStream();
 	multiplex.pipe(processor);
 	multiplex.pipe(collector);
-	multiplex.pipe(output, {end: false});
 	multiplex.pipe(useWriteFileStream(resolve(RELEASE_ROOT, 'hygiene.log')));
 	
 	await await pipeCommandOut(multiplex, 'node', ...gulpCommands(), 'hygiene').then(() => {
-		output.success('gulp hygiene exit successful');
+		log('gulp hygiene exit successful');
 	}, (e: ProgramError) => {
-		output.fail(`gulp hygiene exit with failed status: ${e.status || ''}${e.signal || ''}`);
+		log(`gulp hygiene exit with failed status: ${e.status || ''}${e.signal || ''}`);
 		notValidFiles.unshift('hygiene failed. this list may not complete. run yarn gulp hygiene too see full.');
 	});
 	
 	if (notFormattedFiles.length) {
-		output.success(`fixing ${notFormattedFiles.length} error....\n`);
+		log(`fixing ${notFormattedFiles.length} error....\n`);
 		
 		for (const file of notFormattedFiles) {
-			output.write(file + '\n');
+			log(file + '\n');
 			if (isTs.test(file)) {
 				await getOutputCommand('tsfmt', '-r', file).catch(() => {
 					notValidFiles.push(file);
@@ -84,21 +81,20 @@ runMain(async () => {
 	}
 	
 	if (notValidFiles.length) {
-		output.write('\n\n');
-		output.nextLine();
+		log('\n\n');
 		
 		await timeout(500);
 		
 		console.error('\n' + collector.getOutput() + '\n');
 		
-		output.fail(notValidFiles.length + ' files must fix by hand.');
+		log(notValidFiles.length + ' files must fix by hand.');
 		for (const file of notValidFiles) {
 			console.error(' x %s', file);
 		}
 		console.log('\n\n');
 		throw new Error('auto fix fail.');
 	} else {
-		output.success(notFormattedFiles.length + ' files auto fix complete.');
+		log(notFormattedFiles.length + ' files auto fix complete.');
 	}
 	
 	console.error('Notice: you must run `yarn gulp hygiene` again...');

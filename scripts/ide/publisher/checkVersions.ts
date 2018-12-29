@@ -1,7 +1,7 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { platform } from 'os';
 import { resolve } from 'path';
 import { cmp } from 'semver';
+import { log } from '../../library/gulp';
 import { getRemoteVersion, IDEJson } from '../../library/jsonDefine/releaseRegistry';
 import { getPackageData, isExists } from '../../library/misc/fsUtil';
 import { releaseZipStorageFolder } from '../codeblocks/zip';
@@ -31,15 +31,15 @@ export async function checkPatchIsDifferent(remote: IDEJson) {
 	}
 }
 
-export async function ensureBuildComplete(output: OutputStreamControl) {
+export async function ensureBuildComplete() {
 	const zip = resolve(releaseZipStorageFolder(), releaseFileName(platform(), TYPE_ZIP_FILE));
-	output.writeln('check build result zips exists:\n\t- %s' + zip);
+	log('check build result zips exists:\n\t- %s' + zip);
 	if (await isExists(zip)) {
-		output.success('Build state is ok.');
+		log('Build state is ok.');
 	} else {
-		output.writeln('no, something missing.');
+		log('no, something missing.');
 		
-		output.warn('these files must exists: \n\t- ' + zip);
+		log('these files must exists: \n\t- ' + zip);
 		throw new Error('Not complete build process. please run `build` first.');
 	}
 }

@@ -28,7 +28,7 @@ export async function yarn(cmd: string, ...args: string[]) {
 	if (existsSync('yarn-error.log')) {
 		unlinkSync('yarn-error.log');
 	}
-	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd} --verbose\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
+	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
 	await pipeCommandOut(process.stderr, 'yarn', cmd, ...args);
 	log(`yarn ${cmd} success.`);
 	if (existsSync('yarn-error.log')) {

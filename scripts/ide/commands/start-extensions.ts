@@ -1,6 +1,6 @@
+import { log } from '../../library/gulp';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
-import { closeStream, usePretty } from '../../library/misc/usePretty';
 import { buildExtension } from '../bundledExtensions/buildExtension';
 import { getExtensionPath } from '../bundledExtensions/path';
 import { prepareLinkForDev } from '../bundledExtensions/prepare';
@@ -16,10 +16,8 @@ runMain(async () => {
 	
 	switchQuitKey();
 	
-	const output = usePretty('start-ext');
-	await prepareLinkForDev(output);
-	output.success('extension link created.');
-	await closeStream(output);
+	await prepareLinkForDev();
+	log('extension link created.');
 	
-	await buildExtension(process.stderr, getExtensionPath(false), process.argv.includes('-w'));
+	await buildExtension(getExtensionPath(false), process.argv.includes('-w'));
 });

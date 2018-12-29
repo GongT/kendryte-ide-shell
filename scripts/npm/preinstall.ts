@@ -1,8 +1,6 @@
-import { runMain } from '../library/misc/myBuildSystem';
-import { usePretty } from '../library/misc/usePretty';
 import { reset_asar } from '../ide/codeblocks/resetAsar';
+import { runMain } from '../library/misc/myBuildSystem';
 
 runMain(async () => {
-	const output = usePretty();
-	await reset_asar(output);
+	await reset_asar();
 });

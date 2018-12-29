@@ -1,8 +1,8 @@
-import { creatingReleaseZip } from '../codeblocks/zip';
+import { log } from '../../library/gulp';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { timing } from '../../library/misc/timeUtil';
-import { usePretty } from '../../library/misc/usePretty';
+import { creatingReleaseZip } from '../codeblocks/zip';
 
 whatIsThis(
 	'(re-)Create 7z files from last compiled result',
@@ -10,12 +10,8 @@ whatIsThis(
 );
 
 runMain(async () => {
-	const output = usePretty('zip');
-	
 	const timeZip = timing();
-	output.log('Creating zip packages...');
-	await creatingReleaseZip(output);
-	output.success('Zip files created.' + timeZip());
-	
-	output.success('Done.');
+	log('Creating zip packages...');
+	await creatingReleaseZip();
+	log('Zip files created.' + timeZip());
 });

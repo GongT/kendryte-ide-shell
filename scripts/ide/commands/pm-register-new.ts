@@ -1,13 +1,13 @@
 import { basename, resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
 import { getOutputCommand, pipeCommandOut } from '../../library/childprocess/complex';
+import { log } from '../../library/gulp';
 import { IRemotePackageRegistry } from '../../library/jsonDefine/packageRegistry';
 import { ExS3 } from '../../library/misc/awsUtil';
 import { isExists } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { ensureChdir } from '../../library/misc/pathUtil';
-import { usePretty } from '../../library/misc/usePretty';
 import { OBJKEY_PACKAGE_MANAGER_LIBRARY } from '../../library/releaseInfo/s3Keys';
 import { escapeRegExpCharacters } from '../codeblocks/escapeRegExpCharacters';
 import { readPackageInfo } from '../package-manager/packageInfo';
@@ -33,13 +33,12 @@ runMain(async () => {
 	if (!gitBranch) {
 		throw new Error('git branch is required.' + usage);
 	}
-	const output = usePretty('library-publish');
 	
 	const dir = basename(gitRemote, '.git');
 	const packRoot = resolve(RELEASE_ROOT, 'package-manager', dir);
 	ensureChdir(packRoot);
 	if (await isExists(resolve(packRoot, '.git'))) {
-		output.writeln('repo is already exists, simple check.');
+		log('repo is already exists, simple check.');
 		const branchOut = await getOutputCommand('git', 'branch');
 		const reg = new RegExp('/^\\* (' + escapeRegExpCharacters(gitBranch) + ')$/');
 		const m = reg.exec(branchOut);
@@ -48,15 +47,15 @@ runMain(async () => {
 		}
 		
 	} else {
-		output.writeln('repo is not exists, clone new.');
-		await pipeCommandOut(output, 'git', 'clone', '-b', gitBranch, gitRemote);
+		log('repo is not exists, clone new.');
+		await pipeCommandOut(process.stderr, 'git', 'clone', '-b', gitBranch, gitRemote);
 	}
 	
-	const data = await readPackageInfo(output, packRoot);
+	const data = await readPackageInfo(packRoot);
 	
-	output.writeln('reading registry file...');
+	log('reading registry file...');
 	const remote = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_LIBRARY);
-	output.writeln('registry file loaded.');
+	log('registry file loaded.');
 	const exists = findPackage(remote, data.name);
 	if (exists) {
 		throw new Error('Failed to register new package, same name is already exists. new version use: library-publish-version.');
@@ -71,10 +70,8 @@ runMain(async () => {
 		type: 'library',
 	});
 	
-	output.writeln('update registry file...');
+	log('update registry file...');
 	await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_LIBRARY, remote);
-	
-	output.success('Done.').pause();
 });
 
 function findPackage(remote: IRemotePackageRegistry, name: string) {

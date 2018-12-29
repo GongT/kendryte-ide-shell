@@ -1,11 +1,11 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { unlinkSync } from 'fs';
 import { VSCODE_ROOT } from '../../environment';
+import { log } from '../../library/gulp';
 import { isExistsSync, isLinkSync } from '../../library/misc/fsUtil';
 import { chdir } from '../../library/misc/pathUtil';
 import { removeDirectory } from './removeDir';
 
-export async function reset_asar(output: NodeJS.WritableStream) {
+export async function reset_asar() {
 	chdir(VSCODE_ROOT);
 	if (await isLinkSync('./node_modules')) {
 		unlinkSync('./node_modules');
@@ -16,9 +16,5 @@ export async function reset_asar(output: NodeJS.WritableStream) {
 	if (await isExistsSync('./node_modules.asar.unpacked')) {
 		await removeDirectory('./node_modules.asar.unpacked');
 	}
-	if (output.hasOwnProperty('success')) {
-		(output as OutputStreamControl).success('cleanup ASAR files.');
-	} else {
-		output.write('cleanup ASAR files.\n');
-	}
+	log('cleanup ASAR files.\n');
 }

@@ -1,9 +1,9 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { copy, move } from 'fs-extra';
 import { platform } from 'os';
 import { dirname, resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
 import { getOutputCommand, pipeCommandOut } from '../../library/childprocess/complex';
+import { log } from '../../library/gulp';
 import { IDEJson, SYS_NAME } from '../../library/jsonDefine/releaseRegistry';
 import { calcCompileRootFolderName, getPackageData, mkdirpSync } from '../../library/misc/fsUtil';
 import { chdir, ensureChdir } from '../../library/misc/pathUtil';
@@ -15,21 +15,21 @@ import { releaseFileName, TYPE_ZIP_FILE } from '../codeblocks/zip.name';
 const patchingDir = resolve(RELEASE_ROOT, 'create-patch');
 const {compress} = require('targz');
 
-async function extractVersion(output: OutputStreamControl, zip: string, type: string) {
+async function extractVersion(zip: string, type: string) {
 	const temp = resolve(patchingDir, type + '-unzip');
 	const result = resolve(patchingDir, type);
 	
 	await removeDirectory(temp);
 	await removeDirectory(result);
 	
-	output.writeln('extract ' + zip);
-	await un7zip(output, zip, temp);
-	output.success('extract complete.');
+	log('extract ' + zip);
+	await un7zip(zip, temp);
+	log('extract complete.');
 	
 	const ideDirName = calcCompileRootFolderName();
-	output.writeln(`move ${ideDirName}/resources/app`);
+	log(`move ${ideDirName}/resources/app`);
 	await move(resolve(temp, ideDirName, 'resources/app'), result);
-	output.writeln('ok.');
+	log('ok.');
 	
 	ensureChdir(process.env.TEMP);
 	await removeDirectory(temp);
@@ -37,7 +37,7 @@ async function extractVersion(output: OutputStreamControl, zip: string, type: st
 	return result;
 }
 
-async function downloadAndExtractOldVersion(output: OutputStreamControl, remote: IDEJson) {
+async function downloadAndExtractOldVersion(remote: IDEJson) {
 	const oldZipUrl = remote[SYS_NAME];
 	if (!oldZipUrl) {
 		throw new Error('There is no previous version download url for ' + SYS_NAME + '. That is impossible');
@@ -47,35 +47,35 @@ async function downloadAndExtractOldVersion(output: OutputStreamControl, remote:
 	await removeDirectory(patchingDir);
 	mkdirpSync(patchingDir);
 	
-	output.writeln('download old version.');
-	await downloadFile(output, oldZipUrl, cacheFileName);
-	output.success('downloaded old version.');
+	log('download old version.');
+	await downloadFile(oldZipUrl, cacheFileName);
+	log('downloaded old version.');
 	
-	return await extractVersion(output, cacheFileName, 'old-version');
+	return await extractVersion(cacheFileName, 'old-version');
 }
 
-async function createDiffWithGit(output: OutputStreamControl, remote: IDEJson) {
-	const oldVersion = await downloadAndExtractOldVersion(output, remote);
+async function createDiffWithGit(remote: IDEJson) {
+	const oldVersion = await downloadAndExtractOldVersion(remote);
 	
 	const compileResult = resolve(releaseZipStorageFolder(), releaseFileName(platform(), TYPE_ZIP_FILE));
-	const newVersion = await extractVersion(output, compileResult, 'new-version');
+	const newVersion = await extractVersion(compileResult, 'new-version');
 	
 	chdir(oldVersion);
-	await pipeCommandOut(output, 'git', 'init', '.');
-	await pipeCommandOut(output.screen, 'git', 'add', '.');
-	await pipeCommandOut(output.screen, 'git', 'commit', '-m', 'old version at ' + oldVersion);
+	await pipeCommandOut(process.stderr, 'git', 'init', '.');
+	await pipeCommandOut(process.stderr, 'git', 'add', '.');
+	await pipeCommandOut(process.stderr, 'git', 'commit', '-m', 'old version at ' + oldVersion);
 	
-	output.writeln('move .git folder and clean old dir');
+	log('move .git folder and clean old dir');
 	await move(resolve(oldVersion, '.git'), resolve(newVersion, '.git'));
-	output.writeln('ok');
+	log('ok');
 	
 	chdir(newVersion);
-	await pipeCommandOut(output.screen, 'git', 'add', '.');
+	await pipeCommandOut(process.stderr, 'git', 'add', '.');
 	const fileList = await getOutputCommand('git', 'diff', '--name-only', 'HEAD');
 	
-	output.writeln('copy changed file to dist folder');
-	output.writeln(`  From: ${newVersion}`);
-	output.writeln(`  To  : ${patchingDir}`);
+	log('copy changed file to dist folder');
+	log(`  From: ${newVersion}`);
+	log(`  To  : ${patchingDir}`);
 	const lines = fileList.trim().split(/\n/g).map(e => e.trim()).filter(e => e).filter((file) => {
 		if (/(?:^|\/)node_modules(?:\.asar(?:\.unpacked\/|$)?)?/.test(file)) {
 			return false;
@@ -85,26 +85,25 @@ async function createDiffWithGit(output: OutputStreamControl, remote: IDEJson) {
 	if (lines.length === 0) {
 		throw new Error('Nothing changed.');
 	}
-	output.writeln('---------------------------');
-	output.writeln(lines.join('\n'));
-	output.writeln('---------------------------');
+	log('---------------------------');
+	log(lines.join('\n'));
+	log('---------------------------');
 	for (const file of lines) {
 		const source = resolve(newVersion, file);
 		const target = resolve(patchingDir, file);
 		mkdirpSync(dirname(target));
-		output.write(`copy ${file}\n`);
-		output.screen.write(`copy ${source} => ${target}\n`);
+		log(`copy ${file}\n`);
 		await copy(source, target).catch((e) => {
 			if (e.code === 'ENOENT') { // missing file => deleted from git
-				output.log('ignore missing file: ', e.message);
+				log('ignore missing file: ', e.message);
 				return;
 			} else {
-				output.fail('failed: ' + e.message);
+				log('failed: ' + e.message);
 				throw e;
 			}
 		});
 	}
-	output.writeln('ok.');
+	log('ok.');
 	
 	chdir(patchingDir);
 	await removeDirectory(oldVersion);
@@ -113,10 +112,10 @@ async function createDiffWithGit(output: OutputStreamControl, remote: IDEJson) {
 	return patchingDir;
 }
 
-export async function createPatch(output: OutputStreamControl, remote: IDEJson) {
-	output.writeln('creating patch folder:');
-	const diffFolder = await createDiffWithGit(output, remote);
-	output.success('created patch folder: ' + diffFolder);
+export async function createPatch(remote: IDEJson) {
+	log('creating patch folder:');
+	const diffFolder = await createDiffWithGit(remote);
+	log('created patch folder: ' + diffFolder);
 	
 	const packData = await getPackageData();
 	

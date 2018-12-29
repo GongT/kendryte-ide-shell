@@ -1,5 +1,5 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { platform } from 'os';
+import { log } from '../../library/gulp';
 import {
 	ensurePatchData,
 	getRemoteVersion,
@@ -15,7 +15,6 @@ import { getPackageData } from '../../library/misc/fsUtil';
 import { globalInterruptLog } from '../../library/misc/globalOutput';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
-import { usePretty } from '../../library/misc/usePretty';
 import { checkBaseIsDifferent, checkPatchIsDifferent, ensureBuildComplete } from '../publisher/checkVersions';
 import { createPatch } from '../publisher/createPatch';
 import { publishCompiledResult } from '../publisher/publishCompiledResult';
@@ -28,26 +27,24 @@ whatIsThis(
 const forceOverwride = process.argv.includes('--force');
 
 runMain(async () => {
-	const output = usePretty('publish');
-	
-	await ensureBuildComplete(output);
+	await ensureBuildComplete();
 	
 	globalInterruptLog('HTTP_PROXY=%s', process.env.HTTP_PROXY);
 	
 	const packData = await getPackageData();
 	
-	output.writeln('loading IDE.json from AWS.');
+	log('loading IDE.json from AWS.');
 	let remote = await loadRemoteState().catch((e) => {
 		if (process.argv.includes('-f')) {
-			output.fail('Not able to load state from aws. but --force is set, will create brand new release.');
+			log('Not able to load state from aws. but --force is set, will create brand new release.');
 			return makeNewRemote();
 		} else {
 			throw e;
 		}
 	});
-	output.success('loaded version data.');
+	log('loaded version data.');
 	
-	output.log(
+	log(
 		`  remote version=%s patch=%s\n  local  version=%s patch=%s`,
 		getRemoteVersion(remote, 'main') || 'Null',
 		getRemoteVersion(remote, 'patch') || 'Null',
@@ -56,31 +53,31 @@ runMain(async () => {
 	);
 	
 	if (await checkBaseIsDifferent(remote)) {
-		output.writeln('base version has changed, publish new version.');
+		log('base version has changed, publish new version.');
 		remote.patches = [];
-		await publishCompiledResult(output, remote);
+		await publishCompiledResult(remote);
 	} else if (await checkPatchIsDifferent(remote)) {
-		output.writeln('base version unchanged, but patch version changed, publish new patch.');
-		await createAndPublishPatch(output, remote);
+		log('base version unchanged, but patch version changed, publish new patch.');
+		await createAndPublishPatch(remote);
 		
-		await publishCompiledResult(output, remote);
+		await publishCompiledResult(remote);
 	} else if (forceOverwride) {
-		output.success('Everything is up to date. FORCE UPDATE.');
-		await createAndPublishPatch(output, remote);
-		await publishCompiledResult(output, remote);
+		log('Everything is up to date. FORCE UPDATE.');
+		await createAndPublishPatch(remote);
+		await publishCompiledResult(remote);
 	} else {
-		output.success('Done. Everything is up to date.');
+		log('Done. Everything is up to date.');
 		return;
 	}
 	
-	output.writeln('Done.');
+	log('Done.');
 });
 
-async function createAndPublishPatch(output: OutputStreamControl, remote: IDEJson) {
+async function createAndPublishPatch(remote: IDEJson) {
 	const packageJson = getPackageData();
 	storeRemoteVersion(remote, 'patch', packageJson.patchVersion);
 	
-	const patchFile = await createPatch(output, remote);
+	const patchFile = await createPatch(remote);
 	
 	const key = calcPatchFileAwsKey(platform());
 	const patchUrl = await ExS3.instance().uploadLocalFile(key, patchFile);
@@ -88,6 +85,6 @@ async function createAndPublishPatch(output: OutputStreamControl, remote: IDEJso
 	const data = ensurePatchData(packageJson.patchVersion, remote);
 	data[SYS_NAME].generic = patchUrl;
 	
-	output.writeln('saving IDE.json to AWS.');
+	log('saving IDE.json to AWS.');
 	await saveRemoteState(remote);
 }

@@ -3,7 +3,6 @@ import { resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
 import { log } from '../../library/gulp';
 import { isExists, mkdirpSync, readFile, writeFile } from '../../library/misc/fsUtil';
-import WritableStream = NodeJS.WritableStream;
 
 export function md5(buffer: Buffer|string): string {
 	return createHash('md5').update(buffer).digest('hex');

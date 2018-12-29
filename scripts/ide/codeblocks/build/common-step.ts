@@ -1,4 +1,3 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { readdir } from 'fs-extra';
 import { resolve } from 'path';
 import { ARCH_RELEASE_ROOT } from '../../../environment';
@@ -35,24 +34,24 @@ export async function yarnInstall() {
 	if (await isExists(integrityFile)) {
 		await unlink(integrityFile);
 	}
-	await installDependency( ARCH_RELEASE_ROOT);
+	await installDependency(ARCH_RELEASE_ROOT);
 	log('dependencies installed.' + timeInstall());
 }
 
-export async function downloadElectron(output: OutputStreamControl) {
+export async function downloadElectron() {
 	chdir(ARCH_RELEASE_ROOT);
-	output.write(`installing electron...\n`);
+	log(`installing electron...`);
 	showElectronNoticeInChina();
 	
-	await pipeCommandOut(output, 'node', ...gulpCommands(), 'electron-x64');
-	output.success('electron installed.');
+	await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), 'electron-x64');
+	log('electron installed.');
 }
 
-export async function downloadBuiltinExtensions(output: OutputStreamControl) {
+export async function downloadBuiltinExtensions() {
 	chdir(ARCH_RELEASE_ROOT);
-	output.write(`installing builtin extension...\n`);
-	await pipeCommandOut(output, 'node', 'build/lib/builtInExtensions.js');
-	output.success('builtin extension installed.');
+	log(`installing builtin extension...\n`);
+	await pipeCommandOut(process.stderr, 'node', 'build/lib/builtInExtensions.js');
+	log('builtin extension installed.');
 }
 
 export async function deleteCompileCaches() {

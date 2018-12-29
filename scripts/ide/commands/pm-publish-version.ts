@@ -1,7 +1,7 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { lstat, readdir } from 'fs-extra';
 import { basename, resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
+import { log } from '../../library/gulp';
 import {
 	ICompileOptions,
 	IPackageVersionDetail,
@@ -13,7 +13,6 @@ import { isExists } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
-import { usePretty } from '../../library/misc/usePretty';
 import { OBJKEY_PACKAGE_MANAGER_EXAMPLE, OBJKEY_PACKAGE_MANAGER_LIBRARY } from '../../library/releaseInfo/s3Keys';
 import { removeDirectory } from '../codeblocks/removeDir';
 import { readPackageInfo } from '../package-manager/packageInfo';
@@ -46,7 +45,6 @@ runMain(async () => {
 		}
 		throw new Error('At least 1 argument required.');
 	}
-	const output = usePretty('library-publish-version');
 	
 	// const TODO: [string, IRemotePackageInfo, ICompileOptions][] = [];
 	const remoteLib = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_LIBRARY);
@@ -68,12 +66,12 @@ runMain(async () => {
 			throw new Error('Dir ' + packRoot + ' does not exists.');
 		}
 		
-		const data = await readPackageInfo(output, packRoot);
+		const data = await readPackageInfo(packRoot);
 		const remoteInfo = findRegisterPackage(switchRemote(data), data);
 		
-		const zipFile = await createTarball(output, packRoot);
+		const zipFile = await createTarball(packRoot);
 		
-		output.writeln(data.name + ' : ' + data.version);
+		log(data.name + ' : ' + data.version);
 		
 		const key = calcLibraryFileAwsKey(data);
 		const downloadUrl = await ExS3.instance().uploadLocalFile(key, zipFile);
@@ -81,14 +79,14 @@ runMain(async () => {
 		const versionInfo = findCreateVersion(remoteInfo, data.version);
 		versionInfo.downloadUrl = downloadUrl;
 		versionInfo.releaseDate = (new Date()).toUTCString();
-		output.success(data.name + ': OK!');
+		log(data.name + ': OK!');
 	}
 	
-	output.writeln('upload registry...');
+	log('upload registry...');
 	await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_LIBRARY, remoteLib);
 	await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_EXAMPLE, remoteExp);
 	
-	output.success('Done.').pause();
+	log('Done.').pause();
 });
 
 function findRegisterPackage(remote: IRemotePackageRegistry, data: ICompileOptions): IRemotePackageInfo {
@@ -123,13 +121,13 @@ function findCreateVersion(packInfo: IRemotePackageInfo, version: string): IPack
 	return ret;
 }
 
-async function createTarball(output: OutputStreamControl, packRoot: string) {
+async function createTarball(packRoot: string) {
 	const name = basename(packRoot, '.git');
-	output.writeln('create tarball for ' + name);
+	log('create tarball for ' + name);
 	const tempFile = resolve(process.env.TEMP, `${name}.tgz`);
 	await removeDirectory(tempFile);
 	await new Promise((resolve, reject) => {
-		output.writeln('create tarball from ' + process.cwd());
+		log('create tarball from ' + process.cwd());
 		const wrappedCallback = (err: Error) => err? reject(err) : resolve();
 		
 		const config = {
@@ -152,7 +150,7 @@ async function createTarball(output: OutputStreamControl, packRoot: string) {
 		chdir(packRoot);
 		compress(config, wrappedCallback);
 	});
-	output.writeln('created file: ' + tempFile);
+	log('created file: ' + tempFile);
 	return tempFile;
 }
 
