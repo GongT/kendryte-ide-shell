@@ -20,6 +20,6 @@ export async function packExtensionModules(output: OutputStreamControl, {targetR
 		);
 		output.writeln('    packed ' + extName + ' deps.');
 		
-		await removeDirectory(resolve(resultDir, 'node_modules'), output);
+		await removeDirectory(resolve(resultDir, 'node_modules'));
 	}
 }

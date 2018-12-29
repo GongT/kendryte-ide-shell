@@ -21,8 +21,8 @@ const commonArgs = [
 ];
 const outputArgs = [
 	'-bso1', // standard output messages -> stdout
-	'-bse1', // error messages -> stdout
-	'-bsp2', // progress information -> stderr
+	'-bse2', // error messages -> stderr
+	'-bsp0', // progress information -> mute
 ];
 let invoke = normalOutput;
 if (!isWin) {

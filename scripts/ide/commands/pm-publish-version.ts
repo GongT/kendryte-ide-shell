@@ -127,7 +127,7 @@ async function createTarball(output: OutputStreamControl, packRoot: string) {
 	const name = basename(packRoot, '.git');
 	output.writeln('create tarball for ' + name);
 	const tempFile = resolve(process.env.TEMP, `${name}.tgz`);
-	await removeDirectory(tempFile, output);
+	await removeDirectory(tempFile);
 	await new Promise((resolve, reject) => {
 		output.writeln('create tarball from ' + process.cwd());
 		const wrappedCallback = (err: Error) => err? reject(err) : resolve();

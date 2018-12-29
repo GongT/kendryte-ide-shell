@@ -19,7 +19,7 @@ runMain(async () => {
 	chdir(VSCODE_ROOT);
 	
 	output.writeln('checking exists upstream working tree...');
-	await removeDirectory('.release/follow-upstream', output);
+	await removeDirectory('.release/follow-upstream');
 	await pipeCommandOut(output, 'git', 'worktree', 'prune');
 	output.success('cleared upstream working tree...');
 	
@@ -42,7 +42,7 @@ runMain(async () => {
 	}
 	
 	chdir(RELEASE_ROOT);
-	await removeDirectory(followBranchDir, output);
+	await removeDirectory(followBranchDir);
 	
 	const upstreamStorage = process.env.MICROSOFT_VSCODE_ROOT || resolve(VSCODE_ROOT, '..', 'MicrosoftVSCode');
 	if (await isExists(upstreamStorage)) {
@@ -68,7 +68,7 @@ runMain(async () => {
 	output.writeln('extracting source code...');
 	const untar = extract(followBranchDir);
 	await pipeCommandBoth(untar, output, 'git', 'archive', '--format', 'tar', 'origin/master');
-	await removeDirectory(resolve(followBranchDir, '.git'), output);
+	await removeDirectory(resolve(followBranchDir, '.git'));
 	await writeFile(resolve(followBranchDir, '.git'), gitFileData);
 	output.success('extracted source code.');
 	
@@ -88,7 +88,7 @@ runMain(async () => {
 	
 	output.writeln('cleaning...');
 	chdir(RELEASE_ROOT);
-	await removeDirectory('.release/follow-upstream', output);
+	await removeDirectory('.release/follow-upstream');
 	await pipeCommandOut(output, 'git', 'worktree', 'prune');
 	
 	output.success('Done.');

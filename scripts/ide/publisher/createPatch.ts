@@ -19,8 +19,8 @@ async function extractVersion(output: OutputStreamControl, zip: string, type: st
 	const temp = resolve(patchingDir, type + '-unzip');
 	const result = resolve(patchingDir, type);
 	
-	await removeDirectory(temp, output);
-	await removeDirectory(result, output);
+	await removeDirectory(temp);
+	await removeDirectory(result);
 	
 	output.writeln('extract ' + zip);
 	await un7zip(output, zip, temp);
@@ -32,7 +32,7 @@ async function extractVersion(output: OutputStreamControl, zip: string, type: st
 	output.writeln('ok.');
 	
 	ensureChdir(process.env.TEMP);
-	await removeDirectory(temp, output);
+	await removeDirectory(temp);
 	
 	return result;
 }
@@ -44,7 +44,7 @@ async function downloadAndExtractOldVersion(output: OutputStreamControl, remote:
 	}
 	const cacheFileName = createTempPath(oldZipUrl);
 	
-	await removeDirectory(patchingDir, output);
+	await removeDirectory(patchingDir);
 	mkdirpSync(patchingDir);
 	
 	output.writeln('download old version.');
@@ -107,8 +107,8 @@ async function createDiffWithGit(output: OutputStreamControl, remote: IDEJson) {
 	output.writeln('ok.');
 	
 	chdir(patchingDir);
-	await removeDirectory(oldVersion, output);
-	await removeDirectory(newVersion, output);
+	await removeDirectory(oldVersion);
+	await removeDirectory(newVersion);
 	
 	return patchingDir;
 }

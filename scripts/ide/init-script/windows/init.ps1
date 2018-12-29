@@ -21,7 +21,8 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	writeCmdFile node "
 		set VSCODE_ROOT=$VSCODE_ROOT
 		call set XXXXXX=%cd:%VSCODE_ROOT%=%
-		IF x%XXXXXX%==x%VSCODE_ROOT% (
+		call set YYYYYY=%cd:%RELEASE_ROOT%=%
+		IF x%XXXXXX%%YYYYYY%==x%VSCODE_ROOT%%RELEASE_ROOT% (
 			set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
 			set PATH=$NODEJS_INSTALL\node-latest\bin;%PATH%
 			echo Using node latest 1>&2
@@ -35,16 +36,16 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	writeScriptFile node "
 		`$env:PRIVATE_BINS='$PRIVATE_BINS'
 		`$env:VSCODE_ROOT='$VSCODE_ROOT'
-		if ( `$pwd -like "`${VSCODE_ROOT}*" ) {
-			`$env:NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
-			`$NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
-			`$PATH='$NODEJS_INSTALL\node-latest\bin;`$PATH'
-			Write-Error Using node latest
-		} else {
+		if ( ( `$pwd -like "`${VSCODE_ROOT}*" ) -Or ( `$pwd -like "`${RELEASE_ROOT}*" ) ) {
 			`$env:NODEJS='$NODEJS_INSTALL\node8\bin\node.exe'
 			`$NODEJS='$NODEJS_INSTALL\node8\bin\node.exe'
 			`$PATH='$NODEJS_INSTALL\node8\bin;`$PATH'
-			Write-Error Using node 8
+			Write-Error Using node 8 in `$(Get-Location)
+		} else {
+			`$env:NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
+			`$NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
+			`$PATH='$NODEJS_INSTALL\node-latest\bin;`$PATH'
+			Write-Error Using node latest in `$(Get-Location)
 		}
 		`$NODEJS `$args
 	"

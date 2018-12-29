@@ -28,7 +28,7 @@ runMain(async () => {
 	findAnyDirToDelete(yarnCache, leafs);
 	for (const dir of leafs) {
 		if (!existsSync(resolve(dir, '.yarn-metadata.json'))) {
-			await removeDirectory(dir, logger);
+			await removeDirectory(dir);
 		}
 	}
 });

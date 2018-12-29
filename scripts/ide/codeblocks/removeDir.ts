@@ -1,52 +1,35 @@
-import { rmdir as rmdirAsync, unlink as unlinkAsync } from 'fs';
-import * as rimraf from 'rimraf';
-import { isWin } from '../../environment';
-import { isExists } from '../../library/misc/fsUtil';
-import { globalSuccessMessage } from '../../library/misc/globalOutput';
+import rimraf = require('rimraf');
+import { pathExists } from 'fs-extra';
+import { isAbsolute, normalize } from 'path';
+import { log } from '../../library/gulp';
 import { timeout } from '../../library/misc/timeUtil';
 
-function wrapFs(of: Function, output: NodeJS.WritableStream): Function {
-	if (output.hasOwnProperty('screen')) {
-		output = (output as any).screen;
+export async function removeDirectory(path: string) {
+	path = normalize(path);
+	if (!isAbsolute(path)) {
+		throw new Error('removeDirectory not absolute.');
 	}
-	return ((...args: string[]) => {
-		output.write(`${of.name}: ${args[0]}\n`);
-		return of.apply(undefined, args);
-	}) as any;
-}
-
-export async function removeDirectory(path: string, output: NodeJS.WritableStream, verbose = true): Promise<void> {
-	output.write(`removing directory: ${path}...\n`);
-	
 	if (process.cwd().indexOf(path) === 0) {
-		output.write(`  Cwd: ${process.cwd()}\n`);
-		return Promise.reject(new Error('No way to remove current directory.'));
+		throw new Error('No way to remove current directory.');
 	}
 	
-	if (!await isExists(path)) {
-		output.write(`never exists...\n`);
+	if (!await pathExists(path)) {
 		return;
 	}
+	log(`Removing directory: ${path}...`);
 	
 	await new Promise<void>((resolve, reject) => {
-		const wrappedCallback = (err: Error) => err? reject(err) : resolve();
+		const wrappedCallback = (err: Error) => {
+			return err? reject(err) : resolve();
+		};
 		
 		rimraf(path, {
 			maxBusyTries: 20,
 			emfileWait: true,
 			disableGlob: true,
-			unlink: wrapFs(unlinkAsync, output) as typeof unlinkAsync,
-			rmdir: wrapFs(rmdirAsync, output) as typeof rmdirAsync,
 		}, wrappedCallback);
 	});
 	
-	output.write(`remove complete. delay for OS.\n`);
-	
-	if (isWin) {
-		await timeout(5000);
-	} else {
-		await timeout(300);
-	}
-	
-	globalSuccessMessage(`remove directory finish.`);
+	log('  - remove complete.');
+	await timeout(1000);
 }

@@ -11,8 +11,7 @@ setSystemVar 'VSCODE_ROOT' (resolvePath $WORKSPACE_ROOT kendryte-ide)
 setSystemVar 'BUILD_ROOT' (resolvePath $WORKSPACE_ROOT build)
 setSystemVar 'MY_SCRIPT_ROOT_BUILT' (resolvePath $BUILD_ROOT MyScriptBuildResult/ide)
 setSystemVar 'DOWNLOAD_PATH' (resolvePath $BUILD_ROOT download)
-setSystemVar 'RELEASE_ROOT' (resolvePath $BUILD_ROOT release)
-setSystemVar 'ARCH_RELEASE_ROOT' (resolvePath $RELEASE_ROOT kendryte-ide-release-x64)
+setSystemVar 'RELEASE_ROOT' (resolvePath $BUILD_ROOT ide-main-release)
 setSystemVar 'FAKE_HOME' (resolvePath $BUILD_ROOT FAKE_HOME)
 setSystemVar 'HOME' $FAKE_HOME
 

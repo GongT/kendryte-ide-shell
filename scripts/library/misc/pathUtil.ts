@@ -1,7 +1,7 @@
+import { mkdirpSync } from 'fs-extra';
 import { isAbsolute, normalize, resolve } from 'path';
 import { resolve as _resolve } from 'url';
 import { isWin, RELEASE_ROOT } from '../../environment';
-import { mkdirpSync } from './fsUtil';
 
 export function chdir(d: string) {
 	d = normalize(d);

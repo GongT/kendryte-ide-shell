@@ -13,7 +13,7 @@ export async function prepareLinkForDev(output: NodeJS.WritableStream) {
 		const source = resolve(sourceRoot, extName);
 		const target = resolve(targetRoot, extName);
 		
-		await removeDirectory(target, output);
+		await removeDirectory(target);
 		
 		output.write(`   copy items from ${source} to ${target}\n`);
 		await mkdirp(target);
@@ -29,7 +29,7 @@ export async function prepareLinkForDev(output: NodeJS.WritableStream) {
 	
 	const nmTarget = resolve(targetRoot, 'node_modules');
 	if (await isExists(nmTarget)) {
-		await removeDirectory(targetRoot, output);
+		await removeDirectory(targetRoot);
 	}
 	await symlink(
 		relative(targetRoot, resolve(sourceRoot, 'node_modules')),

@@ -1,11 +1,11 @@
-import { OutputStreamControl } from '@gongt/stillalive';
 import { createHash } from 'crypto';
 import { createWriteStream } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
 import { extract } from 'tar-fs';
-import { getOutputCommand, muteCommandOut, pipeCommandBoth } from '../../../library/childprocess/complex';
 import { ARCH_RELEASE_ROOT, RELEASE_ROOT, VSCODE_ROOT } from '../../../environment';
+import { getOutputCommand, muteCommandOut, pipeCommandBoth } from '../../../library/childprocess/complex';
+import { log } from '../../../library/gulp';
 import { isExists, rename } from '../../../library/misc/fsUtil';
 import { chdir } from '../../../library/misc/pathUtil';
 import { streamPromise } from '../../../library/misc/streamUtil';
@@ -13,25 +13,25 @@ import { timing } from '../../../library/misc/timeUtil';
 import { removeDirectory } from '../removeDir';
 import { compareHash, saveHash } from '../statusHash';
 
-export async function extractSourceCodeIfNeed(output: OutputStreamControl) {
+export async function extractSourceCodeIfNeed() {
 	chdir(VSCODE_ROOT);
 	const timeOut = timing();
 	
-	output.writeln('creating source code snapshot...\n');
-	const hash = await createSourceSnapshot(output);
-	output.success('   code hash: ' + hash);
+	log('creating source code snapshot...');
+	const hash = await createSourceSnapshot();
+	log('   code hash: ' + hash);
 	
-	if (await compareHash('source-code', hash, output)) {
-		output.success('source code not changed.' + timeOut());
+	if (await compareHash('source-code', hash)) {
+		log('source code not changed.' + timeOut());
 	} else {
-		output.writeln('source code has changed, making new directory.\n');
-		await recreateSourceCodes(output);
-		await saveHash('source-code', hash, output);
-		output.success('complete action on create source:' + timeOut());
+		log('source code has changed, making new directory.');
+		await recreateSourceCodes();
+		await saveHash('source-code', hash);
+		log('complete action on create source:' + timeOut());
 	}
 }
 
-async function createSourceSnapshot(output: OutputStreamControl) {
+async function createSourceSnapshot() {
 	const hasher = createHash('md5');
 	let md5 = '';
 	hasher.on('data', (data: Buffer) => {
@@ -47,65 +47,65 @@ async function createSourceSnapshot(output: OutputStreamControl) {
 	multiplex.pipe(createWriteStream(snapshotFile));
 	multiplex.pipe(hasher);
 	
-	await writeSourceCodeStream(multiplex, output);
+	await writeSourceCodeStream(multiplex);
 	await streamPromise(multiplex);
 	await streamPromise(hasher);
 	
 	return md5;
 }
 
-async function recreateSourceCodes(output: OutputStreamControl) {
+async function recreateSourceCodes() {
 	const node_modules = resolve(ARCH_RELEASE_ROOT, 'node_modules');
 	const temp_node_modules = resolve(RELEASE_ROOT, 'saved_node_modules');
 	
 	if (await isExists(ARCH_RELEASE_ROOT)) {
-		output.writeln('old source code exists.');
+		log('old source code exists.');
 		if (await isExists(node_modules)) {
-			output.writeln('old node_modules exists, move it out.');
+			log('old node_modules exists, move it out.');
 			await rename(node_modules, temp_node_modules);
 		}
-		output.writeln('remove old source code...');
-		await removeDirectory(ARCH_RELEASE_ROOT, output, false).catch((e) => {
-			output.fail(e.message);
-			output.fail(`Did you opened any file in ${ARCH_RELEASE_ROOT}?`);
+		log('remove old source code...');
+		await removeDirectory(ARCH_RELEASE_ROOT).catch((e) => {
+			log(e.message);
+			log(`Did you opened any file in ${ARCH_RELEASE_ROOT}?`);
 			throw e;
 		});
-		output.success('dist directory clean.');
+		log('dist directory clean.');
 	} else {
-		output.writeln('no old source code exists.');
+		log('no old source code exists.');
 	}
 	
-	output.writeln('writing source code:');
+	log('writing source code:');
 	const untar = extract(ARCH_RELEASE_ROOT);
-	await writeSourceCodeStream(untar, output);
-	output.success('source code directory created.');
+	await writeSourceCodeStream(untar);
+	log('source code directory created.');
 	
 	if (await isExists(temp_node_modules)) {
-		output.writeln('move old node_modules back...');
+		log('move old node_modules back...');
 		await rename(temp_node_modules, node_modules);
 	}
 	
 	const gypTemp = resolve(process.env.HOME, '.node-gyp');
 	if (await isExists(gypTemp)) {
-		output.writeln('remove node-gyp at HOME...');
-		await removeDirectory(gypTemp, output);
+		log('remove node-gyp at HOME...');
+		await removeDirectory(gypTemp);
 	}
 }
 
-async function writeSourceCodeStream(writeTo: NodeJS.WritableStream, output: OutputStreamControl) {
-	const version = await getCurrentVersion(output);
+async function writeSourceCodeStream(writeTo: NodeJS.WritableStream) {
+	const version = await getCurrentVersion();
 	
-	output.writeln('processing source code tarball...');
-	await pipeCommandBoth(writeTo, output, 'git', 'archive', '--format', 'tar', version);
+	log('processing source code tarball...');
+	await pipeCommandBoth(writeTo, process.stderr, 'git', 'archive', '--format', 'tar', version);
 }
 
 let knownVersion: string;
 
-async function getCurrentVersion(output: OutputStreamControl) {
+async function getCurrentVersion() {
 	if (knownVersion) {
 		return knownVersion;
 	}
-	output.writeln(`Checking git status.`);
+	log(`Checking git status.`);
 	await muteCommandOut('git', 'add', '.');
 	const result = await getOutputCommand('git', 'status');
 	
@@ -115,6 +115,6 @@ async function getCurrentVersion(output: OutputStreamControl) {
 	} else {
 		currentVersion = await getOutputCommand('git', 'stash', 'create');
 	}
-	output.success(`Git Current Version: ${currentVersion}.`);
+	log(`Git Current Version: ${currentVersion}.`);
 	return knownVersion = currentVersion;
 }

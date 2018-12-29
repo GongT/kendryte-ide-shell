@@ -14,7 +14,7 @@ export async function reset_asar(output: NodeJS.WritableStream) {
 		unlinkSync('./node_modules.asar');
 	}
 	if (await isExistsSync('./node_modules.asar.unpacked')) {
-		await removeDirectory('./node_modules.asar.unpacked', output);
+		await removeDirectory('./node_modules.asar.unpacked');
 	}
 	if (output.hasOwnProperty('success')) {
 		(output as OutputStreamControl).success('cleanup ASAR files.');

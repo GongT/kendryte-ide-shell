@@ -2,7 +2,7 @@ import { OutputStreamControl } from '@gongt/stillalive';
 import { createWriteStream } from 'fs';
 import { mkdirp } from 'fs-extra';
 import { dirname, extname, resolve } from 'path';
-import { muteCommandOut, pipeCommandBoth } from '../../library/childprocess/complex';
+import { muteCommandOut, pipeCommandOut } from '../../library/childprocess/complex';
 import { promiseToBool } from '../../library/misc/asyncUtil';
 import { isExists, rename } from '../../library/misc/fsUtil';
 import { streamPromise } from '../../library/misc/streamUtil';
@@ -41,7 +41,7 @@ export async function downloadFile(output: OutputStreamControl, url: string, loc
 	const saveTo = createWriteStream(localSave + '.partial', {autoClose: true});
 	if (hasWget) {
 		output.writeln('Download engine: native wget');
-		await pipeCommandBoth(saveTo, output.screen, 'wget', '-O', '-', '--progress=bar:force', '--', url);
+		await pipeCommandOut(saveTo, 'wget', '-O', '-', '--', url);
 		await streamPromise(saveTo);
 	} else {
 		output.writeln('Download engine: node request');

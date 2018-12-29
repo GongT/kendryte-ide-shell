@@ -69,7 +69,7 @@ export async function packWindows(output: OutputStreamControl) {
 		output.success('dummy git repo created.');
 	}
 	const huskyHooks = resolve(devDepsDir, '.git', 'hooks');
-	await removeDirectory(huskyHooks, output);
+	await removeDirectory(huskyHooks);
 	await mkdir(huskyHooks);
 	
 	/// devDependencies - install
