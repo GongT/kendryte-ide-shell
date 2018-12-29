@@ -4,7 +4,7 @@
 		"start": "yarn workspace shell run start",
 		"watch": "yarn workspace scripts run gulp watch",
 		"script": "yarn workspace scripts run gulp",
-		"preinstall": "node build/MyScriptBuildResult/npm/preinstall.js",
+		"preinstall": "node pre-install-loader.js",
 		"postinstall": "tsc -p scripts && node build/MyScriptBuildResult/npm/postinstall.js"
 	},
 	"workspaces": [
