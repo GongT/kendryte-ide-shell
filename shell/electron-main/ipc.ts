@@ -233,7 +233,8 @@ export async function ensureIpcServer() {
 			reject(e);
 		});
 		
-		pipe.listen(ipcPipe, () => {
+		const hp = ipcPipe.split(':');
+		pipe.listen(parseInt(hp[1]), hp[0], () => {
 			resolve();
 		});
 	});
