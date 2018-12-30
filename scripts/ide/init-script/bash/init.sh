@@ -171,7 +171,11 @@ writeShFile git "
 "$PRIVATE_BINS/git" --version
 
 if ! findCommand "7z" &>/dev/null ; then
-	die "p7zip is not installed on your system, install it first."
+	if [ -z "$SYSTEM_COLLECTIONID" ]; then
+		die "p7zip is not installed on your system, install it first."
+	else
+		sudo apt-get install p7zip-full
+	fi
 fi
 writeShFile 7z "
 	'$(findCommand "7z")' $_PASSARG
