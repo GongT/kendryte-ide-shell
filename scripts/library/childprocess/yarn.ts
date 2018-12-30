@@ -5,6 +5,7 @@ import { log } from '../gulp';
 import { useWriteFileStream } from '../misc/myBuildSystem';
 import { chdir } from '../misc/pathUtil';
 import { pipeCommandOut } from './complex';
+import { shellExec } from './simple';
 
 export interface IInstallOpt {
 	args?: string[]
@@ -29,6 +30,12 @@ export async function yarn(cmd: string, ...args: string[]) {
 	if (existsSync('yarn-error.log')) {
 		unlinkSync('yarn-error.log');
 	}
+	shellExec('env');
+	shellExec('whereis', 'node');
+	shellExec('pwd');
+	console.error('VSCODE_ROOT=', VSCODE_ROOT);
+	console.error('RELEASE_ROOT=', RELEASE_ROOT);
+	
 	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
 	const logTarget = process.env.SYSTEM_COLLECTIONID? process.stderr : useWriteFileStream('logs/yarn-install.log');
 	await pipeCommandOut(logTarget, 'yarn', cmd, '--verbose', ...args).catch((e) => {
