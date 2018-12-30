@@ -12,7 +12,7 @@ function realAwsUpload() {
 	const matches = platforms.map((platform) => {
 		return resolvePath(BUILD_ARTIFACTS_DIR, updaterFileName(platform));
 	});
-	return gulp.src(matches, {base: BUILD_ARTIFACTS_DIR, buffer: false})
+	return gulp.src(matches, {base: BUILD_ARTIFACTS_DIR, buffer: true})
 	           .pipe(gulpS3.dest({base: AWS_RELEASE_UPDATER_PATH}))
 	           .pipe(debug({title: 'uploadComplete:'}));
 }

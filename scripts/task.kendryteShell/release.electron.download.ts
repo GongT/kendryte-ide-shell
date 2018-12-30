@@ -1,9 +1,10 @@
-import { existsSync, renameSync } from 'fs';
-import { mkdirpSync } from 'fs-extra';
+import { existsSync } from 'fs';
+import { rename } from 'fs-extra';
 import { basename, join } from 'path';
+import * as File from 'vinyl';
 import { DOWNLOAD_PATH, isCI } from '../environment';
 import { download, everyPlatform, gulp, log } from '../library/gulp';
-import { resolvePath } from '../library/misc/pathUtil';
+import { simpleTransformStream } from '../library/gulp/transform';
 import { UPDATER_ELECTRON_VERSION } from '../library/releaseInfo/electronVersion';
 
 function buildElectronUrl(platform: string) {
@@ -29,13 +30,14 @@ export const downloadTask = everyPlatform('electron:download', (platform) => {
 	if (!existsSync(saveTo)) {
 		log.info('download electron from %s to %s', url, saveTo);
 		log('');
-		return download(url)
-			.pipe(gulp.dest(DOWNLOAD_PATH + '.tmp'))
-			.on('end', () => {
-				const temp = resolvePath(DOWNLOAD_PATH + '.tmp', basename(saveTo));
-				mkdirpSync(DOWNLOAD_PATH);
-				renameSync(temp, saveTo);
-			});
+		return download({
+			url,
+			file: basename(saveTo) + '.tmp',
+		}).pipe(gulp.dest(DOWNLOAD_PATH))
+		  .pipe(simpleTransformStream(async function renameDownloadedTemp(file: File) {
+			  await rename(file.path, saveTo);
+			  return file;
+		  }));
 	} else {
 		log.info('electron exists: %s', saveTo);
 	}

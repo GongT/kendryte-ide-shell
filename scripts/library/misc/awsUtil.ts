@@ -1,5 +1,6 @@
 import { S3 } from 'aws-sdk';
 import { createReadStream } from 'fs';
+import { log } from '../gulp';
 import { ICompileOptions } from '../jsonDefine/packageRegistry';
 import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../releaseInfo/s3Keys';
 import { ProgressPromise } from './asyncUtil';
@@ -196,6 +197,7 @@ export class ExS3 implements AWSLogger {
 		
 		if (hash) {
 			const hashValue = await hashPromise;
+			log('upload complete: %s', hashValue);
 			await this.putText(key + '.md5', hashValue);
 		}
 		
