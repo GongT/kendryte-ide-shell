@@ -38,3 +38,10 @@ Write-Host " > The anwser is 42 <" -ForegroundColor Green
 [console]::BufferWidth = [console]::WindowWidth
 
 cd $VSCODE_ROOT # required last item
+
+if( $args.Count -ne 0 ) {
+	$e=$args.Count - 1
+	$cmd=$args[1..$e]
+	@ $args[0] @cmd
+	exit $LastExitCode
+}

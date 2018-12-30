@@ -175,8 +175,12 @@ if ! findCommand "7z" &>/dev/null ; then
 	if [ -z "$SYSTEM_COLLECTIONID" ]; then
 		die "p7zip is not installed on your system, install it first."
 	else
-		sudo apt-get install p7zip-full \
-			bash wget curl tar findutils git make g++ libc++-dev libstdc++-5-dev libxss-dev gconf2 libx11-dev libxkbfile-dev
+		if [ "$SYSTEM" = "mac" ]; then
+			echo is mac
+		else
+			sudo apt-get install p7zip-full \
+				bash wget curl tar findutils git make g++ libc++-dev libstdc++-5-dev libxss-dev gconf2 libx11-dev libxkbfile-dev
+		fi
 	fi
 fi
 writeShFile 7z "
