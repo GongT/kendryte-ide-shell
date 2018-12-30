@@ -40,5 +40,6 @@ if [ $# -eq 0 ]; then
 else
 	export BS_RUN_SCRIPT=YES
 	source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/ide/init-script/bash/rc.sh"
+	
 	"$@" || die "Command failed with error $RET"
 fi

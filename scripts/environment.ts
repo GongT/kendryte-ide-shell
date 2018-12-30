@@ -1,6 +1,5 @@
 import { platform } from 'os';
 import { normalize, resolve } from 'path';
-import { log } from './library/gulp';
 
 export const isCI = !!process.env.SYSTEM_COLLECTIONID; // azure
 export const isWin = platform() === 'win32';
@@ -67,7 +66,7 @@ if (platform() === 'win32') {
 }
 export const PATH = process.env.PATH = PATHS.map(normalize).join(sp);
 if (isCI) {
-	log('PATH=%s', process.env.PATH);
+	console.error('PATH=%s', process.env.PATH);
 }
 
 if (process.env.KENDRYTE_PROXY) {
