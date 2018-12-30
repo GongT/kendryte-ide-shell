@@ -31,11 +31,6 @@ export async function yarn(cmd: string, ...args: string[]) {
 	if (existsSync('yarn-error.log')) {
 		unlinkSync('yarn-error.log');
 	}
-	shellExec('env');
-	shellExec('whereis', 'node');
-	shellExec('pwd');
-	console.error('VSCODE_ROOT=', VSCODE_ROOT);
-	console.error('RELEASE_ROOT=', RELEASE_ROOT);
 	
 	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
 	const logTarget = process.env.SYSTEM_COLLECTIONID? process.stderr : useWriteFileStream('logs/yarn-install.log');
