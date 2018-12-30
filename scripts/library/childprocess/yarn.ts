@@ -1,4 +1,4 @@
-import { createWriteStream, existsSync, unlinkSync } from 'fs';
+import { createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
 import { log } from '../gulp';
@@ -33,14 +33,26 @@ export async function yarn(cmd: string, ...args: string[]) {
 	const tun = new PassThrough();
 	tun.pipe(useWriteFileStream('logs/yarn-install.log'));
 	await pipeCommandOut(tun, 'yarn', cmd, '--verbose', ...args).catch((e) => {
-		log('yarn %s failed. check log file yarn-install.log and yarn-error.log, find them at %s', cmd, process.cwd());
+		showError(cmd, 'yarn-install.log');
 		throw e;
 	});
 	log(`yarn ${cmd} success.`);
 	if (existsSync('yarn-error.log')) {
-		log('yarn-error.log is exists!');
-		log('Failed: yarn install failed, see yarn-install.log And yarn-error.log\n');
+		showError(cmd, 'yarn-error.log');
 		throw new Error(`yarn install failed, please see ${resolve(process.cwd(), 'yarn-error.log')}`);
 	}
 	log(`yarn ${cmd} success again.`);
+}
+
+function showError(cmd: string, logF: string) {
+	log('yarn %s failed. check log file yarn-install.log and yarn-error.log, find them at %s', cmd, process.cwd());
+	if (process.env.SYSTEM_COLLECTIONID) {
+		log('SYSTEM_COLLECTIONID exists');
+		if (existsSync(logF)) {
+			process.stderr.write(readFileSync(logF));
+		} else {
+			log('!!! log file %s not exists', logF);
+		}
+		log('yarn %s failed. check log file yarn-install.log and yarn-error.log, find them at %s', cmd, process.cwd());
+	}
 }
