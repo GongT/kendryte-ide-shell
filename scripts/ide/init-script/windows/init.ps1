@@ -165,7 +165,8 @@ writeScriptFile yarn @"
 if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 	echo "init scripts..."
 	cd $WORKSPACE_ROOT
-	yarn --silent --no-bin-links
+	yarn
+	yarn global add node-gyp
 	cd scripts
 	tsc -p .
 }
