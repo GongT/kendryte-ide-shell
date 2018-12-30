@@ -1,6 +1,7 @@
 import { createReadStream, createWriteStream, ftruncateSync, openSync, ReadStream, WriteStream } from 'fs';
 import { resolve } from 'path';
 import { BUILD_ROOT } from '../../environment';
+import { log } from '../gulp';
 import { mkdirpSync } from './fsUtil';
 import { currentCommand, WIT } from './help';
 import { streamPromise } from './streamUtil';
@@ -15,10 +16,6 @@ const disposeList: DisposeFunction[] = [];
 export function mainDispose(dispose: DisposeFunction) {
 	disposeList.push(dispose);
 }
-
-let finalPromise: Promise<void|number> = new Promise((resolve, reject) => {
-	setImmediate(resolve);
-});
 
 const knownProxyVar = [
 	'HTTP_PROXY',
@@ -49,44 +46,47 @@ export function preventProxy() {
 	}
 }
 
+const jobQueue: Function[] = [];
+
 export function runMain(main: () => Promise<void|number>) {
 	if (WIT()) {
 		return;
 	}
-	const p = finalPromise = finalPromise.then(main);
-	p.then((exitCode) => {
-		if (exitCode) {
-			return exitCode;
-		}
-		return 0;
-	}, async (e) => {
-		if (e.__programError) {
-			console.error(
-				'\n\n\x1B[38;5;9mCommand Failed: child process die\n\t%s\x1B[0m\n  Working Directory: %s\n  Program is:\n%s',
-				e.message,
-				e.__cwd,
-				e.__program.replace(/^/mg, '    '),
-			);
-		} else {
-			console.error('\n\n\x1B[38;5;9mCommand Failed: %s\x1B[0m', e? e.stack || e.message || e : 'Unknown error');
-		}
-		return 1;
-	}).then(async (quit) => {
-		if (finalPromise !== p) {
-			return;
-		}
-		while (disposeList.length) {
-			await disposeList.shift()();
-			await timeout(50); // give time to finish
-		}
-		await timeout(300);
-		console.error('\x1B[38;5;14m' + currentCommand().file + ' exit with code ' + quit + '\x1B[0m');
-		process.exit(quit);
-	}).catch((e) => {
+	jobQueue.push(main);
+	if (jobQueue.length === 1) {
+		log('--');
+		setImmediate(runHandle);
+	}
+}
+
+function runHandle() {
+	log('start: ', jobQueue.length);
+	run().catch((e) => {
 		console.error(e);
-		console.error('\x1B[38;5;14m' + currentCommand().file + ' error with code 1\x1B[0m');
-		process.exit(1);
+		return 1;
+	}).then(async (code) => {
+		while (disposeList.length) {
+			try {
+				await disposeList.shift()();
+			} catch (e) {
+			}
+			await timeout(500); // give time to finish
+		}
+		if (code) {
+			console.error('\x1B[38;5;14m' + currentCommand().file + ' error with code 1\x1B[0m');
+		}
+		process.exit(code);
 	});
+}
+
+async function run(): Promise<number> {
+	for (const cb of jobQueue) {
+		const ret = await cb()  as any;
+		if (ret) {
+			return ret;
+		}
+	}
+	return 0;
 }
 
 export function useWriteFileStream(file: string): WriteStream {
