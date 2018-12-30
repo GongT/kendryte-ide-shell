@@ -175,7 +175,7 @@ if ! findCommand "7z" &>/dev/null ; then
 		die "p7zip is not installed on your system, install it first."
 	else
 		sudo apt-get install p7zip-full \
-			bash wget curl tar xz findutils git make g++ libc++-dev libstdc++-5-dev libXtst-dev libxss-dev gconf2 alsa-lib libx11-dev libxkbfile-dev
+			bash wget curl tar findutils git make g++ libc++-dev libstdc++-5-dev libxss-dev gconf2 libx11-dev libxkbfile-dev
 	fi
 fi
 writeShFile 7z "
