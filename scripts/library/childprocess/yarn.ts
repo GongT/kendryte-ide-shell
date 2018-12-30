@@ -1,12 +1,10 @@
 import { createWriteStream, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
-import { RELEASE_ROOT, VSCODE_ROOT } from '../../environment';
 import { log } from '../gulp';
 import { useWriteFileStream } from '../misc/myBuildSystem';
 import { chdir } from '../misc/pathUtil';
 import { pipeCommandOut } from './complex';
-import { shellExec } from './simple';
 
 export interface IInstallOpt {
 	args?: string[]
