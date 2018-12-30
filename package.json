@@ -6,7 +6,7 @@
 		"script": "yarn workspace scripts run gulp",
 		"ide-cmd": "node build/MyScriptBuildResult/ide/init-script/load-command.js",
 		"preinstall": "node pre-install-loader.js",
-		"postinstall": "tsc -p scripts && node build/MyScriptBuildResult/npm/postinstall.js"
+		"postinstall": "echo post install && tsc -p scripts && node build/MyScriptBuildResult/npm/postinstall.js"
 	},
 	"workspaces": [
 		"shell",

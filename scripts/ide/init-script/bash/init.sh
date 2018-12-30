@@ -133,7 +133,7 @@ writeShFile yarn "
 if [ ! -e "$MY_SCRIPT_ROOT_BUILT" ]; then
 	echo "init scripts..."
 	cd "$WORKSPACE_ROOT"
-	yarn --silent
+	yarn
 	cd scripts
 	tsc -p .
 fi
