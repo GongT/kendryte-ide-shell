@@ -17,7 +17,12 @@
 		"outDir": "dist",
 		"rootDir": "src",
 		"typeRoots": [
-			"../node_modules"
+			"../node_modules",
+			"../node_modules/@types",
+			"../../node_modules",
+			"../../node_modules/@types",
+			"../../../node_modules",
+			"../../../node_modules/@types"
 		],
 		"types": [
 			"vscode"

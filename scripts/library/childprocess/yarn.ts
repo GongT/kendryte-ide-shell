@@ -30,7 +30,9 @@ export async function yarn(cmd: string, ...args: string[]) {
 		unlinkSync('yarn-error.log');
 	}
 	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
-	await pipeCommandOut(useWriteFileStream('yarn-install.log'), 'yarn', cmd, ...args).catch((e) => {
+	const tun = new PassThrough();
+	tun.pipe(useWriteFileStream('logs/yarn-install.log'));
+	await pipeCommandOut(tun, 'yarn', cmd, '--verbose', ...args).catch((e) => {
 		log('yarn %s failed. check log file yarn-install.log and yarn-error.log, find them at %s', cmd, process.cwd());
 		throw e;
 	});

@@ -41,7 +41,7 @@ export async function simpleCommandOut(cmd: string, ...args: string[]): Promise<
 export async function pipeCommandOut(pipe: NodeJS.WritableStream, cmd: string, ...args: string[]): Promise<void> {
 	// console.log(' + %s %s | line-output', command, argumentList.join(' '));
 	const stream = _spawnCommand(cmd, args);
-	stream.output.pipe(pipe, endArg(pipe));
+	stream.output.pipe(pipe);
 	await stream.wait();
 }
 

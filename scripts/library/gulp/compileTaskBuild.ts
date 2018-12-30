@@ -20,7 +20,8 @@ export function createCompileTask(
 	}
 	return task(taskName(category + ':' + (isBuilt? TASK_BUILD : TASK_COMPILE), taskConfig), dependencies, () => {
 		return process(gulpSrc(taskConfig.root, createGlob(taskConfig.sourceFiles)))
-			.pipe(gulp.dest(isBuilt? taskConfig.built : taskConfig.output));
+			.pipe(gulp.dest(isBuilt? taskConfig.built : taskConfig.output))
+			.pipe(debug({title: 'target:'}));
 	});
 }
 
@@ -61,10 +62,14 @@ export function createTypescriptWatch(
 	], () => {
 		return gulpChokidar(taskConfig.root, sources, (o: VinylFile) => {
 			log('\x1Bc[typescript] file has change: ', o.path);
-			const rel = o.dirname.replace(taskConfig.root, '');
-			return process(gulp.src(o.path).pipe(plumber(noopFn)))
+			const rel = o.dirname.replace(taskConfig.root, '').replace(/^[\\\/]/, '');
+			return process(
+				gulp.src(o.path)
+				    .pipe(plumber(logFn)),
+			)
 				.pipe(gulp.dest(nativePath(taskConfig.output, rel)))
 				.pipe(debug({title: 'write:'}))
+				
 				.on('end', () => {
 					log('compile complete.');
 				});
@@ -72,6 +77,6 @@ export function createTypescriptWatch(
 	});
 }
 
-function noopFn() {
-	
+function logFn() {
+	console.log(arguments);
 }

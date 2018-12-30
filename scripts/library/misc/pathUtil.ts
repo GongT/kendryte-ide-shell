@@ -1,5 +1,5 @@
 import { mkdirpSync } from 'fs-extra';
-import { isAbsolute, normalize, resolve } from 'path';
+import { isAbsolute, join, normalize, resolve } from 'path';
 import { resolve as _resolve } from 'url';
 import { isWin, RELEASE_ROOT } from '../../environment';
 
@@ -41,6 +41,10 @@ function resolveRelative(p: string, ...paths: string[]): string {
 
 export function posixPath(p: string, ...paths: string[]) {
 	return isWin? normalize(resolveRelative(p, ...paths)).replace(/\\/g, '/') : resolveRelative(p, ...paths);
+}
+
+export function posixJoin(p: string, ...paths: string[]) {
+	return isWin? normalize(join(p, ...paths)).replace(/\\/g, '/') : join(p, ...paths);
 }
 
 export function requireEnvPath(name: string): string {

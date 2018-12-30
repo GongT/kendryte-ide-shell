@@ -1,6 +1,6 @@
 import { ISingleTask, task } from '../library/gulp';
 import { createCompileTask, createTypescriptWatch, createWatchTask } from '../library/gulp/compileTaskBuild';
-import { createTypescriptTask } from '../library/gulp/typescript';
+import { createTypescriptTaskWithRename } from '../library/gulp/typescript';
 import { nativePath } from '../library/misc/pathUtil';
 import { EXTENSIONS_DIST_PATH_DEVELOP, EXTENSIONS_DIST_PATH_RESULT, EXTENSIONS_SOURCE_CODE_PATH, listExtension } from './path';
 
@@ -33,7 +33,7 @@ function wrapTypescriptTask(name: string) {
 		output: nativePath(EXTENSIONS_DIST_PATH_DEVELOP, name),
 		built: nativePath(EXTENSIONS_DIST_PATH_RESULT, name),
 		sourceFiles: ['ts'],
-		task: createTypescriptTask,
+		task: createTypescriptTaskWithRename,
 	};
 }
 
