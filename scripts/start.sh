@@ -15,8 +15,8 @@ if [ "$(id -u)" -eq 0 ]; then
 	die "Do not use root."
 fi
 
-/bin/sh --version &>/dev/null || die "Your /bin/sh is missing, please create link (eg: ln -s bash /bin/sh)."
-/bin/sh --version 2>&1 | grep -q "bash" || die "Your /bin/sh is not a standard BASH, that is not supported."
+sh --version &>/dev/null || die "Your 'sh' is missing, please create link (eg: ln -s bash /bin/sh)."
+sh --version 2>&1 | grep -q "bash" || die "Your sh is not a standard BASH, that is not supported."
 
 if [ $# -eq 0 ]; then
 	export BS_RUN_SCRIPT=""
