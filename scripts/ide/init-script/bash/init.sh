@@ -183,7 +183,7 @@ writeShFile 7z "
 	'$(findCommand "7z")' $_PASSARG
 "
 writeShFile sh "
-	echo '+' /bin/bash $_PASSARG
+	echo '+' /bin/bash $_PASSARG >&2
 	exec '/bin/bash' $_PASSARG
 "
 ### x-www-browser
