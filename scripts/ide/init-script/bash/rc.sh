@@ -53,7 +53,7 @@ export -f prompt_path
 export -f prompt
 export PROMPT_COMMAND="prompt"
 
-if [ -z "${BS_RUN_SCRIPT}" ]; then
+if [ -z "${BS_RUN_SCRIPT}" ] || [ -n "$SYSTEM_COLLECTIONID" ] ; then
 	echo -e "\ec"
 	node "$MY_SCRIPT_ROOT_BUILT/init-script/help.js" -- --what-is-this
 	echo
