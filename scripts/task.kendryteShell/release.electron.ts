@@ -4,7 +4,7 @@ import { everyPlatform, filter, gulp, gulpSrc, jeditor, mergeStream, rename, zip
 import { nativePath } from '../library/misc/pathUtil';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
 import { skipDirectories } from '../library/vscode/uitl';
-import { cleanReleaseTask } from './cleanup';
+import { cleanReleaseTask } from '../library/gulp/cleanup';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
 

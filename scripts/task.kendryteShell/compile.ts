@@ -1,33 +1,16 @@
-import { VinylFile } from 'gulp-typescript/release/types';
 import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, SHELL_OUTPUT, SHELL_ROOT, WORKSPACE_ROOT } from '../environment';
-import {
-	debug,
-	gulp,
-	gulpChokidar,
-	gulpSrc,
-	ISingleTask,
-	jeditor,
-	log,
-	plumber,
-	sass,
-	sourcemaps,
-	task,
-	typescript,
-} from '../library/gulp';
-import { resolvePath } from '../library/misc/pathUtil';
-import { cleanBuildTask, cleanDevelopTask } from './cleanup';
+import { jeditor, log, sass, sourcemaps, task, } from '../library/gulp';
+import { createClean } from '../library/gulp/cleanup';
+import { createCompileTask, createTypescriptWatch, createWatchTask } from '../library/gulp/compileTaskBuild';
+import { ISourceType } from '../library/gulp/sourceType';
+import { createTypescriptTask } from '../library/gulp/typescript';
 
-const TASK_COMPILE = 'develop:compile';
-const TASK_WATCH = 'develop:watch';
-
-interface ISourceType {
-	id?: string;
-	output?: string;
-	sourceFiles: string[]|string;
-	task(): (p: NodeJS.ReadWriteStream) => NodeJS.ReadWriteStream;
-}
+const TASK_CATEGORY = 'shell';
 
 const scssTask: ISourceType = {
+	root: SHELL_ROOT,
+	output: SHELL_OUTPUT,
+	built: BUILD_DIST_SOURCE,
 	sourceFiles: ['scss'],
 	task() {
 		const compile = sass().on('error', sass.logError);
@@ -40,22 +23,18 @@ const scssTask: ISourceType = {
 };
 
 const tsTask: ISourceType = {
+	root: SHELL_ROOT,
+	output: SHELL_OUTPUT,
+	built: BUILD_DIST_SOURCE,
 	sourceFiles: ['ts'],
-	task() {
-		const tsProject = typescript.createProject(resolvePath(SHELL_ROOT, 'tsconfig.json'), {
-			declaration: false,
-			rootDir: '.',
-		});
-		return (p: NodeJS.ReadWriteStream) => {
-			return p.pipe(sourcemaps.init({includeContent: true}))
-			        .pipe(tsProject())
-			        .pipe(sourcemaps.write(''));
-		};
-	},
+	task: createTypescriptTask,
 };
 
 const assetTask: ISourceType = {
 	id: 'assets',
+	root: SHELL_ROOT,
+	output: SHELL_OUTPUT,
+	built: BUILD_DIST_SOURCE,
 	sourceFiles: ['html', 'svg', 'ico', 'icns'],
 	task() {
 		return (p: NodeJS.ReadWriteStream) => p;
@@ -63,7 +42,9 @@ const assetTask: ISourceType = {
 };
 
 const channelJsonTask: ISourceType = {
+	root: SHELL_ROOT,
 	output: DEBUG_APP_ROOT,
+	built: BUILD_DIST_SOURCE,
 	sourceFiles: 'channel.json',
 	task() {
 		return (p: NodeJS.ReadWriteStream) => {
@@ -81,6 +62,9 @@ const channelJsonTask: ISourceType = {
 };
 
 const packageJsonTask: ISourceType = {
+	root: SHELL_ROOT,
+	output: SHELL_OUTPUT,
+	built: BUILD_DIST_SOURCE,
 	sourceFiles: 'package.json',
 	task() {
 		return (p: NodeJS.ReadWriteStream) => p.pipe(jeditor({
@@ -89,105 +73,27 @@ const packageJsonTask: ISourceType = {
 	},
 };
 
-function taskName(prefix: string, obj: ISourceType) {
-	if (obj.id) {
-		return prefix + ':' + obj.id;
-	} else if (Array.isArray(obj.sourceFiles)) {
-		return prefix + ':' + obj.sourceFiles.join('.');
-	} else {
-		return prefix + ':' + obj.sourceFiles;
-	}
-}
+export const cleanupBuild = createClean(TASK_CATEGORY, tsTask, true);
+export const cleanupBuildDevel = createClean(TASK_CATEGORY, tsTask, false);
 
-function createGlob(src: string[]|string) {
-	if (Array.isArray(src)) {
-		const srcGlob = src.length > 1? '{' + src.join(',') + '}' : src[0];
-		return '**/*.' + srcGlob;
-	} else {
-		return src;
-	}
-}
-
-function createCompileTask(
-	taskConfig: ISourceType,
-	dependencies: ISingleTask[],
-	isBuild = false,
-) {
-	const process = taskConfig.task();
-	return task(taskName(isBuild? 'build:compile' : TASK_COMPILE, taskConfig), dependencies, () => {
-		return process(gulpSrc(SHELL_ROOT, createGlob(taskConfig.sourceFiles)))
-			.pipe(gulp.dest(isBuild? BUILD_DIST_SOURCE : taskConfig.output || SHELL_OUTPUT));
-	});
-}
-
-function createWatchTask(
-	taskConfig: ISourceType,
-	dependencies: ISingleTask[],
-) {
-	const process = taskConfig.task();
-	const watchName = taskName(TASK_WATCH, taskConfig);
-	return task(watchName, [
-		...dependencies,
-		taskName(TASK_COMPILE, taskConfig),
-	], () => {
-		const p = gulpChokidar(SHELL_ROOT, createGlob(taskConfig.sourceFiles), (o) => {
-			console.log('\x1Bc[%s] file has change: ', watchName, o.path);
-			return o;
-		}).pipe(plumber());
-		return process(p)
-			.pipe(plumber.stop())
-			.pipe(gulp.dest(taskConfig.output || SHELL_OUTPUT))
-			.pipe(debug({title: 'write:'}));
-	});
-}
-
-function createWatchCallbackTask(
-	taskConfig: ISourceType,
-	dependencies: ISingleTask[],
-) {
-	const process = taskConfig.task();
-	const watchName = taskName(TASK_WATCH, taskConfig);
-	return task(watchName, [
-		...dependencies,
-		taskName(TASK_COMPILE, taskConfig),
-	], () => {
-		const sources = createGlob(taskConfig.sourceFiles);
-		return gulpChokidar(SHELL_ROOT, sources, (o: VinylFile) => {
-			console.log('\x1Bc[%s] file has change: ', watchName, o.path);
-			const rel = o.dirname.replace(SHELL_ROOT, '');
-			
-			const p = gulp.src(o.path)
-			              .pipe(plumber(() => {
-			              }));
-			return process(p).pipe(plumber.stop())
-			                 .pipe(gulp.dest(SHELL_OUTPUT + rel))
-			                 .pipe(debug({title: 'write:'}))
-			                 .on('end', () => {
-				                 console.log('compile complete.');
-			                 });
-		});
-	});
-}
-
-export const productionTask = task('build:compile', [
-	createCompileTask(scssTask, [cleanBuildTask], true),
-	createCompileTask(tsTask, [cleanBuildTask], true),
-	createCompileTask(assetTask, [cleanBuildTask], true),
+export const productionTask = task(TASK_CATEGORY + ':build', [
+	createCompileTask(TASK_CATEGORY, scssTask, [cleanupBuild], true),
+	createCompileTask(TASK_CATEGORY, tsTask, [cleanupBuild], true),
+	createCompileTask(TASK_CATEGORY, assetTask, [cleanupBuild], true),
 ]);
 
-export const developmentTask = task(TASK_COMPILE, [
-	createCompileTask(scssTask, [cleanDevelopTask], false),
-	createCompileTask(tsTask, [cleanDevelopTask], false),
-	createCompileTask(assetTask, [cleanDevelopTask], false),
-	createCompileTask(channelJsonTask, [cleanDevelopTask], false),
-	createCompileTask(packageJsonTask, [cleanDevelopTask], false),
+export const developmentTask = task(TASK_CATEGORY + ':develop', [
+	createCompileTask(TASK_CATEGORY, scssTask, [cleanupBuildDevel], false),
+	createCompileTask(TASK_CATEGORY, tsTask, [cleanupBuildDevel], false),
+	createCompileTask(TASK_CATEGORY, assetTask, [cleanupBuildDevel], false),
+	createCompileTask(TASK_CATEGORY, channelJsonTask, [cleanupBuildDevel], false),
+	createCompileTask(TASK_CATEGORY, packageJsonTask, [cleanupBuildDevel], false),
 ]);
 
-export const watchTask = task(TASK_WATCH, [
-	createWatchTask(scssTask, [cleanDevelopTask]),
-	createWatchCallbackTask(tsTask, [cleanDevelopTask]),
-	createWatchTask(assetTask, [cleanDevelopTask]),
-	createWatchTask(channelJsonTask, [cleanDevelopTask]),
-	createWatchTask(packageJsonTask, [cleanDevelopTask]),
+export const watchTask = task(TASK_CATEGORY + ':watch', [
+	createWatchTask(TASK_CATEGORY, scssTask, []),
+	createTypescriptWatch(TASK_CATEGORY, tsTask, []),
+	createWatchTask(TASK_CATEGORY, assetTask, []),
+	createWatchTask(TASK_CATEGORY, channelJsonTask, []),
+	createWatchTask(TASK_CATEGORY, packageJsonTask, []),
 ]);
-

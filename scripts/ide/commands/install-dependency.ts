@@ -5,8 +5,6 @@ import { lstat } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
-import { installExtensionDevelopDeps } from '../bundledExtensions/installAll';
-import { getExtensionPath } from '../bundledExtensions/path';
 import { packWindows } from '../codeblocks/packWindows';
 import { reset_asar } from '../codeblocks/resetAsar';
 
@@ -33,9 +31,6 @@ runMain(async () => {
 		await installDependency(VSCODE_ROOT);
 		log('node packages installed.');
 	}
-	
-	await installExtensionDevelopDeps(getExtensionPath(false));
-	log('extension dependencies installed.');
 	
 	log('Done.');
 });

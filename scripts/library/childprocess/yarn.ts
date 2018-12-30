@@ -2,6 +2,7 @@ import { createWriteStream, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
 import { log } from '../gulp';
+import { useWriteFileStream } from '../misc/myBuildSystem';
 import { chdir } from '../misc/pathUtil';
 import { pipeCommandOut } from './complex';
 
@@ -21,7 +22,7 @@ export async function installDependency(dir?: string, opts: IInstallOpt = {}): P
 	if (opts.args) {
 		extra.push(...opts.args);
 	}
-	await yarn(log, 'install', ...extra);
+	await yarn('install', ...extra);
 }
 
 export async function yarn(cmd: string, ...args: string[]) {
@@ -29,7 +30,10 @@ export async function yarn(cmd: string, ...args: string[]) {
 		unlinkSync('yarn-error.log');
 	}
 	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
-	await pipeCommandOut(process.stderr, 'yarn', cmd, ...args);
+	await pipeCommandOut(useWriteFileStream('yarn-install.log'), 'yarn', cmd, ...args).catch((e) => {
+		log('yarn %s failed. check log file yarn-install.log and yarn-error.log, find them at %s', cmd, process.cwd());
+		throw e;
+	});
 	log(`yarn ${cmd} success.`);
 	if (existsSync('yarn-error.log')) {
 		log('yarn-error.log is exists!');

@@ -1,6 +1,6 @@
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
-import { Readable, Transform } from 'stream';
+import { Readable } from 'stream';
 import * as File from 'vinyl';
 import { createVinylFile, limitSpeedTransform, log, pluginError } from '../gulp';
 import { ExS3, getMime } from '../misc/awsUtil';
@@ -52,7 +52,7 @@ export namespace gulpS3 {
 		base?: string;
 	}
 	
-	export function dest(opts?: DestOptions): Transform {
+	export function dest(opts?: DestOptions): NodeJS.ReadWriteStream {
 		if (!opts) {
 			opts = {};
 		}

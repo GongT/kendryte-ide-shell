@@ -7,10 +7,6 @@ import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir, ensureChdir } from '../../library/misc/pathUtil';
 import { timing } from '../../library/misc/timeUtil';
-import { buildExtension } from '../bundledExtensions/buildExtension';
-import { installExtensionDevelopDeps, installExtensionProdDeps } from '../bundledExtensions/installAll';
-import { getExtensionPath } from '../bundledExtensions/path';
-import { prepareLinkForProd } from '../bundledExtensions/prepare';
 import { linuxBuild } from '../codeblocks/build/build-linux';
 import { macBuild } from '../codeblocks/build/build-mac';
 import { windowsBuild } from '../codeblocks/build/build-windows';
@@ -79,13 +75,8 @@ runMain(async () => {
 	
 	await rename(compileResultFolder, wantDirPath);
 	
-	await installExtensionDevelopDeps(getExtensionPath(true));
-	log('Bundle extensions dependencies resolved');
-	await prepareLinkForProd(getExtensionPath(true, wantDirPath));
-	log('Bundle extensions link created.');
-	await installExtensionProdDeps(getExtensionPath(true, wantDirPath));
-	log('Bundle extensions production dependencies resolved');
-	await buildExtension(getExtensionPath(true, wantDirPath), false);
+	log('Build bundle extensions');
+	await buildExtension();
 	log('Bundle extensions built');
 	chdir(RELEASE_ROOT);
 	
@@ -96,3 +87,7 @@ runMain(async () => {
 	
 	log('Done.');
 });
+
+function buildExtension() {
+
+}

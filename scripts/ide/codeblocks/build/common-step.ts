@@ -1,7 +1,7 @@
 import { readdir } from 'fs-extra';
 import { resolve } from 'path';
 import { ARCH_RELEASE_ROOT } from '../../../environment';
-import { pipeCommandOut } from '../../../library/childprocess/complex';
+import { simpleCommandOut } from '../../../library/childprocess/complex';
 import { installDependency } from '../../../library/childprocess/yarn';
 import { log } from '../../../library/gulp';
 import { isExists, rename, unlink } from '../../../library/misc/fsUtil';
@@ -43,14 +43,14 @@ export async function downloadElectron() {
 	log(`installing electron...`);
 	showElectronNoticeInChina();
 	
-	await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), 'electron-x64');
+	await simpleCommandOut('node', ...gulpCommands(), 'electron-x64');
 	log('electron installed.');
 }
 
 export async function downloadBuiltinExtensions() {
 	chdir(ARCH_RELEASE_ROOT);
 	log(`installing builtin extension...\n`);
-	await pipeCommandOut(process.stderr, 'node', 'build/lib/builtInExtensions.js');
+	await simpleCommandOut('node', 'build/lib/builtInExtensions.js');
 	log('builtin extension installed.');
 }
 

@@ -2,7 +2,7 @@ import { join } from 'path';
 import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../environment';
 import { everyPlatform, log, run } from '../library/gulp';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
-import { cleanArtifactTask } from '../task.kendryteShell/cleanup';
+import { cleanArtifactTask } from '../library/gulp/cleanup';
 import { extractPackages } from './extract';
 import { getPackagesExtractRoot } from './paths';
 

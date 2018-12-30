@@ -1,31 +1,39 @@
 import { TaskFunc } from 'orchestrator';
-import { join, relative } from 'path';
+import { relative } from 'path';
 import * as Q from 'q';
 import * as stream from 'stream';
 import { Readable, Transform } from 'stream';
 import * as File from 'vinyl';
 import { BUILD_DIST_TARGETS, WORKSPACE_ROOT } from '../environment';
+import { wrapGlob } from './gulp/path';
 import { resolvePath } from './misc/pathUtil';
 
+export type GulpCallback = (...arg: any[]) => Promise<any>
+
+export interface IAnonGulpPlugin {
+	(...opt: any[]): NodeJS.ReadWriteStream;
+	[any: string]: (...opt: any[]) => NodeJS.ReadWriteStream;
+}
+
 export const gulp = require('gulp');
-export const watch = require('gulp-watch');
-export const sourcemaps = require('gulp-sourcemaps');
-export const typescript = require('gulp-typescript');
-export const sass = require('gulp-dart-sass');
+export const watch: IAnonGulpPlugin = require('gulp-watch');
+export const sourcemaps: IAnonGulpPlugin = require('gulp-sourcemaps');
+export const typescript: any = require('gulp-typescript');
+export const sass: IAnonGulpPlugin = require('gulp-dart-sass');
 sass.compiler = require('sass');
-export const jeditor = require('gulp-json-editor');
-export const plumber = require('gulp-plumber');
-export const yarn = require('gulp-yarn');
-export const download = require('gulp-download2');
-export const filter = require('gulp-filter');
-export const debug = require('gulp-debug');
-export const zip = require('gulp-vinyl-zip');
-export const rename = require('gulp-rename');
+export const jeditor: IAnonGulpPlugin = require('gulp-json-editor');
+export const plumber: IAnonGulpPlugin = require('gulp-plumber');
+export const yarn: IAnonGulpPlugin = require('gulp-yarn');
+export const download: IAnonGulpPlugin = require('gulp-download2');
+export const filter: IAnonGulpPlugin = require('gulp-filter');
+export const debug: IAnonGulpPlugin = require('gulp-debug');
+export const zip: IAnonGulpPlugin = require('gulp-vinyl-zip');
+export const rename: IAnonGulpPlugin = require('gulp-rename');
 export const run = require('gulp-run-command').default;
-export const aws = require('gulp-aws');
-export const log = require('fancy-log');
-export const remoteSrc = require('gulp-remote-src');
-export const through2Concurrent = require('through2-concurrent');
+export const aws: IAnonGulpPlugin = require('gulp-aws');
+export const log: Function&typeof console = require('fancy-log');
+export const remoteSrc: IAnonGulpPlugin = require('gulp-remote-src');
+export const through2Concurrent: IAnonGulpPlugin = require('through2-concurrent');
 const PluginError = require('plugin-error');
 const _mergeStream = require('merge-stream');
 
@@ -187,13 +195,4 @@ export function normalizePath(f: File) {
 export function gulpChokidar(base: string, glob: string[]|string, eventHandler: (file: File) => any) {
 	const rel = relative(WORKSPACE_ROOT, base);
 	return watch(wrapGlob(rel, glob), {base: rel, dot: true}, eventHandler);
-}
-
-function wrapGlob(rel: string, glob: string[]|string): string[] {
-	if (!Array.isArray(glob)) {
-		glob = [glob];
-	}
-	return glob.map((g) => {
-		return join(rel, g);
-	});
 }

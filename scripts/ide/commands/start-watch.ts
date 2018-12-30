@@ -1,5 +1,5 @@
 import { VSCODE_ROOT } from '../../environment';
-import { pipeCommandOut } from '../../library/childprocess/complex';
+import { pipeCommandOut, simpleCommandOut } from '../../library/childprocess/complex';
 import { log } from '../../library/gulp';
 import { cleanScreen, getCleanableStdout } from '../../library/misc/clsUtil';
 import { isExists } from '../../library/misc/fsUtil';
@@ -8,9 +8,6 @@ import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
 import { TypescriptCompileOutputStream } from '../../library/misc/streamUtil';
-import { buildExtension } from '../bundledExtensions/buildExtension';
-import { getExtensionPath } from '../bundledExtensions/path';
-import { prepareLinkForDev } from '../bundledExtensions/prepare';
 import { getElectronIfNot } from '../codeblocks/getElectron';
 import { gulpCommands } from '../codeblocks/gulp';
 import { switchQuitKey } from '../codeblocks/switchQuitKey';
@@ -29,14 +26,10 @@ runMain(async () => {
 	let skipped = false;
 	if (process.argv.includes('--slow')
 	    || !await isExists('extensions/css-language-features/client/out')
-	    || !await isExists('data/extensions/kendryte-debug/gdb.js')
 	) {
-		await prepareLinkForDev();
-		await buildExtension(getExtensionPath(false), false);
-		
 		chdir(VSCODE_ROOT);
 		log('starting compile extensions...');
-		await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), 'compile-extensions');
+		await simpleCommandOut('node', ...gulpCommands(), 'compile-extensions');
 		log('extensions compiled');
 		useThisStream(process.stderr);
 	} else {

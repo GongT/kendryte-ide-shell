@@ -1,6 +1,6 @@
 import { basename, resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
-import { getOutputCommand, pipeCommandOut } from '../../library/childprocess/complex';
+import { getOutputCommand, simpleCommandOut } from '../../library/childprocess/complex';
 import { log } from '../../library/gulp';
 import { IRemotePackageRegistry } from '../../library/jsonDefine/packageRegistry';
 import { ExS3 } from '../../library/misc/awsUtil';
@@ -48,7 +48,7 @@ runMain(async () => {
 		
 	} else {
 		log('repo is not exists, clone new.');
-		await pipeCommandOut(process.stderr, 'git', 'clone', '-b', gitBranch, gitRemote);
+		await simpleCommandOut('git', 'clone', '-b', gitBranch, gitRemote);
 	}
 	
 	const data = await readPackageInfo(packRoot);

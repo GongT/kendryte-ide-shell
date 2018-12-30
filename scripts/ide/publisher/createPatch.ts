@@ -2,7 +2,7 @@ import { copy, move } from 'fs-extra';
 import { platform } from 'os';
 import { dirname, resolve } from 'path';
 import { RELEASE_ROOT } from '../../environment';
-import { getOutputCommand, pipeCommandOut } from '../../library/childprocess/complex';
+import { getOutputCommand, simpleCommandOut } from '../../library/childprocess/complex';
 import { log } from '../../library/gulp';
 import { IDEJson, SYS_NAME } from '../../library/jsonDefine/releaseRegistry';
 import { calcCompileRootFolderName, getPackageData, mkdirpSync } from '../../library/misc/fsUtil';
@@ -61,16 +61,16 @@ async function createDiffWithGit(remote: IDEJson) {
 	const newVersion = await extractVersion(compileResult, 'new-version');
 	
 	chdir(oldVersion);
-	await pipeCommandOut(process.stderr, 'git', 'init', '.');
-	await pipeCommandOut(process.stderr, 'git', 'add', '.');
-	await pipeCommandOut(process.stderr, 'git', 'commit', '-m', 'old version at ' + oldVersion);
+	await simpleCommandOut('git', 'init', '.');
+	await simpleCommandOut('git', 'add', '.');
+	await simpleCommandOut('git', 'commit', '-m', 'old version at ' + oldVersion);
 	
 	log('move .git folder and clean old dir');
 	await move(resolve(oldVersion, '.git'), resolve(newVersion, '.git'));
 	log('ok');
 	
 	chdir(newVersion);
-	await pipeCommandOut(process.stderr, 'git', 'add', '.');
+	await simpleCommandOut('git', 'add', '.');
 	const fileList = await getOutputCommand('git', 'diff', '--name-only', 'HEAD');
 	
 	log('copy changed file to dist folder');

@@ -2,7 +2,7 @@ import { readFileSync, rename, writeFileSync } from 'fs';
 import { copy, mkdir } from 'fs-extra';
 import { resolve } from 'path';
 import { MY_SCRIPT_ROOT, VSCODE_ROOT } from '../../environment';
-import { pipeCommandOut } from '../../library/childprocess/complex';
+import { simpleCommandOut } from '../../library/childprocess/complex';
 import { installDependency, yarn } from '../../library/childprocess/yarn';
 import { log } from '../../library/gulp';
 import { isExists, writeFile } from '../../library/misc/fsUtil';
@@ -60,7 +60,7 @@ export async function packWindows() {
 	
 	//// devDependencies - husky
 	if (!await isExists('.git')) {
-		await pipeCommandOut(process.stderr, 'git', 'init', '.');
+		await simpleCommandOut('git', 'init', '.');
 		await writeFile('.gitignore', '*');
 		log('dummy git repo created.');
 	}
@@ -74,7 +74,7 @@ export async function packWindows() {
 	log('development dependencies installed.' + timeOutDev());
 	
 	//// devDependencies - husky (ensure)
-	await pipeCommandOut(process.stderr, 'node', 'node_modules/husky/bin/install.js');
+	await simpleCommandOut('node', 'node_modules/husky/bin/install.js');
 	
 	/// devDependencies - link to working tree
 	const devDepsStore = resolve(devDepsDir, 'node_modules');
@@ -86,7 +86,7 @@ export async function packWindows() {
 	log('create ASAR package');
 	chdir(root);
 	const timeOutZip = timing();
-	await pipeCommandOut(process.stderr, 'node', ...gulpCommands(), '--gulpfile', resolve(MY_SCRIPT_ROOT, 'gulpfile/pack-win.js'));
+	await simpleCommandOut('node', ...gulpCommands(), '--gulpfile', resolve(MY_SCRIPT_ROOT, 'gulpfile/pack-win.js'));
 	log('ASAR created.' + timeOutZip());
 	
 	log('move ASAR package to source root');

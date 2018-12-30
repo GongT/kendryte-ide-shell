@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { VSCODE_ROOT } from '../../environment';
-import { muteCommandOut, pipeCommandOut } from '../../library/childprocess/complex';
+import { muteCommandOut, simpleCommandOut } from '../../library/childprocess/complex';
 import { chdir, requireEnvPath } from '../../library/misc/pathUtil';
 import { gulpCommands } from './gulp';
 
@@ -21,7 +21,7 @@ export function getElectronIfNot() {
 	chdir(VSCODE_ROOT);
 	return muteCommandOut('node', 'build/lib/electron.js').catch(() => {
 		showElectronNoticeInChina();
-		return pipeCommandOut(process.stderr, 'node', ...gulpCommands(), 'electron');
+		return simpleCommandOut('node', ...gulpCommands(), 'electron');
 	}).then(() => {
 		console.log('Electron has installed.');
 	}, (e) => {

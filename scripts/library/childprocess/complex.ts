@@ -31,6 +31,13 @@ export async function muteCommandOut(cmd: string, ...args: string[]): Promise<vo
 	return pipeCommandOut(new BlackHoleStream(), cmd, ...args);
 }
 
+export async function simpleCommandOut(cmd: string, ...args: string[]): Promise<void> {
+	// console.log(' + %s %s | line-output', command, argumentList.join(' '));
+	const stream = _spawnCommand(cmd, args);
+	stream.output.pipe(process.stderr);
+	await stream.wait();
+}
+
 export async function pipeCommandOut(pipe: NodeJS.WritableStream, cmd: string, ...args: string[]): Promise<void> {
 	// console.log(' + %s %s | line-output', command, argumentList.join(' '));
 	const stream = _spawnCommand(cmd, args);

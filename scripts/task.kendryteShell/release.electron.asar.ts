@@ -3,7 +3,7 @@ import { BUILD_ASAR_DIR, BUILD_DIST_SOURCE, WORKSPACE_ROOT, } from '../environme
 import { filter, gulp, task } from '../library/gulp';
 import { simpleTransformStream } from '../library/gulp/transform';
 import { createAsar } from '../library/vscode/asar';
-import { cleanAsarTask } from './cleanup';
+import { cleanAsarTask } from '../library/gulp/cleanup';
 import { releaseMakeTask } from './release.sources';
 
 export const asarTask = task('release:app.asar', [releaseMakeTask, cleanAsarTask], () => {

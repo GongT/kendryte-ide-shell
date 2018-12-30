@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 import { extract } from 'tar-fs';
 import { RELEASE_ROOT, VSCODE_ROOT } from '../../environment';
-import { getOutputCommand, pipeCommandBoth, pipeCommandOut } from '../../library/childprocess/complex';
+import { getOutputCommand, pipeCommandBoth, simpleCommandOut } from '../../library/childprocess/complex';
 import { log } from '../../library/gulp';
 import { isExists, readFile, writeFile } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
@@ -19,15 +19,15 @@ runMain(async () => {
 	
 	log('checking exists upstream working tree...');
 	await removeDirectory('.release/follow-upstream');
-	await pipeCommandOut(process.stderr, 'git', 'worktree', 'prune');
+	await simpleCommandOut('git', 'worktree', 'prune');
 	log('cleared upstream working tree...');
 	
 	log('fetching origin upstream branch...');
-	await pipeCommandOut(process.stderr, 'git', 'fetch', 'origin', 'microsoft');
+	await simpleCommandOut('git', 'fetch', 'origin', 'microsoft');
 	log('origin upstream branch fetched.');
 	
 	log('checking out upstream working tree...');
-	await pipeCommandOut(process.stderr, 'git', 'worktree', 'add', '-f', '.release/follow-upstream', 'origin/microsoft');
+	await simpleCommandOut('git', 'worktree', 'add', '-f', '.release/follow-upstream', 'origin/microsoft');
 	log('upstream working tree checked out.');
 	
 	const followBranchDir = resolve(RELEASE_ROOT, 'follow-upstream');
@@ -47,10 +47,10 @@ runMain(async () => {
 	if (await isExists(upstreamStorage)) {
 		log('upstream vscode repo is exists. update it.');
 		chdir(upstreamStorage);
-		await pipeCommandOut(process.stderr, 'git', 'fetch', 'origin', 'master');
+		await simpleCommandOut('git', 'fetch', 'origin', 'master');
 	} else {
 		log('upstream vscode repo is not exists.');
-		await pipeCommandOut(process.stderr, 'git', 'clone', '--bare', '-b', 'master', '--single-branch', 'https://github.com/Microsoft/vscode.git', upstreamStorage);
+		await simpleCommandOut('git', 'clone', '--bare', '-b', 'master', '--single-branch', 'https://github.com/Microsoft/vscode.git', upstreamStorage);
 		chdir(upstreamStorage);
 	}
 	const latestMicrosoftCommit = await getOutputCommand('git', 'rev-parse', 'origin/master');
@@ -77,18 +77,18 @@ runMain(async () => {
 	
 	chdir(followBranchDir);
 	log('commit working tree...');
-	await pipeCommandOut(process.stderr, 'git', 'add', '.');
-	await pipeCommandOut(process.stderr, 'git', 'commit', '.', '--no-verify', '--file=' + commitLogFile);
+	await simpleCommandOut('git', 'add', '.');
+	await simpleCommandOut('git', 'commit', '.', '--no-verify', '--file=' + commitLogFile);
 	log('commit success.');
 	
 	log('pushing...');
-	await pipeCommandOut(process.stderr, 'git', 'push', 'origin', 'HEAD:microsoft');
+	await simpleCommandOut('git', 'push', 'origin', 'HEAD:microsoft');
 	log('push success.');
 	
 	log('cleaning...');
 	chdir(RELEASE_ROOT);
 	await removeDirectory('.release/follow-upstream');
-	await pipeCommandOut(process.stderr, 'git', 'worktree', 'prune');
+	await simpleCommandOut('git', 'worktree', 'prune');
 	
 	log('Done.');
 });
