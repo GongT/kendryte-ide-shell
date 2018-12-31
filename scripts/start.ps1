@@ -1,5 +1,7 @@
 [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
-chcp 65001 | Out-Null
+if ( ! $env:SYSTEM_COLLECTIONID ){
+	chcp 65001 | Out-Null
+}
 $ErrorActionPreference = "Stop"
 
 cd $PSScriptRoot
@@ -33,9 +35,11 @@ node "$MY_SCRIPT_ROOT_BUILT\init-script\help.js" --what-is-this
 
 Write-Host " > The anwser is 42 <" -ForegroundColor Green
 
-[console]::WindowWidth = 100
-[console]::WindowHeight = 24
-[console]::BufferWidth = [console]::WindowWidth
+if ( ! $env:SYSTEM_COLLECTIONID ) {
+	[console]::WindowWidth = 100
+	[console]::WindowHeight = 24
+	[console]::BufferWidth = [console]::WindowWidth
+}
 
 cd $VSCODE_ROOT # required last item
 

@@ -93,9 +93,11 @@ if (!$?) {
 
 ### yarn-install-build-tools
 writeScriptFile yarn-install-build-tools @"
-	[console]::WindowWidth=150
-	[console]::WindowHeight=24
-	[console]::BufferWidth=[console]::WindowWidth
+	if ( ! $env:SYSTEM_COLLECTIONID ) {
+		[console]::WindowWidth=150
+		[console]::WindowHeight=24
+		[console]::BufferWidth=[console]::WindowWidth
+	}
 	
 	`$env:PATH='$PATH'
 	`$env:YARN_CACHE_FOLDER='$YARN_CACHE_FOLDER'
