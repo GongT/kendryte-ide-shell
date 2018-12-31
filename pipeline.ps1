@@ -66,7 +66,9 @@ $WORKSPACE_ROOT="$(Get-Location)"
 $BUILD_ROOT="$(resolvePath $WORKSPACE_ROOT build)"
 $DOWNLOAD_PATH="$(resolvePath $BUILD_ROOT download)"
 $PRIVATE_BINS="$(resolvePath $BUILD_ROOT wrapping-bins)"
+MkDir $BUILD_ROOT
 MkDir $PRIVATE_BINS
+MkDir $DOWNLOAD_PATH
 
 $env:Path="$PRIVATE_BINS;$env:Path"
 
