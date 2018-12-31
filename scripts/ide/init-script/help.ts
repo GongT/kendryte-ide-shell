@@ -2,7 +2,7 @@ import { chmodSync, createWriteStream, existsSync, readdirSync, readFileSync, un
 import { ensureDirSync } from 'fs-extra';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
-import { isWin, PRIVATE_BINS } from '../../environment';
+import { isCI, isWin, PRIVATE_BINS } from '../../environment';
 import { helpPrint, helpStringCache, whatIsError, whatIsThis } from '../../library/misc/help';
 import { resolvePath } from '../../library/misc/pathUtil';
 
@@ -23,8 +23,10 @@ const cacheFile = helpStringCache();
 if (existsSync(cacheFile)) {
 	unlinkSync(cacheFile);
 }
-out.pipe(createWriteStream(cacheFile))
-   .write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
+if (!isCI){
+	out.pipe(createWriteStream(cacheFile))
+		.write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
+}
 out.pipe(process.stderr);
 
 whatIsThis('Print this', '显示这些提示', 'show-help');

@@ -10,7 +10,7 @@ import { calcCompileFolderName, removeIfExists } from '../../library/misc/fsUtil
 import { chdir } from '../../library/misc/pathUtil';
 import { nameReleaseFile, TYPE_ZIP_FILE } from './zip.name';
 
-const _7z = isWin? require('7zip')['7z'] : '7z';
+const _7z = isWin? require('7zip-bin')['7z'] : '7z';
 
 const commonArgs = [
 	'-y', // --yes
