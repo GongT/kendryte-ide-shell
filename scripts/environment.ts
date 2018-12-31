@@ -68,7 +68,7 @@ if (platform() === 'win32') {
 	sp = ':';
 	PATHS.push('/bin', '/usr/bin');
 }
-export const PATH = process.env.PATH = PATHS.map(normalize).join(sp);
+export const PATH = process.env.PATH = PATHS.map(normalize).join(sp) + isCI ? sp + ORIGINAL_PATH : '';
 if (isCI) {
 	console.error('PATH=%s', process.env.PATH);
 }
