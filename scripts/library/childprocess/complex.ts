@@ -1,6 +1,6 @@
 import { PassThrough } from 'stream';
 import { spawnWithLog } from '../misc/globalOutput';
-import { BlackHoleStream, CollectingStream, endArg } from '../misc/streamUtil';
+import { CollectingStream, endArg } from '../misc/streamUtil';
 import { mergeEnv } from './env';
 import { parseCommand, processPromise } from './handlers';
 
@@ -28,7 +28,7 @@ export async function pipeCommandBoth(
 }
 
 export async function muteCommandOut(cmd: string, ...args: string[]): Promise<void> {
-	return pipeCommandOut(new BlackHoleStream(), cmd, ...args);
+	return pipeCommandOut(process.stderr, cmd, ...args);
 }
 
 export async function simpleCommandOut(cmd: string, ...args: string[]): Promise<void> {
