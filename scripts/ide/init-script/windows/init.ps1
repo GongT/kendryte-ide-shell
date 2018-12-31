@@ -169,8 +169,6 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 		Get-ChildItem $PythonPath
 		echo "Install finished"
 	}
-	Write-Host "Detect Python: $PythonPath"
-	& "$PythonPath/python.exe" --version
 } else {
 	if (!(Get-Command python -errorAction SilentlyContinue)) {
 		echo "================================================="
@@ -191,6 +189,9 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 	}
 }
 
+Write-Host "Detect Python: $PythonPath"
+& "$PythonPath/python.exe" --version
+
 ### install node_modules for my scripts
 if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 	echo "init scripts..."
@@ -203,20 +204,24 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 ### install node_modules for my scripts
 
 if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
-	cd $TMP
-	writeCmdFile finding-git @"
-		echo %PATH%
-		echo %ORIGINAL_PATH%
+	function cmd_special() {
+		cd $TMP
+		Write-Error $env:Path
+		Write-Error $ORIGINAL_PATH
+		$orig_path=$env:Path
+		$env:PATH=$ORIGINAL_PATH
 		C:\Windows\System32\where.exe git
-"@
-	$GitLocation = (cmd.exe /c "finding-git")
+		$env:PATH=$orig_path
+	}
+	cmd_special
+	$GitLocation = (cmd_special)
 	
 	if (!$GitLocation) {
 		throw "You need to install <github desktop>( https://desktop.github.com/ )."
 	}
 	writeScriptFile git @"
-	$env:HOME=${ORIGINAL_HOME}
-	$env:Path=${ORIGINAL_PATH}
+	$env:HOME="${ORIGINAL_HOME}"
+	$env:Path="${ORIGINAL_PATH}"
 	& "$GitLocation" `$args
 "@
 	writeCmdFile git @"
