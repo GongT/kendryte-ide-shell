@@ -157,17 +157,6 @@ writeScriptFile yarn @"
 "@
 ### yarn.ps
 
-### install node_modules for my scripts
-if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
-	echo "init scripts..."
-	cd $WORKSPACE_ROOT
-	yarn
-	yarn global add node-gyp
-	cd scripts
-	tsc -p .
-}
-### install node_modules for my scripts
-
 if ( $env:SYSTEM_COLLECTIONID ) {
 	
 	downloadFile "http://www.python.org/ftp/python/2.7.6/python-2.7.6.amd64.msi" "$DOWNLOAD_PATH/python2.msi"
@@ -194,6 +183,17 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 		throw "python cannot not install at $PythonPath, please install windows-build-tools and try again."
 	}
 }
+
+### install node_modules for my scripts
+if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
+	echo "init scripts..."
+	cd $WORKSPACE_ROOT
+	yarn
+	yarn global add node-gyp
+	cd scripts
+	tsc -p .
+}
+### install node_modules for my scripts
 
 if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
 	cd $TMP

@@ -1,5 +1,5 @@
 import * as VinylFile from 'vinyl';
-import { debug, gulp, gulpChokidar, gulpSrc, ISingleTask, log, plumber, task } from '../gulp';
+import { debug, filter, gulp, gulpChokidar, gulpSrc, ISingleTask, log, plumber, task } from '../gulp';
 import { nativePath } from '../misc/pathUtil';
 import { createClean } from './cleanup';
 import { createGlob, ISourceType, taskName } from './sourceType';
@@ -19,7 +19,10 @@ export function createCompileTask(
 		dependencies.push(createClean(category, taskConfig, isBuilt));
 	}
 	return task(taskName(category + ':' + (isBuilt? TASK_BUILD : TASK_COMPILE), taskConfig), dependencies, () => {
-		return process(gulpSrc(taskConfig.root, createGlob(taskConfig.sourceFiles)))
+		return process(
+			gulpSrc(taskConfig.root, createGlob(taskConfig.sourceFiles))
+				.pipe(filter(['**', '!**/node_modules/'])),
+		)
 			.pipe(gulp.dest(isBuilt? taskConfig.built : taskConfig.output))
 			.pipe(debug({title: 'target:'}));
 	});

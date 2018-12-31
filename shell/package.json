@@ -9,8 +9,7 @@
 	"main": "./boot.js",
 	"private": true,
 	"scripts": {
-		"start": "cd ../build/DebugContents/Updater ; electron resources/app",
-		"postinstall": "rimraf node_modules"
+		"start": "cd ../build/DebugContents/Updater ; electron resources/app"
 	},
 	"dependencies": {
 		"7zip-bin": "^4.1.0",

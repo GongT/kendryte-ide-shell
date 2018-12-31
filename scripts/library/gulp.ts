@@ -194,5 +194,6 @@ export function normalizePath(f: File) {
 
 export function gulpChokidar(base: string, glob: string[]|string, eventHandler: (file: File) => any) {
 	const rel = relative(WORKSPACE_ROOT, base);
-	return watch(wrapGlob(rel, glob), {base: rel, dot: true}, eventHandler);
+	return watch(wrapGlob(rel, glob), {base: rel, dot: true}, eventHandler)
+		.pipe(filter(['**', '!**/node_modules/']));
 }
