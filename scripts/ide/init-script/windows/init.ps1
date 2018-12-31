@@ -6,9 +6,8 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	echo "Install Node.js"
-	$VERSION=11.6.0
 	downloadFile "https://nodejs.org/dist/v8.11.2/win-x64/node.exe" "$DOWNLOAD_PATH/node8.exe"
-	downloadFile "https://nodejs.org/dist/v$VERSION/win-x64/node.exe" "$DOWNLOAD_PATH/node.exe"
+	downloadFile "https://nodejs.org/dist/v11.6.0/win-x64/node.exe" "$DOWNLOAD_PATH/node.exe"
 	
 	echo "Coping node.exe from $DOWNLOAD_PATH to $NODEJS_INSTALL"
 	RimDir $NODEJS_INSTALL\node8
@@ -20,39 +19,36 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	
 	writeCmdFile node "
 		set VSCODE_ROOT=$VSCODE_ROOT
-		call set XXXXXX=%cd:%VSCODE_ROOT%=%
-		call set YYYYYY=%cd:%RELEASE_ROOT%=%
-		IF x%XXXXXX%%YYYYYY%==x%VSCODE_ROOT%%RELEASE_ROOT% (
-			set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
-			set PATH=$NODEJS_INSTALL\node-latest\bin;%PATH%
-			echo Using node latest 1>&2
-		) ELSE (
-			set NODEJS=$NODEJS_INSTALL\node8\bin\node.exe
-			set PATH=$NODEJS_INSTALL\node8\bin;%PATH%
-			echo Using node 8 1>&2
-		)
+		set NODEJS_INSTALL=$NODEJS_INSTALL
+		call set XXXXXX=%%cd:%VSCODE_ROOT%=%%
+		call set YYYYYY=%%cd:%RELEASE_ROOT%=%%
+		IF NOT x%XXXXXX%==x%cd% GOTO use8
+		IF NOT x%YYYYYY%==x%cd% GOTO use8
+
+		:usel
+		set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
+		set PATH=$NODEJS_INSTALL\node-latest\bin;%PATH%
+		echo node.bat Using node latest 1>&2
+		GOTO end
+
+		:use8
+		set NODEJS=$NODEJS_INSTALL\node8\bin\node.exe
+		set PATH=$NODEJS_INSTALL\node8\bin;%PATH%
+		echo node.bat Using node 8 1>&2
+		GOTO end
+
+		:end
 		%NODEJS% %*
-	"
-	writeScriptFile node "
-		`$env:PRIVATE_BINS='$PRIVATE_BINS'
-		`$env:VSCODE_ROOT='$VSCODE_ROOT'
-		if ( ( `$pwd -like "`${VSCODE_ROOT}*" ) -Or ( `$pwd -like "`${RELEASE_ROOT}*" ) ) {
-			`$env:NODEJS='$NODEJS_INSTALL\node8\bin\node.exe'
-			`$NODEJS='$NODEJS_INSTALL\node8\bin\node.exe'
-			`$PATH='$NODEJS_INSTALL\node8\bin;`$PATH'
-			Write-Error Using node 8 in `$(Get-Location)
-		} else {
-			`$env:NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
-			`$NODEJS='$NODEJS_INSTALL\node-latest\bin\node.exe'
-			`$PATH='$NODEJS_INSTALL\node-latest\bin;`$PATH'
-			Write-Error Using node latest in `$(Get-Location)
-		}
-		`$NODEJS `$args
 	"
 }
 
-echo "Detect Node.js: $( cd $VSCODE_ROOT; & node --version )"
-echo "Detect Node.js: $( & node --version )"
+Write-Host "Detect Node.js: $VSCODE_ROOT"
+Set-Location $VSCODE_ROOT
+node --version
+Write-Host "Detect Node.js: $WORKSPACE_ROOT"
+Set-Location $WORKSPACE_ROOT
+node --version
+
 setSystemVar 'npm_config_target' $( cd $VSCODE_ROOT; node -p "require('./build/lib/electron').getElectronVersion();" )
 
 if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
@@ -70,7 +66,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
 		echo "  failed..."
 		exit 1
 	}
-	7za x -y "-o$DOWNLOAD_PATH" -- "$TMP/yarn.tar" | Out-Null
+	7za x -y "-o$tempDir" -- "$TMP/yarn.tar" | Out-Null
 	if (!$?) {
 		echo "  failed..."
 		exit 1
@@ -80,7 +76,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
 	cd $tempDir
 	(Get-ChildItem -Directory | Select-Object -Index 0).Name | cd
 	echo "Install yarn to $NODEJS_INSTALL"
-	& $NODEJS ".\bin\yarn.js" `
+	node ".\bin\yarn.js" `
 		--prefer-offline --no-default-rc --no-bin-links `
 		--cache-folder "$YARN_CACHE_FOLDER" `
 		--global-folder "$NODEJS_INSTALL" `
@@ -150,7 +146,7 @@ writeScriptFile yarn @"
 		}
 	}
 	
-	& '$NODEJS' ``
+	node ``
 		'$NODEJS_INSTALL\node_modules\yarn\bin\yarn.js' ``
 			--prefer-offline --no-default-rc `$BL ``
 			--use-yarnrc '$VSCODE_ROOT/.yarnrc' ``

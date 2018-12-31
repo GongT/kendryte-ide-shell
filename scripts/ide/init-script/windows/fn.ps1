@@ -18,7 +18,7 @@ function setGlobalConst($Name, $Value) {
 
 function setSystemVar($Name, $Value) {
 	try {
-		Set-Variable -Option AllScope, ReadOnly -Force -Scope Global -Name $Name -Value $Value
+		Set-Variable -Option AllScope -Force -Scope Global -Name $Name -Value $Value
 	} catch {
 		Set-Variable -Option AllScope -Force -Scope Global -Name $Name -Value $Value
 	}

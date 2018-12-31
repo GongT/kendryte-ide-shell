@@ -22,7 +22,6 @@ setSystemVar 'PREFIX' $YARN_FOLDER
 setSystemVar 'YARN_CACHE_FOLDER' (resolvePath $YARN_FOLDER cache)
 
 setSystemVar 'PRIVATE_BINS' (resolvePath $BUILD_ROOT wrapping-bins)
-setSystemVar 'NODEJS' (resolvePath $PRIVATE_BINS node.ps1)
 
 $CommonPaths = "C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0"
 $PythonPath = (resolvePath $env:USERPROFILE .windows-build-tools\python27)
