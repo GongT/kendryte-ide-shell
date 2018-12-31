@@ -18,11 +18,20 @@ function setGlobalConst($Name, $Value) {
 
 function setSystemVar($Name, $Value) {
 	try {
-		Set-Variable -Option AllScope -Force -Scope Global -Name $Name -Value $Value
+		Set-Variable -Option AllScope,ReadOnly -Force -Scope Global -Name $Name -Value $Value
+		New-Item -Path env:\$Name -value "$Value" -Force | Out-Null
 	} catch {
-		Set-Variable -Option AllScope -Force -Scope Global -Name $Name -Value $Value
+		try {
+			Set-Variable -Option AllScope -Force -Scope Global -Name $Name -Value $Value
+			New-Item -Path env:\$Name -value "$Value" -Force | Out-Null
+		} catch {
+			$original = (Get-Variable -Name $Name -ValueOnly)
+			if (!($original == $Value)) {
+				Write-Error "You cannot change variable $Name from '$original' to '$Value'"
+				exit 111
+			}
+		}
 	}
-	New-Item -Path env:\$Name -value "$Value" -Force | Out-Null
 }
 
 function resolvePath() {
