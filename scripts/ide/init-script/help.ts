@@ -82,10 +82,9 @@ if (!$?) {
 	throw "Command failed with code $LastExitCode"
 }
 `, 'utf8');
-	}
-	
-	newCommands[cmd] = true;
-	writeFileSync(file, `#!/bin/bash
+	} else {
+		newCommands[cmd] = true;
+		writeFileSync(file, `#!/bin/bash
 function die() {
 	echo -en "\\e[38;5;9m" >&2
 	echo -en "$*" >&2
@@ -94,7 +93,6 @@ function die() {
 }
 node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
 `, 'utf8');
-	if (!isWin) {
 		chmodSync(file, '0777');
 	}
 }
