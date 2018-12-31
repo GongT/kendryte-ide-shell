@@ -169,7 +169,8 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 		Get-ChildItem $PythonPath
 		echo "Install finished"
 	}
-	Write-Host "Detect Python: $(& "$PythonPath/python.exe" --version)"
+	Write-Host "Detect Python: $PythonPath"
+	& "$PythonPath/python.exe" --version
 
 } else {
 	if (!(Get-Command python -errorAction SilentlyContinue)) {
