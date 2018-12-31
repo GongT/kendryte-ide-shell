@@ -171,7 +171,6 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 	}
 	Write-Host "Detect Python: $PythonPath"
 	& "$PythonPath/python.exe" --version
-
 } else {
 	if (!(Get-Command python -errorAction SilentlyContinue)) {
 		echo "================================================="
@@ -205,9 +204,9 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 
 if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
 	cd $TMP
-	
 	writeCmdFile finding-git @"
-		set PATH=$ORIGINAL_PATH
+		echo %PATH%
+		echo %ORIGINAL_PATH%
 		C:\Windows\System32\where.exe git
 "@
 	$GitLocation = (cmd.exe /c "finding-git")
