@@ -161,7 +161,10 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 	
 	downloadFile "http://www.python.org/ftp/python/2.7.6/python-2.7.6.amd64.msi" "$DOWNLOAD_PATH/python2.msi"
 	$PythonPath = (resolvePath $BUILD_ROOT python27)
+	get-item "$DOWNLOAD_PATH/python2.msi"
+	echo "Downloaded, now install it to $PythonPath"
 	& msiexec /i "$DOWNLOAD_PATH/python2.msi" "TARGETDIR=$PythonPath" /passive
+	echo "Install finished"
 	& "$PythonPath/python.exe" --version
 
 } else {
