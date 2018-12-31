@@ -1,9 +1,9 @@
 import { Writable } from 'stream';
+import { isCI, isWin } from '../../environment';
 import { shellExec, shellExecAsync } from '../childprocess/simple';
-import { isWin } from '../../environment';
 
 export function cleanScreen() {
-	if (process.env.BS_RUN_SCRIPT) {
+	if (process.env.BS_RUN_SCRIPT || isCI) {
 		return;
 	}
 	if (isWin) {
