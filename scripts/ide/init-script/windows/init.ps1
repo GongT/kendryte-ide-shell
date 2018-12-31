@@ -163,7 +163,7 @@ if ( $env:SYSTEM_COLLECTIONID ) {
 	$PythonPath = (resolvePath $BUILD_ROOT python27)
 	get-item "$DOWNLOAD_PATH/python2.msi"
 	echo "Downloaded, now install it to $PythonPath"
-	& msiexec /i "$DOWNLOAD_PATH/python2.msi" "TARGETDIR=$PythonPath" /passive
+	& msiexec /a "$DOWNLOAD_PATH/python2.msi" /qb "TARGETDIR=$PythonPath"
 	echo "Install finished"
 	& "$PythonPath/python.exe" --version
 
