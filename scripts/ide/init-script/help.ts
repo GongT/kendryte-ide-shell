@@ -87,14 +87,14 @@ if (!$?) {
 	} else {
 		newCommands[cmd] = true;
 		writeFileSync(file, `#!/bin/bash
-	function die() {
-		echo -en "\\e[38;5;9m" >&2
-		echo -en "$*" >&2
-		echo -e "\\e[0m" >&2
-		exit 1
-	}
-	node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
-	`, 'utf8');
+function die() {
+	echo -en "\\e[38;5;9m" >&2
+	echo -en "$*" >&2
+	echo -e "\\e[0m" >&2
+	exit 1
+}
+node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
+`, 'utf8');
 		chmodSync(file, '0777');
 	}
 }
