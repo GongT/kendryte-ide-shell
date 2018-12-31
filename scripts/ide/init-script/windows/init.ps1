@@ -38,7 +38,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 		GOTO end
 
 		:end
-		echo `"    And run: %*`"
+		echo `"    And run: %*`" 1>&2
 		%NODEJS% %*
 	"
 }
