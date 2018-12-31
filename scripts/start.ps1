@@ -44,8 +44,11 @@ if ( ! $env:SYSTEM_COLLECTIONID ) {
 cd $VSCODE_ROOT # required last item
 
 if( $args.Count -ne 0 ) {
-	$e=$args.Count - 1
-	$cmd=$args[1..$e]
-	& $args[0] @cmd
+	$cnt=$args.Count
+	$cmd, $rst=$args
+	Write-Host "Passing $cnt arguments, running it."
+	Write-Host "   Command=$cmd"
+	Write-Host "   Arguments=$rst"
+	& $cmd @rst
 	exit $LastExitCode
 }

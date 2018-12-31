@@ -10,7 +10,7 @@ function Fork {
 		}
 		Start-Process -ArgumentList $argList -FilePath powershell.exe
 	} else {
-		Start-Process powershell.exe "-NoExit -Command . `"$WORKSPACE_ROOT\script\start.ps1`""
+		Start-Process powershell.exe "-NoExit -Command . `"$WORKSPACE_ROOT\scripts\start.ps1`""
 	}
 }
 Set-Item -Path function:global:fork -Value ${function:Fork}

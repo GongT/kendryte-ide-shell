@@ -8,14 +8,16 @@ import { resolvePath } from '../../library/misc/pathUtil';
 
 process.argv.push('--what-is-this');
 
-if (existsSync(helpStringCache())) {
-	process.stderr.write(readFileSync(helpStringCache()));
-	process.exit(0);
+if (!isCI) {
+	if (existsSync(helpStringCache())) {
+		process.stderr.write(readFileSync(helpStringCache()));
+		process.exit(0);
+	}
 }
 
 const myCreatedCommands = resolvePath(PRIVATE_BINS, '.commands.lst');
-const oldCommands: {[id: string]: boolean} = existsSync(myCreatedCommands)? JSON.parse(readFileSync(myCreatedCommands, 'utf-8')) : {};
-const newCommands: {[id: string]: boolean} = {};
+const oldCommands: { [id: string]: boolean } = existsSync(myCreatedCommands) ? JSON.parse(readFileSync(myCreatedCommands, 'utf-8')) : {};
+const newCommands: { [id: string]: boolean } = {};
 
 ensureDirSync(process.env.TEMP);
 const out = helpPrint(new PassThrough());
@@ -23,10 +25,9 @@ const cacheFile = helpStringCache();
 if (existsSync(cacheFile)) {
 	unlinkSync(cacheFile);
 }
-if (!isCI) {
-	out.pipe(createWriteStream(cacheFile))
-	   .write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
-}
+out.pipe(createWriteStream(cacheFile))
+	.write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
+
 out.pipe(process.stderr);
 
 whatIsThis('Print this', '显示这些提示', 'show-help');
@@ -36,9 +37,9 @@ readdirSync(base).forEach((file) => {
 	if (!file.endsWith('.js')) {
 		return;
 	}
-	
+
 	generateCommand(file.replace(/\.js$/, ''));
-	
+
 	try {
 		require(resolve(__dirname, '../commands', file));
 	} catch (e) {
@@ -70,31 +71,30 @@ writeFileSync(myCreatedCommands, JSON.stringify(newCommands), 'utf-8');
 
 function generateCommand(cmd: string) {
 	delete oldCommands[cmd];
-	
+
 	const file = resolvePath(PRIVATE_BINS, cmd);
 	const loader = resolve(__dirname, 'load-command.js');
-	
+
 	if (isWin) {
-		newCommands[file + '.ps1'] = true;
+		delete oldCommands[cmd + '.ps1'];
+		newCommands[cmd + '.ps1'] = true;
 		writeFileSync(file + '.ps1', `
 node '${loader}' "${cmd}" @args
 if (!$?) {
 	throw "Command failed with code $LastExitCode"
 }
 `, 'utf8');
+	} else {
+		newCommands[cmd] = true;
+		writeFileSync(file, `#!/bin/bash
+	function die() {
+		echo -en "\\e[38;5;9m" >&2
+		echo -en "$*" >&2
+		echo -e "\\e[0m" >&2
+		exit 1
 	}
-	
-	newCommands[cmd] = true;
-	writeFileSync(file, `#!/bin/bash
-function die() {
-	echo -en "\\e[38;5;9m" >&2
-	echo -en "$*" >&2
-	echo -e "\\e[0m" >&2
-	exit 1
-}
-node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
-`, 'utf8');
-	if (!isWin) {
+	node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
+	`, 'utf8');
 		chmodSync(file, '0777');
 	}
 }

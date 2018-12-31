@@ -38,6 +38,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 		GOTO end
 
 		:end
+		echo `"    And run: %*`"
 		%NODEJS% %*
 	"
 }
@@ -194,8 +195,8 @@ Write-Host "Detect Python: $PythonPath"
 
 ### install node_modules for my scripts
 if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
-	echo "init scripts..."
-	cd $WORKSPACE_ROOT
+	Write-Host "init scripts..."
+	Set-Location $WORKSPACE_ROOT
 	yarn
 	yarn global add node-gyp
 	cd scripts
@@ -204,35 +205,20 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 ### install node_modules for my scripts
 
 if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
-	function cmd_special() {
-		cd $TMP
-		Write-Error $env:Path
-		Write-Error $ORIGINAL_PATH
-		$orig_path=$env:Path
-		$env:PATH=$ORIGINAL_PATH
-		C:\Windows\System32\where.exe git
-		$env:PATH=$orig_path
-	}
-	cmd_special
-	$GitLocation = (cmd_special)
-	
-	if (!$GitLocation) {
-		throw "You need to install <github desktop>( https://desktop.github.com/ )."
-	}
-	writeScriptFile git @"
-	$env:HOME="${ORIGINAL_HOME}"
-	$env:Path="${ORIGINAL_PATH}"
-	& "$GitLocation" `$args
-"@
 	writeCmdFile git @"
-		powershell.exe `"$PRIVATE_BINS/git.ps1`" %*
+		set HOME=${ORIGINAL_HOME}
+		set Path=${ORIGINAL_PATH}
+		git %*
 "@
-	
-	cd $RELEASE_ROOT
-	if (!(Test-Path -Path '.git')) {
-		git init .
-		echo '*' | Out-File -FilePath .gitignore -Encoding "ascii"
-	}
+}
+
+Write-Host "Detect Git:"
+git --version
+
+cd $RELEASE_ROOT
+if (!(Test-Path -Path '.git')) {
+	git init .
+	echo '*' | Out-File -FilePath .gitignore -Encoding "ascii"
 }
 
 cd $VSCODE_ROOT
