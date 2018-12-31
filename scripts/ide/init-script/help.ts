@@ -59,6 +59,9 @@ Object.keys(oldCommands).forEach((removedCommand) => {
 	if (existsSync(path)) {
 		unlinkSync(path);
 	}
+	if (existsSync(path + '.ps1')) {
+		unlinkSync(path + '.ps1');
+	}
 });
 
 writeFileSync(myCreatedCommands, JSON.stringify(newCommands), 'utf-8');
@@ -77,6 +80,7 @@ if (!$?) {
 	throw "Command failed with code $LastExitCode"
 }
 `;
+		writeFileSync(file + '.ps1', content, 'utf8');
 	} else {
 		content = `#!/bin/bash
 function die() {
@@ -87,9 +91,7 @@ function die() {
 }
 node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
 `;
-	}
-	writeFileSync(file, content, 'utf8');
-	if (!isWin) {
+		writeFileSync(file, content, 'utf8');
 		chmodSync(file, '0777');
 	}
 }
