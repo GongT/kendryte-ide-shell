@@ -64,6 +64,7 @@ $ErrorActionPreference = "Stop"
 $env:CHILD_CONCURRENCY="1"
 $WORKSPACE_ROOT="$(Get-Location)"
 $BUILD_ROOT="$(resolvePath $WORKSPACE_ROOT build)"
+$DOWNLOAD_PATH="$(resolvePath $BUILD_ROOT download)"
 $PRIVATE_BINS="$(resolvePath $BUILD_ROOT wrapping-bins)"
 MkDir $PRIVATE_BINS
 
