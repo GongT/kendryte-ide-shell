@@ -28,13 +28,13 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 		:usel
 		set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
 		set PATH=$NODEJS_INSTALL\node-latest\bin;%PATH%
-		echo `"node.bat Using node latest in $(pwd)`" 1>&2
+		echo `"node.bat Using node latest in %cd%`" 1>&2
 		GOTO end
 
 		:use8
 		set NODEJS=$NODEJS_INSTALL\node8\bin\node.exe
 		set PATH=$NODEJS_INSTALL\node8\bin;%PATH%
-		echo `"node.bat Using node 8 in $(pwd)`" 1>&2
+		echo `"node.bat Using node 8 in %cd%`" 1>&2
 		GOTO end
 
 		:end
