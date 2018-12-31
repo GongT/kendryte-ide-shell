@@ -24,13 +24,8 @@ setSystemVar 'YARN_CACHE_FOLDER' (resolvePath $YARN_FOLDER cache)
 setSystemVar 'PRIVATE_BINS' (resolvePath $BUILD_ROOT wrapping-bins)
 
 $CommonPaths = "C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0"
-if ( $env:SYSTEM_COLLECTIONID ) {
-	$PythonPath = (resolvePath $BUILD_ROOT python27)
-} else {
-	$PythonPath = (resolvePath $env:USERPROFILE .windows-build-tools\python27)
-}
 $LocalNodePath = (resolvePath $WORKSPACE_ROOT node_modules\.bin)
-setSystemVar 'PATH' "$PRIVATE_BINS;$PythonPath;$NODEJS_BIN;$LocalNodePath;$CommonPaths"
+setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$LocalNodePath;$CommonPaths"
 
 if ($env:KENDRYTE_PROXY) {
 	setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"

@@ -1,3 +1,7 @@
+$ErrorActionPreference = "Stop"
+$env:CHILD_CONCURRENCY="1"
+
+
 function Exec
 {
 	[CmdletBinding()]
@@ -60,26 +64,8 @@ function downloadFile() {
 	}
 }
 
-$ErrorActionPreference = "Stop"
-$env:CHILD_CONCURRENCY="1"
-$WORKSPACE_ROOT="$(Get-Location)"
-$BUILD_ROOT="$(resolvePath $WORKSPACE_ROOT build)"
-$DOWNLOAD_PATH="$(resolvePath $BUILD_ROOT download)"
-$PRIVATE_BINS="$(resolvePath $BUILD_ROOT wrapping-bins)"
-MkDir $BUILD_ROOT
-MkDir $PRIVATE_BINS
-MkDir $DOWNLOAD_PATH
-
-$env:Path="$PRIVATE_BINS;$env:Path"
-
-downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/7zip/7za.exe" (resolvePath $PRIVATE_BINS '7za.exe')
-downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/7zip/7za.dll" (resolvePath $PRIVATE_BINS '7za.dll')
-downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/7zip/7zxa.dll" (resolvePath $PRIVATE_BINS '7zxa.dll')
-downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/py2.7z" (resolvePath $DOWNLOAD_PATH python2.7z)
-
-7za x -y "-o$PRIVATE_BINS" -- $(resolvePath $DOWNLOAD_PATH python2.7z) | Out-Null
-
-Get-ChildItem $PRIVATE_BINS
-
 cd kendryte-ide
 exec { yarn }
+exec { npm run gulp -- electron-x64 }
+exec { npm run gulp -- "vscode-win32-x64-min" }
+exec { node build/lib/builtInExtensions.js }

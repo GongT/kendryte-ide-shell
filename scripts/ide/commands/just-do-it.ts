@@ -1,10 +1,12 @@
 import { log } from '../../library/gulp';
 import { nativePath } from '../../library/misc/pathUtil';
+import { isWin } from '../../environment';
 
-const queue = [
-	'test-aws',
+const queue = isWin ? [
+	'release-build-pipeline',
+	'release-publish',
+] : [
 	'release-build',
-	'release-create-tarball',
 	'release-publish',
 ];
 

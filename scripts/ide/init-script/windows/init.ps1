@@ -6,51 +6,22 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	echo "Install Node.js"
-	downloadFile "https://nodejs.org/dist/v8.11.2/win-x64/node.exe" "$DOWNLOAD_PATH/node8.exe"
 	downloadFile "https://nodejs.org/dist/v11.6.0/win-x64/node.exe" "$DOWNLOAD_PATH/node.exe"
 	
 	echo "Coping node.exe from $DOWNLOAD_PATH to $NODEJS_INSTALL"
-	RimDir $NODEJS_INSTALL\node8
-	RimDir $NODEJS_INSTALL\node-latest
-	MkDir $NODEJS_INSTALL\node8\bin
-	MkDir $NODEJS_INSTALL\node-latest\bin
-	Copy-Item "$DOWNLOAD_PATH\node8.exe" $NODEJS_INSTALL\node8\bin\node.exe -Force
-	Copy-Item "$DOWNLOAD_PATH\node.exe" $NODEJS_INSTALL\node-latest\bin\node.exe -Force
+	RimDir $NODEJS_INSTALL
+	MkDir $NODEJS_INSTALL\bin
+	Copy-Item "$DOWNLOAD_PATH\node.exe" $NODEJS_INSTALL\bin\node.exe -Force
 	
 	writeCmdFile node "
+		set NODEJS=$NODEJS_INSTALL\bin\node.exe
 		set VSCODE_ROOT=$VSCODE_ROOT
 		set NODEJS_INSTALL=$NODEJS_INSTALL
-		call set XXXXXX=%%cd:%VSCODE_ROOT%=%%
-		call set YYYYYY=%%cd:%RELEASE_ROOT%=%%
-		IF NOT x%XXXXXX%==x%cd% GOTO use8
-		IF NOT x%YYYYYY%==x%cd% GOTO use8
-
-		:usel
-		set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
-		set PATH=$NODEJS_INSTALL\node-latest\bin;%PATH%
-		echo `"node.bat Using node latest in %cd%`" 1>&2
-		GOTO end
-
-		:use8
-		set NODEJS=$NODEJS_INSTALL\node8\bin\node.exe
-		set PATH=$NODEJS_INSTALL\node8\bin;%PATH%
-		echo `"node.bat Using node 8 in %cd%`" 1>&2
-		GOTO end
-
-		:end
-		echo `"    And run: %*`" 1>&2
 		%NODEJS% %*
 	"
 }
-
-Write-Host "Detect Node.js: $VSCODE_ROOT"
-Set-Location $VSCODE_ROOT
+Write-Host "Detect Node.js:"
 node --version
-Write-Host "Detect Node.js: $WORKSPACE_ROOT"
-Set-Location $WORKSPACE_ROOT
-node --version
-
-setSystemVar 'npm_config_target' $( cd $VSCODE_ROOT; node -p "require('./build/lib/electron').getElectronVersion();" )
 
 if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
 	$tempDir = "$TMP/yarn-install"
@@ -86,30 +57,6 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
 	cd $RELEASE_ROOT
 	RimDir $tempDir
 }
-
-& $NODEJS_INSTALL\node-latest\bin\node.exe "$MY_SCRIPT_ROOT/init-script/windows/pathinfo.js"
-if (!$?) {
-	throw "Network location ($VSCODE_ROOT) is not supported."
-}
-
-### yarn-install-build-tools
-writeScriptFile yarn-install-build-tools @"
-	if ( ! $env:SYSTEM_COLLECTIONID ) {
-		[console]::WindowWidth=150
-		[console]::WindowHeight=24
-		[console]::BufferWidth=[console]::WindowWidth
-	}
-	
-	`$env:PATH='$PATH'
-	`$env:YARN_CACHE_FOLDER='$YARN_CACHE_FOLDER'
-	& '$NODEJS' ``
-		'$NODEJS_INSTALL\node_modules\yarn\bin\yarn.js' ``
-		global add windows-build-tools ``
-			--prefer-offline --no-default-rc --no-bin-links ``
-			--cache-folder '$YARN_CACHE_FOLDER' ``
-	pause
-"@
-### yarn-install-build-tools
 
 ### npm
 writeCmdFile npm @"
@@ -160,38 +107,8 @@ writeScriptFile yarn @"
 "@
 ### yarn.ps
 
-if ( $env:SYSTEM_COLLECTIONID ) {
-	
-	if (!(Get-Command python -errorAction SilentlyContinue)) {
-		downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/py2.7z" (resolvePath $DOWNLOAD_PATH python2.7z)
-		$PythonPath = (resolvePath $BUILD_ROOT python27)
-		7za x -y "-o$PythonPath" -- $(resolvePath $DOWNLOAD_PATH python2.7z) | Out-Null
-	
-		Get-ChildItem $PythonPath
-		echo "Install finished"
-	}
-} else {
-	if (!(Get-Command python -errorAction SilentlyContinue)) {
-		echo "================================================="
-		echo "  Try install windows-build-tools"
-		echo "  Please wait result from new window"
-		echo "  "
-		echo "  You need press Enter to continue"
-		echo "================================================="
-		
-		Start-Process -Verb RunAs -Wait -FilePath powershell.exe -ArgumentList @("-NoExit", "-Command", $( resolvePath $PRIVATE_BINS "yarn-install-build-tools.ps1" ) )
-		if (!$?) {
-			throw "windows-build-tools cannot install"
-		}
-	}
-	if (!(Get-Command python -errorAction SilentlyContinue)) {
-		$PythonPath = (resolvePath $env:USERPROFILE .windows-build-tools\python27)
-		throw "python cannot not install at $PythonPath, please install windows-build-tools and try again."
-	}
-}
-
-Write-Host "Detect Python: $PythonPath"
-& "$PythonPath/python.exe" --version
+Write-Host "Detect Python:"
+python --version
 
 ### install node_modules for my scripts
 if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
@@ -204,21 +121,13 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 }
 ### install node_modules for my scripts
 
-if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
-	writeCmdFile git @"
-		set HOME=${ORIGINAL_HOME}
-		set Path=${ORIGINAL_PATH}
-		git %*
+writeCmdFile git @"
+	set HOME=${ORIGINAL_HOME}
+	set Path=${ORIGINAL_PATH}
+	git %*
 "@
-}
 
 Write-Host "Detect Git:"
 git --version
-
-cd $RELEASE_ROOT
-if (!(Test-Path -Path '.git')) {
-	git init .
-	echo '*' | Out-File -FilePath .gitignore -Encoding "ascii"
-}
 
 cd $VSCODE_ROOT
