@@ -214,11 +214,13 @@ if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
 	if (!$GitLocation) {
 		throw "You need to install <github desktop>( https://desktop.github.com/ )."
 	}
-	
+	writeScriptFile git @"
+	$env:HOME=${ORIGINAL_HOME}
+	$env:Path=${ORIGINAL_PATH}
+	& "$GitLocation" `$args
+"@
 	writeCmdFile git @"
-		set HOME=${ORIGINAL_HOME}
-		set Path=${ORIGINAL_PATH}
-	"$GitLocation" %*
+		powershell.exe `"$PRIVATE_BINS/git.ps1`" %*
 "@
 	
 	cd $RELEASE_ROOT
