@@ -58,11 +58,11 @@ runMain(async () => {
 		await cleanupBuildResult(wantDirPath);
 	}
 	
-	if (!isCI){
+	if (!isCI) {
 		await extractSourceCodeIfNeed();
+		await yarnInstall();
 	}
 	
-	await yarnInstall();
 	await downloadElectron();
 	await downloadBuiltinExtensions();
 	
