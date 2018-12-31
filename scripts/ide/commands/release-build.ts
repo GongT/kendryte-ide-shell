@@ -1,6 +1,6 @@
 import { copy } from 'fs-extra';
 import { resolve } from 'path';
-import { ARCH_RELEASE_ROOT, isMac, isWin, RELEASE_ROOT, VSCODE_ROOT, WORKSPACE_ROOT } from '../../environment';
+import { ARCH_RELEASE_ROOT, isCI, isMac, isWin, RELEASE_ROOT, VSCODE_ROOT, WORKSPACE_ROOT } from '../../environment';
 import { shellExecAsync } from '../../library/childprocess/simple';
 import { log } from '../../library/gulp';
 import { cleanScreen } from '../../library/misc/clsUtil';
@@ -54,9 +54,13 @@ runMain(async () => {
 	ensureChdir(RELEASE_ROOT);
 	const wantDirName = await calcCompileFolderName();
 	const wantDirPath = resolve(RELEASE_ROOT, wantDirName);
-	await cleanupBuildResult(wantDirPath);
+	if (!isCI) {
+		await cleanupBuildResult(wantDirPath);
+	}
 	
-	await extractSourceCodeIfNeed();
+	if (!isCI){
+		await extractSourceCodeIfNeed();
+	}
 	
 	await yarnInstall();
 	await downloadElectron();
