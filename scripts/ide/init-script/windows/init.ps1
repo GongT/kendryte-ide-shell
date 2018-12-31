@@ -159,12 +159,13 @@ writeScriptFile yarn @"
 
 if ( $env:SYSTEM_COLLECTIONID ) {
 	
-	downloadFile "http://www.python.org/ftp/python/2.7.6/python-2.7.6.amd64.msi" "$DOWNLOAD_PATH/python2.msi"
+	downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/py2.7z" (resolvePath $DOWNLOAD_PATH python2.7z)
 	$PythonPath = (resolvePath $BUILD_ROOT python27)
-	get-item "$DOWNLOAD_PATH/python2.msi"
-	echo "Downloaded, now install it to $PythonPath"
-	& msiexec /a "$DOWNLOAD_PATH/python2.msi" /qb "TARGETDIR=$PythonPath"
+	7za x -y "-o$PythonPath" -- $(resolvePath $DOWNLOAD_PATH python2.7z) | Out-Null
+
+	Get-ChildItem $PythonPath
 	echo "Install finished"
+	
 	& "$PythonPath/python.exe" --version
 
 } else {
