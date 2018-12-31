@@ -170,31 +170,16 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 
 if ( $env:SYSTEM_COLLECTIONID ) {
 	
-	if (!(Test-Path -Path "$PRIVATE_BINS\python.bat")) {
-		cd $TMP
-		
-		writeCmdFile finding-py @"
-			set PATH=$ORIGINAL_PATH
-			C:\Windows\System32\where.exe python
-"@
-		$PyLocation = (cmd.exe /c "finding-py")
-		
-		if (!$PyLocation) {
-			throw "You need to install python2"
-		}
-		
-		writeCmdFile python @"
-			set HOME=${ORIGINAL_HOME}
-			set Path=${ORIGINAL_PATH}
-		"$GitLocation" %*
-"@
-	}
+	downloadFile "http://www.python.org/ftp/python/2.7.6/python-2.7.6.amd64.msi" "$DOWNLOAD_PATH/python2.msi"
+	$PythonPath = (resolvePath $BUILD_ROOT python27)
+	& msiexec /i "$DOWNLOAD_PATH/python2.msi" "TARGETDIR=$PythonPath" /passive
+	& "$PythonPath/python.exe" --version
 
 } else {
 	if (!(Get-Command python -errorAction SilentlyContinue)) {
 		echo "================================================="
 		echo "  Try install windows-build-tools"
-		echo "  Pplease wait result from new window"
+		echo "  Please wait result from new window"
 		echo "  "
 		echo "  You need press Enter to continue"
 		echo "================================================="

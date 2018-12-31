@@ -55,7 +55,11 @@ let PATHS = [
 if (platform() === 'win32') {
 	sp = ';';
 	PATHS.push('C:/WINDOWS/system32', 'C:/WINDOWS', 'C:/WINDOWS/System32/Wbem', 'C:/WINDOWS/System32/WindowsPowerShell/v1.0');
-	PATHS.push(resolve(process.env.USERPROFILE, '.windows-build-tools/python27'));
+	if (isCI) {
+		PATHS.push(resolve(BUILD_ROOT, 'python27'));
+	} else {
+		PATHS.push(resolve(process.env.USERPROFILE, '.windows-build-tools/python27'));
+	}
 } else if (platform() === 'darwin') {
 	sp = ':';
 	PATHS.push('/bin', '/usr/bin');
