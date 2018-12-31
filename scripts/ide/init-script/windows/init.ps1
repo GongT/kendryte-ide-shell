@@ -168,30 +168,52 @@ if (!(Test-Path -Path "$MY_SCRIPT_ROOT_BUILT")) {
 }
 ### install node_modules for my scripts
 
-if (!(Get-Command python -errorAction SilentlyContinue)) {
-	echo "================================================="
-	echo "  Try install windows-build-tools"
-	echo "  Pplease wait result from new window"
-	echo "  "
-	echo "  You need press Enter to continue"
-	echo "================================================="
+if ( $env:SYSTEM_COLLECTIONID ) {
 	
-	Start-Process -Verb RunAs -Wait -FilePath powershell.exe -ArgumentList @("-NoExit", "-Command", $( resolvePath $PRIVATE_BINS "yarn-install-build-tools.ps1" ) )
-	if (!$?) {
-		throw "windows-build-tools cannot install"
+	if (!(Test-Path -Path "$PRIVATE_BINS\python.bat")) {
+		cd $TMP
+		
+		writeCmdFile finding-py @"
+			set PATH=$ORIGINAL_PATH
+			C:\Windows\System32\where.exe python
+"@
+		$PyLocation = (cmd.exe /c "finding-py")
+		
+		if (!$PyLocation) {
+			throw "You need to install python2"
+		}
+		
+		writeCmdFile python @"
+			set HOME=${ORIGINAL_HOME}
+			set Path=${ORIGINAL_PATH}
+		"$GitLocation" %*
+"@
 	}
-}
-if (!(Get-Command python -errorAction SilentlyContinue)) {
-	$PythonPath = (resolvePath $env:USERPROFILE .windows-build-tools\python27)
-	throw "python cannot not install at $PythonPath, please install windows-build-tools and try again."
+
+} else {
+	if (!(Get-Command python -errorAction SilentlyContinue)) {
+		echo "================================================="
+		echo "  Try install windows-build-tools"
+		echo "  Pplease wait result from new window"
+		echo "  "
+		echo "  You need press Enter to continue"
+		echo "================================================="
+		
+		Start-Process -Verb RunAs -Wait -FilePath powershell.exe -ArgumentList @("-NoExit", "-Command", $( resolvePath $PRIVATE_BINS "yarn-install-build-tools.ps1" ) )
+		if (!$?) {
+			throw "windows-build-tools cannot install"
+		}
+	}
+	if (!(Get-Command python -errorAction SilentlyContinue)) {
+		$PythonPath = (resolvePath $env:USERPROFILE .windows-build-tools\python27)
+		throw "python cannot not install at $PythonPath, please install windows-build-tools and try again."
+	}
 }
 
 if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
 	cd $TMP
 	
-	$GitLocation = $f.FullName
 	writeCmdFile finding-git @"
-		@echo off
 		set PATH=$ORIGINAL_PATH
 		C:\Windows\System32\where.exe git
 "@
@@ -202,7 +224,6 @@ if (!(Test-Path -Path "$PRIVATE_BINS\git.bat")) {
 	}
 	
 	writeCmdFile git @"
-		@echo off
 		set HOME=${ORIGINAL_HOME}
 		set Path=${ORIGINAL_PATH}
 	"$GitLocation" %*
