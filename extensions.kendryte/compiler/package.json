@@ -6,7 +6,7 @@
 		"vscode": ">=1.29.0"
 	},
 	"scripts": {
-		"postinstall": "vscode-install"
+		"postinstall": "node run-bin.js"
 	},
 	"devDependencies": {
 		"@types/node": "^10.12.10",

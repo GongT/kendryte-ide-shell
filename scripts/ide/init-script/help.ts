@@ -23,9 +23,9 @@ const cacheFile = helpStringCache();
 if (existsSync(cacheFile)) {
 	unlinkSync(cacheFile);
 }
-if (!isCI){
+if (!isCI) {
 	out.pipe(createWriteStream(cacheFile))
-		.write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
+	   .write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
 }
 out.pipe(process.stderr);
 
@@ -73,18 +73,19 @@ function generateCommand(cmd: string) {
 	
 	const file = resolvePath(PRIVATE_BINS, cmd);
 	const loader = resolve(__dirname, 'load-command.js');
-	let content: string;
-	newCommands[cmd] = true;
+	
 	if (isWin) {
-		content = `
+		newCommands[file + '.ps1'] = true;
+		writeFileSync(file + '.ps1', `
 node '${loader}' "${cmd}" @args
 if (!$?) {
 	throw "Command failed with code $LastExitCode"
 }
-`;
-		writeFileSync(file + '.ps1', content, 'utf8');
-	} else {
-		content = `#!/bin/bash
+`, 'utf8');
+	}
+	
+	newCommands[cmd] = true;
+	writeFileSync(file, `#!/bin/bash
 function die() {
 	echo -en "\\e[38;5;9m" >&2
 	echo -en "$*" >&2
@@ -92,8 +93,8 @@ function die() {
 	exit 1
 }
 node ${JSON.stringify(loader)} '${cmd}' "$@" || die "Command failed with code $?"
-`;
-		writeFileSync(file, content, 'utf8');
+`, 'utf8');
+	if (!isWin) {
 		chmodSync(file, '0777');
 	}
 }
