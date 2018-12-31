@@ -161,14 +161,15 @@ writeScriptFile yarn @"
 
 if ( $env:SYSTEM_COLLECTIONID ) {
 	
-	downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/py2.7z" (resolvePath $DOWNLOAD_PATH python2.7z)
-	$PythonPath = (resolvePath $BUILD_ROOT python27)
-	7za x -y "-o$PythonPath" -- $(resolvePath $DOWNLOAD_PATH python2.7z) | Out-Null
-
-	Get-ChildItem $PythonPath
-	echo "Install finished"
+	if (!(Get-Command python -errorAction SilentlyContinue)) {
+		downloadFile "https://s3.cn-northwest-1.amazonaws.com.cn/kendryte-ide/3rd-party/py2.7z" (resolvePath $DOWNLOAD_PATH python2.7z)
+		$PythonPath = (resolvePath $BUILD_ROOT python27)
+		7za x -y "-o$PythonPath" -- $(resolvePath $DOWNLOAD_PATH python2.7z) | Out-Null
 	
-	& "$PythonPath/python.exe" --version
+		Get-ChildItem $PythonPath
+		echo "Install finished"
+	}
+	Write-Host "Detect Python: $(& "$PythonPath/python.exe" --version)"
 
 } else {
 	if (!(Get-Command python -errorAction SilentlyContinue)) {

@@ -3,6 +3,8 @@
 	"name": "scripts",
 	"version": "0.0.0",
 	"dependencies": {
+		"7zip-bin": "^4.1.0",
+		"7zip-bin-wrapper": "^1.0.6",
 		"@gongt/stillalive": "^1.2.4",
 		"@types/gulp": "^3",
 		"@types/gulp-filter": "^3.0.32",
