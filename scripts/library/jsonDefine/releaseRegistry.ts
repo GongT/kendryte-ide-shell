@@ -88,10 +88,37 @@ export async function checkRemoteOutdated(platform: IPlatformTypes, local: IPack
 	const remote = await loadRemoteState(true);
 	const r = remote[platform];
 	if (!r) {
+		log('checkRemoteOutdated: remote do not have platform `%s`, result is outdated', platform);
 		return true;
 	}
-	if (r.version === local.version && r.patchVersion === local.patchVersion) {
+	if (r.version !== local.version) {
+		log('checkRemoteOutdated: platform `%s` version is %s, remote is %s, result is outdated', local.version, r.version, platform);
+		return true;
+	}
+	if (r.patchVersion === local.patchVersion) {
+		log('checkRemoteOutdated: platform `%s` patch is %s, remote is %s, result is outdated', local.patchVersion, r.patchVersion, platform);
+		return true;
+	}
+	log('checkRemoteOutdated: platform `%s` has same version and patch, result is up-to-date', platform);
+	return false;
+}
+
+export async function checkRemoteNeedPatch(platform: IPlatformTypes, local: IPackageJson) {
+	const remote = await loadRemoteState(true);
+	const r = remote[platform];
+	if (!r) {
+		log('checkRemoteNeedPatch: remote do not have platform `%s`, NO patch need.', platform);
 		return false;
 	}
-	return true;
+	if (r.version !== local.version) {
+		log('checkRemoteNeedPatch: remote do not have platform `%s`, NO patch need.', platform);
+		log('checkRemoteNeedPatch: platform `%s` big version has changed, NO patch need.', platform);
+		return false;
+	}
+	if (r.patchVersion === local.patchVersion) {
+		log('checkRemoteNeedPatch: platform `%s` has same patch, NO patch need', platform);
+		return true;
+	}
+	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', local.patchVersion, r.patchVersion, platform);
+	return false;
 }

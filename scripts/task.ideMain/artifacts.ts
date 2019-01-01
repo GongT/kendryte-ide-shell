@@ -1,6 +1,6 @@
 import { copy, readJson } from 'fs-extra';
 import { basename } from 'path';
-import { BUILD_ARTIFACTS_DIR } from '../environment';
+import { BUILD_ARTIFACTS_DIR, isForceRun } from '../environment';
 import { everyPlatform, log } from '../library/gulp';
 import { compress7z, extract7z } from '../library/gulp/7z';
 import { createDownload2Stream } from '../library/gulp/download';
@@ -40,7 +40,7 @@ export const artifactsRepackTask = everyPlatform('ide:artifacts:repack', [artifa
 	
 	const packageJson: IPackageJson = await readJson(nativePath(sourceFrom, platformResourceAppDir(platform), 'package.json'));
 	
-	if (await checkRemoteOutdated(platform, packageJson) && !process.argv.includes('-f')) {
+	if (!await checkRemoteOutdated(platform, packageJson) && !isForceRun) {
 		log('upload for %s is ignored, remote version is same with local.\n    set -f to force overwrite.', platform);
 		return;
 	}

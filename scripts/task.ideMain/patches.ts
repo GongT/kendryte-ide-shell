@@ -1,10 +1,11 @@
 import { copy, readJson } from 'fs-extra';
 import { basename } from 'path';
+import { isForceRun } from '../environment';
 import { getOutputCommandAt, simpleCommandAt } from '../library/childprocess/complex';
-import { everyPlatform, log } from '../library/gulp';
+import { everyPlatform, log, task } from '../library/gulp';
 import { compress7z } from '../library/gulp/7z';
 import { IPackageJson } from '../library/jsonDefine/package.json';
-import { checkRemoteOutdated } from '../library/jsonDefine/releaseRegistry';
+import { checkRemoteNeedPatch } from '../library/jsonDefine/releaseRegistry';
 import { ExS3 } from '../library/misc/awsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
@@ -12,14 +13,20 @@ import { artifactsExtractedTempPath, extractTempDir, patchDownloadKey } from '..
 import { artifactsPrepareTask } from './artifacts';
 import { prevBuildDownloadAndExtractTask } from './download.prev';
 
-export const createPatchesFiles = everyPlatform('ide:patches:create', [
+function noop() {
+	return task('ide:patches:create', () => {
+		log('is force run, skip patch');
+	});
+}
+
+export const createPatchesFiles = isForceRun? noop() : everyPlatform('ide:patches:create', [
 	prevBuildDownloadAndExtractTask,
 	artifactsPrepareTask,
 ], async (platform) => {
 	const result = nativePath(artifactsExtractedTempPath(platform, 'latest'), platformResourceAppDir(platform));
 	const resultVersion: IPackageJson = await readJson(nativePath(result, 'package.json'));
 	
-	if (await checkRemoteOutdated(platform, resultVersion)) {
+	if (!await checkRemoteNeedPatch(platform, resultVersion)) {
 		log('patch for %s is ignored, remote version is same with local.', platform);
 		return;
 	}

@@ -6,6 +6,8 @@ export const isWin = platform() === 'win32';
 export const isMac = platform() === 'darwin';
 export const isLinux = platform() === 'linux';
 
+export const isForceRun = process.argv.includes('-f');
+
 export const ORIGINAL_HOME = process.env.ORIGINAL_HOME || process.env.HOME;
 process.env.ORIGINAL_HOME = ORIGINAL_HOME;
 
