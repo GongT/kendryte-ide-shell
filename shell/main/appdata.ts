@@ -16,8 +16,14 @@ export interface IRegistryData extends IDEJson {
 	updaterVersion: string;
 }
 
-export function loadApplicationData(): Promise<ISelfConfig> {
-	console.info('loadApplicationData');
+let config: ISelfConfig;
+
+export async function loadApplicationData(): Promise<ISelfConfig> {
+	if (!config) {
+		console.info('loadApplicationData');
+		config = readJson(configFile, {encoding: 'utf8'}) as any;
+		console.info(config);
+	}
 	
-	return readJson(configFile, {encoding: 'utf8'});
+	return config;
 }

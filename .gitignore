@@ -4,6 +4,7 @@ dist/
 /build/
 *.tgz
 
+*/.idea
 .idea/*
 !.idea/*.iml
 !.idea/vcs.xml

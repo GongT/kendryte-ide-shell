@@ -6,7 +6,7 @@ import { doCleanup } from './library/lifecycle';
 import { createLogger } from './library/logger';
 import { toggleLoggerVisible } from './library/showLogger';
 import { timeout } from './library/timeout';
-import { ISelfConfig, loadApplicationData } from './main/appdata';
+import { loadApplicationData } from './main/appdata';
 import { handleError } from './main/error';
 import { startMainLogic } from './main/main';
 
@@ -24,12 +24,12 @@ function userCancel() {
 export function main() {
 	document.getElementById('viewMain').style.width = (WINDOW_WIDTH - 20) + 'px';
 	toggleLoggerVisible(false);
-	
+
 	window.scrollTo(0, 0);
 	window.addEventListener('beforeUnload', () => {
 		window.scrollTo(0, 0);
 	});
-	
+
 	document.getElementById('btnLog').addEventListener('click', () => toggleLoggerVisible());
 	document.addEventListener('auxclick', (e: MouseEvent) => {
 		if (e.which === 2) { // middle
@@ -38,14 +38,14 @@ export function main() {
 			ipcRenderer.send('contextmenu');
 		}
 	}, false);
-	
+
 	Object.defineProperty(window, 'copyLog', {
 		value() {
 			const ele: HTMLDivElement = document.querySelector('#viewLog>div.logText');
 			clipboard.writeText(ele.innerText);
 		},
 	});
-	
+
 	if (document.readyState === 'complete') {
 		bootstrap();
 	} else {
@@ -80,7 +80,6 @@ function mainLogic(): Promise<boolean> {
 				document.querySelector('#progressBar'),
 				document.querySelector('#viewLog>.logText'),
 			);
-			return data;
 		})
 		.then(animate)
 		.then(startMainLogic)
@@ -91,18 +90,19 @@ function mainLogic(): Promise<boolean> {
 		.catch(handleError);
 }
 
-async function animate(data: ISelfConfig) {
+async function animate() {
+	const data = await loadApplicationData();
 	const title = document.createElement('title');
 	title.innerText = `${data.title} :: Auto Updater`;
 	document.head.appendChild(title);
-	
+
 	console.info('animate');
 	await timeout(1000);
-	
+
 	const $main = document.querySelector('#viewMain');
 	$main.querySelector('.title').innerHTML = data.title;
 	$main.querySelector('.subtitle').innerHTML = '(' + data.channel + ')';
-	
+
 	document.body.classList.add('run');
 	return data;
 }

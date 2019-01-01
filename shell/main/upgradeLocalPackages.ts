@@ -6,27 +6,20 @@ import { loadJson } from '../library/network';
 import { willRemove } from '../library/removeDirectory';
 import { registerWork, workTitle } from '../library/work';
 import { downloadAndExtract } from './downloadAndExtract';
-import { SYS_NAME } from './release.json';
+import { IPlatformMap, platform } from './release.json';
 
 const CONTENT_PACKAGE_OK = 'install-ok:v0.0.0';
+
+export interface IPlatformPair {
+	version: string;
+	download: string;
+}
 
 export type IThirdPartyRegistry = ReadonlyArray<{
 	projectName: string;
 	version: string;
 	source: string;
-	windows: {
-		version: string;
-		download: string;
-	};
-	linux: {
-		version: string;
-		download: string;
-	};
-	mac: {
-		version: string;
-		download: string;
-	};
-}>
+}&IPlatformMap<IPlatformPair>>
 
 interface VersionMap<AS = string> {
 	[name: string]: AS;
@@ -47,14 +40,14 @@ export async function upgradeLocalPackages(remote: string) {
 	const remoteVersion: VersionMap<{version: string, url: string}> = {};
 	for (const item of thirdParty) {
 		let version = item.version;
-		if (item[SYS_NAME] && item[SYS_NAME].version) {
-			version = item[SYS_NAME].version;
+		if (item[platform] && item[platform].version) {
+			version = item[platform].version;
 		}
 		
 		let url;
 		
-		if (item[SYS_NAME] && item[SYS_NAME].download) {
-			url = resolveUrl(remote, item[SYS_NAME].download);
+		if (item[platform] && item[platform].download) {
+			url = resolveUrl(remote, item[platform].download);
 		} else if (item.source) {
 			url = resolveUrl(remote, item.source);
 		}
