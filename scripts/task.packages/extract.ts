@@ -6,7 +6,7 @@ import { writeFile } from '../library/misc/fsUtil';
 import { getBundledVersions } from './3rd-registry';
 import { cleanupTask } from './cleanup';
 import { downloadTask } from './download';
-import { createPackagesExtractPath, getPackagesExtractRoot, savePath } from './paths';
+import { createPackagesExtractPath, savePath } from './paths';
 
 class ExtractStream extends Transform {
 	constructor() {
@@ -36,9 +36,10 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	}
 	handle.end();
 	
+	const bundleFile = createPackagesExtractPath(platform, 'bundled-versions.json');
 	return mergeStream(
 		handle,
 		filesToStream(createVinylFile('bundled-versions.json', undefined, JSON.stringify(bundledVersions)))
-			.pipe(gulp.dest(getPackagesExtractRoot(platform))),
+			.pipe(gulp.dest(bundleFile)),
 	);
 });
