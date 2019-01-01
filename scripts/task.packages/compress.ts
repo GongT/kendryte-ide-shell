@@ -1,27 +1,16 @@
-import { join } from 'path';
-import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../environment';
-import { everyPlatform, log, run } from '../library/gulp';
-import { offlinePackageFileName } from '../library/paths/offlinePackages';
+import { BUILD_ARTIFACTS_DIR } from '../environment';
+import { everyPlatform } from '../library/gulp';
+import { compress7z } from '../library/gulp/7z';
 import { cleanArtifactTask } from '../library/gulp/cleanup';
+import { nativePath } from '../library/misc/pathUtil';
+import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { extractPackages } from './extract';
 import { getPackagesExtractRoot } from './paths';
 
 export const createZipFiles = everyPlatform('offpack:compress', [cleanArtifactTask, extractPackages], (platform) => {
 	const extraTo = getPackagesExtractRoot(platform);
-	const szCmd = [
-		require('7zip-bin').path7za,
-		'a',
-		'-y',
-		'-ms=on',
-		'-mx8',
-		'-mmt',
-		'-ssc',
-		join(BUILD_ROOT, BUILD_ARTIFACTS_DIR, offlinePackageFileName(platform)),
-		'*',
-	].join(' ');
-	log.info(`Compress: ${szCmd}(${extraTo})`);
-	return run(szCmd, {
-		cwd: extraTo,
-		quiet: true,
-	})();
+	return compress7z(
+		nativePath(BUILD_ARTIFACTS_DIR, offlinePackageFileName(platform)),
+		extraTo,
+	);
 });

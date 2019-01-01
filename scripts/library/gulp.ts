@@ -183,7 +183,7 @@ export function filesToStream(...files: File[]) {
 
 export function gulpSrc(base: string, glob: string[]|string) {
 	// const rel = relative(WORKSPACE_ROOT, base);
-	return gulp.src(wrapGlob(base, glob), {base: base + '/', cwd: base, dot: true});
+	return gulp.src(wrapGlob(base, glob), {base: base + '/', cwd: base, dot: true, buffer: true});
 }
 
 export function normalizePath(f: File) {
