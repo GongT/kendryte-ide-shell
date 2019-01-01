@@ -20,7 +20,7 @@ export async function resolveExecutable(fsPath: string) {
 
 export function launchProduction() {
 	workTitle('starting', '...');
-	registerWork(async () => {
+	registerWork('launch application', async () => {
 		const lastVersion = (await readLocalVersions()).pop();
 		if (!lastVersion) {
 			throw new Error('latest IDE version not found');
@@ -33,12 +33,12 @@ export function launchProduction() {
 		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			VSCODE_PATH: lastVersion.fsPath,
 		});
-	}, 'launch application');
+	});
 }
 
 export function launchSource(data: ISelfConfig) {
 	workTitle('starting', 'source code');
-	registerWork(async () => {
+	registerWork('launch application source', async () => {
 		const sourceRoot = ideSourceRoot(data);
 		const exe = await ideSourceCmdline(sourceRoot);
 		
@@ -47,7 +47,7 @@ export function launchSource(data: ISelfConfig) {
 			IS_SOURCE_RUN: 'yes',
 			VSCODE_PATH: sourceRoot,
 		});
-	}, 'launch application');
+	});
 }
 
 export async function launchIDE(exe: string|string[], cwd: string, args: string[], env: any) {

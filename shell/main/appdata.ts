@@ -21,7 +21,7 @@ let config: ISelfConfig;
 export async function loadApplicationData(): Promise<ISelfConfig> {
 	if (!config) {
 		console.info('loadApplicationData');
-		config = readJson(configFile, {encoding: 'utf8'}) as any;
+		config = await readJson(configFile, {encoding: 'utf8'}) as any;
 		console.info(config);
 	}
 	

@@ -9,11 +9,20 @@ export interface IWorkObj {
 
 const workList: IWorkObj[] = [];
 
-export function registerWork(cb: IWorkFn, hint: string = 'no name') {
-	workList.push({
-		work: cb,
-		hint,
-	});
+export function registerWork(cb: IWorkFn): void;
+export function registerWork(hint: string, cb: IWorkFn): void;
+export function registerWork(hint: string|IWorkFn, cb?: IWorkFn) {
+	if (arguments.length === 2) {
+		workList.push({
+			work: cb,
+			hint,
+		} as any);
+	} else {
+		workList.push({
+			work: hint,
+			hint: (hint as any).name || 'no name',
+		} as any);
+	}
 }
 
 export function getWorkCount() {

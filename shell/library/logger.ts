@@ -1,6 +1,6 @@
 import { is } from 'electron-util';
 import { createWriteStream, ensureDir, ftruncate, open } from 'fs-extra';
-import { configFile, contentRoot, isBuilt, myProfilePath, nativePath } from './environment';
+import { configFile, contentRoot, isBuilt, myProfilePath, nativePath, SELF_VERSION } from './environment';
 import { registerCleanup } from './lifecycle';
 
 const CLS_INFINITY = 'infinite';
@@ -92,6 +92,8 @@ class Logger implements ILogger {
 	}
 	
 	public action(message: string, subMessage: string = ''): void {
+		console.log('Action: ' + message);
+		console.log('        ' + subMessage);
 		this.$action.innerHTML = message;
 		this._writeln(message, 'action');
 		
@@ -122,15 +124,18 @@ class Logger implements ILogger {
 	}
 	
 	public debug(message: string): void {
+		console.log('debug: ' + message);
 		this._writeln(message, 'log debug');
 	}
 	
 	public log(message: string): void {
+		console.log('log: ' + message);
 		this._writeln(message, 'log');
 		this.sub2(message);
 	}
 	
 	public error(message: string): void {
+		console.error('error: ' + message);
 		this._writeln(message, 'error');
 		this.sub2(message);
 	}
@@ -189,6 +194,7 @@ export async function createLogger(
 		$log,
 	);
 	
+	logger.debug(`SELF_VERSION=${SELF_VERSION}`);
 	logger.debug(`isBuilt=${isBuilt}`);
 	logger.debug(`appRoot=${contentRoot}`);
 	logger.debug(`configFile=${configFile}`);
