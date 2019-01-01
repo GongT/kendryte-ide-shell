@@ -11,12 +11,15 @@ const uploadPackage = everyPlatform('offpack:upload', [createZipFiles], (platfor
 	return gulpSrc(BUILD_ARTIFACTS_DIR, offlinePackageFileName(platform))
 		.pipe(gulpS3.dest({base: AWS_RELEASE_PACKAGES_PATH}));
 });
+everyPlatform('offpack', [uploadPackage], updateRelease);
 
-export const modifyJsonTask = task('offpack:update.json', [uploadPackage], () => {
+export const modifyJsonTask = task('offpack:update.json', [uploadPackage], updateRelease);
+
+function updateRelease() {
 	const version = createReleaseTag();
 	return gulpS3.src(`release/IDE.${getReleaseChannel()}.json`)
 	             .pipe(jeditor({
 		             offlinePackageVersion: version,
 	             }))
 	             .pipe(gulpS3.dest());
-});
+}
