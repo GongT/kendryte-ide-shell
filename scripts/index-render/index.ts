@@ -18,8 +18,8 @@ export async function createIndexFileContent(): Promise<string> {
 	];
 	
 	const registryFile = await loadRemoteState();
-	const lastPatch = registryFile.linux.patchVersion;
-	const lastVersion = registryFile.linux.version;
+	const lastPatch = registryFile.linux && registryFile.linux.patchVersion;
+	const lastVersion = registryFile.linux && registryFile.linux.version;
 	
 	log('version=%s', lastVersion);
 	if (lastPatch) {
