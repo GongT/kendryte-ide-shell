@@ -7,7 +7,7 @@ import { IRegistryData, loadApplicationData } from './appdata';
 import { downloadMain, migrateUserData, uninstallOldVersion } from './downloadMain';
 import { downloadPatch } from './downloadPatch';
 import { isRunSource, launchProduction, launchSource } from './launch';
-import { getFullRegistry, IDEPatchJson, latestPatch, platform } from './release.json';
+import { getFullRegistry, IDEPatchJson, platform } from './release.json';
 import { upgradeLocalPackages } from './upgradeLocalPackages';
 
 function findRelease(registry: IRegistryData) {
@@ -30,8 +30,7 @@ export async function startMainLogic() {
 	const registry = await getFullRegistry();
 	const platformInfo = registry[platform];
 	logger.debug('latest version: ' + platformInfo.version);
-	const lp = latestPatch(platformInfo);
-	const lastPatch = lp? str(lp.version) : '';
+	const lastPatch = platformInfo.patchVersion;
 	logger.debug(`latest patch: ${lastPatch || 'No Patch'}`);
 	
 	logger.progress(NaN);
