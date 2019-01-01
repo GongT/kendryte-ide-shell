@@ -45,7 +45,7 @@ export async function createIndexFileContent(): Promise<string> {
 
 <span class="en">main:</span>
 <span class="cn">主程序：</span>
-<span class="badge badge-info">${registryFile || '???'}(${lastPatch || '???'})</span>
+<span class="badge badge-info">${lastVersion || '???'}(${lastPatch || '???'})</span>
 <span>&nbsp;</span>
 
 <span class="en">updater:</span>
