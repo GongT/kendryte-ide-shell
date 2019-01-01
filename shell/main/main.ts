@@ -14,7 +14,9 @@ function findRelease(registry: IRegistryData) {
 	const res = registry[platform];
 	
 	if (!res) {
-		debugger;
+		if (!isBuilt) {
+			debugger;
+		}
 		throw new Error('Registry is invalid.');
 	}
 	

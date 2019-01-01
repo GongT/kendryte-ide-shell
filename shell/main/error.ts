@@ -1,6 +1,6 @@
 import { remote } from 'electron';
 import { DEVELOPER_PREVENT_START } from '../library/debug';
-import { myArgs } from '../library/environment';
+import { isBuilt, myArgs } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { launchIDE, resolveExecutable } from './launch';
@@ -17,7 +17,9 @@ export function handleError(error: Error) {
 		logger.sub2('');
 		return false;
 	}
-	debugger;
+	if (!isBuilt) {
+		debugger;
+	}
 	
 	setTimeout(() => {
 		throw error;
@@ -41,7 +43,9 @@ export function handleError(error: Error) {
 
 function finalTry(sub2: string) {
 	readLocalVersions().then(async (versions) => {
-		debugger;
+		if (!isBuilt) {
+			debugger;
+		}
 		versions = versions.filter((version) => {
 			return version.fsPath !== lastRun; // filter out this version, it seems broken
 		});
