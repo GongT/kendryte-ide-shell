@@ -225,8 +225,11 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 		waitInit(),
 	]);
 	
-	logOut.write('---- unpipe original output ----');
 	cp.stdout.unpipe(logOut);
 	cp.stderr.unpipe(logOut);
-	logOut.close();
+	try {
+		logOut.write('---- unpipe original output ----');
+		logOut.close();
+	} catch (e) {
+	}
 }
