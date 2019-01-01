@@ -93,10 +93,6 @@ export async function startMainLogic() {
 	window.close();
 }
 
-function str(v: any) {
-	return typeof v === 'number'? v.toFixed(6) : v;
-}
-
 function patchesToDownload(patches: IDEPatchJson[], localVer: string): string[] {
 	return patches.filter((patch) => {
 		return parseFloat(patch.version) > parseFloat(localVer);
