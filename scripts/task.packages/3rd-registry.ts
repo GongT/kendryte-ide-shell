@@ -1,8 +1,7 @@
 import { IPlatformMap, IPlatformTypes } from '../library/gulp';
 import { ExS3 } from '../library/misc/awsUtil';
 import { resolveUrl } from '../library/misc/pathUtil';
-
-let registry: IThirdPartyRegistry;
+import { thirdRegistry } from './registry';
 
 export interface IThirdPartyRegistryPlatform {
 	version?: string;
@@ -24,18 +23,8 @@ export interface IRegistryDownloadInfo {
 	url: string;
 }
 
-export function convertRegistry(contents: Buffer) {
-	const reg: any[] = JSON.parse(contents.toString('utf8'));
-	registry = reg.map((item) => {
-		return Object.assign(item, {
-			darwin: item.mac,
-			win32: item.windows,
-		});
-	});
-}
-
 export function walkRegistry(platform: IPlatformTypes): ReadonlyArray<IRegistryDownloadInfo> {
-	return registry.map((item) => {
+	return thirdRegistry.map((item) => {
 		let url: string;
 		if (item[platform]) {
 			url = item[platform].download || item.source;

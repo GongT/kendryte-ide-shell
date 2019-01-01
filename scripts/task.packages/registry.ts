@@ -1,11 +1,10 @@
-import { task } from '../library/gulp';
-import { gulpS3 } from '../library/gulp/aws';
-import { convertRegistry } from './3rd-registry';
-import File = require('vinyl');
+import { log, task } from '../library/gulp';
+import { ExS3 } from '../library/misc/awsUtil';
+import { IThirdPartyRegistry } from './3rd-registry';
 
-export const registryTask = task('offpack:registry', (platform) => {
-	return gulpS3.src(['3rd-party/versions.json'])
-	             .on('data', (file: File) => {
-		             convertRegistry(file.contents as Buffer);
-	             });
+export let thirdRegistry: IThirdPartyRegistry;
+export const registryTask = task('offpack:registry', async () => {
+	log('Loading ThirdParty packages registry: %s', ExS3.instance().websiteUrl('3rd-party/versions.json'));
+	thirdRegistry = await ExS3.instance().loadJson<IThirdPartyRegistry>('3rd-party/versions.json');
+	log('ThirdParty packages registry: %s', JSON.stringify(thirdRegistry, null, 4));
 });
