@@ -64,6 +64,10 @@ export function localPackagePath(what: string) {
 	return resolve(contentRoot, 'LocalPackage', what);
 }
 
+export function systemTempPath() {
+	return resolve(contentRoot, 'PortableSystemTemp');
+}
+
 export function myProfilePath(what: string) {
 	return resolve(contentRoot, 'UserData/updater/user-data/', what);
 }

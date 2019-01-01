@@ -1,7 +1,7 @@
 import { ipcRenderer, remote } from 'electron';
 import { is } from 'electron-util';
 import { ensureDir, pathExistsSync, readJson } from 'fs-extra';
-import { myArgs, nativePath, resourceLocation, userDataPath } from '../library/environment';
+import { myArgs, nativePath, resourceLocation, systemTempPath, userDataPath } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
 import { registerWork, workTitle } from '../library/work';
@@ -52,6 +52,7 @@ export function launchSource(data: ISelfConfig) {
 
 export async function launchIDE(exe: string|string[], cwd: string, args: string[], env: any) {
 	console.info('LAUNCH', exe, cwd, args, env);
+	await ensureDir(systemTempPath());
 	const msg = `${exe} ${args.join(' ')}\nwd: ${cwd}`;
 	logger.debug(msg);
 	logger.sub2(msg);
