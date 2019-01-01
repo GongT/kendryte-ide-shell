@@ -28,9 +28,7 @@ export function createTypescriptTaskWithRename(taskConfig: ISourceType): TaskPro
 		        .pipe(sourcemaps.write(''))
 		        .pipe(simpleTransformStream((file) => {
 			        const distSrc = posixJoin(file.base, 'src');
-			        log(1, file.dirname);
 			        file.dirname = file.dirname.replace(distSrc, file.base);
-			        log(2, file.dirname);
 			        return file;
 		        }));
 	};

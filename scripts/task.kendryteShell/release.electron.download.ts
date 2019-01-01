@@ -1,10 +1,7 @@
-import { existsSync } from 'fs';
-import { rename } from 'fs-extra';
 import { basename, join } from 'path';
-import * as File from 'vinyl';
 import { DOWNLOAD_PATH, isCI } from '../environment';
-import { download, everyPlatform, gulp, log } from '../library/gulp';
-import { simpleTransformStream } from '../library/gulp/transform';
+import { everyPlatform } from '../library/gulp';
+import { createDownload2Stream } from '../library/gulp/download';
 import { UPDATER_ELECTRON_VERSION } from '../library/releaseInfo/electronVersion';
 
 function buildElectronUrl(platform: string) {
@@ -27,19 +24,5 @@ export function getElectronZipPath(platform: string) {
 export const downloadTask = everyPlatform('electron:download', (platform) => {
 	const url = buildElectronUrl(platform);
 	const saveTo = whereToSave(url);
-	if (!existsSync(saveTo)) {
-		log.info('download electron from %s to %s', url, saveTo);
-		log('');
-		return download({
-			url,
-			file: basename(saveTo) + '.tmp',
-		}).pipe(gulp.dest(DOWNLOAD_PATH))
-		  .pipe(simpleTransformStream(async function renameDownloadedTemp(file: File) {
-			  await rename(file.path, saveTo);
-			  return file;
-		  }));
-	} else {
-		log.info('electron exists: %s', saveTo);
-	}
-	return null;
+	return createDownload2Stream(url, saveTo);
 });

@@ -1,38 +1,12 @@
-import { spawn } from 'child_process';
-import { readdir, rename, rmdir } from 'fs-extra';
 import { resolve } from 'path';
 import { Transform } from 'stream';
-import { processPromise } from '../library/childprocess/handlers';
-import { createVinylFile, everyPlatform, filesToStream, gulp, log, mergeStream, pluginError } from '../library/gulp';
-import { mkdirpSync, writeFile } from '../library/misc/fsUtil';
+import { createVinylFile, everyPlatform, filesToStream, gulp, mergeStream, pluginError } from '../library/gulp';
+import { extract7z } from '../library/gulp/7z';
+import { writeFile } from '../library/misc/fsUtil';
 import { getBundledVersions } from './3rd-registry';
 import { cleanupTask } from './cleanup';
 import { downloadTask } from './download';
 import { createPackagesExtractPath, getPackagesExtractRoot, savePath } from './paths';
-
-const p7z = require('7zip-bin').path7za;
-
-function gulpExtract7z(zip: string, saveTo: string): Promise<void> {
-	const szCmd = [
-		'x',
-		'-y',
-		zip,
-	];
-	log.info('Decompress: ' + zip);
-	const opt = {
-		cwd: saveTo,
-		stdio: 'ignore',
-	};
-	
-	mkdirpSync(saveTo);
-	
-	return processPromise(spawn(p7z, szCmd, opt), [p7z, szCmd], opt).then(() => {
-		log.error('Decompress Success.');
-	}, (e) => {
-		log.error('Failed to extract ' + zip);
-		throw e;
-	});
-}
 
 class ExtractStream extends Transform {
 	constructor() {
@@ -41,14 +15,7 @@ class ExtractStream extends Transform {
 	
 	_transform({zipFile, extraTo}: {zipFile: string; extraTo: string;}, _: any, callback: Function) {
 		(async () => {
-			await gulpExtract7z(zipFile, extraTo + '.tmp');
-			const child = await readdir(extraTo + '.tmp');
-			if (child.length === 1) {
-				await rename(extraTo + '.tmp/' + child[0], extraTo);
-				await rmdir(extraTo + '.tmp');
-			} else {
-				await rename(extraTo + '.tmp', extraTo);
-			}
+			await extract7z(zipFile, extraTo);
 			await writeFile(resolve(extraTo, '.install-ok'), 'install-ok:offline');
 		})().then(() => {
 			callback();

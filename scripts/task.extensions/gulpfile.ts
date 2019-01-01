@@ -37,8 +37,12 @@ function wrapTypescriptTask(name: string) {
 	};
 }
 
+export function buildTaskName(name: string) {
+return TASK_CATEGORY + ':' + name + ':build';
+}
+
 function createBuildTask(name: string) {
-	return task(TASK_CATEGORY + ':' + name + ':build', [
+	return task(buildTaskName(name), [
 		createCompileTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [], true),
 		createCompileTask(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [], true),
 	]);

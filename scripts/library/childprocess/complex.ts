@@ -1,3 +1,4 @@
+import { SpawnOptions } from 'child_process';
 import { PassThrough } from 'stream';
 import { spawnWithLog } from '../misc/globalOutput';
 import { CollectingStream, endArg } from '../misc/streamUtil';
@@ -31,6 +32,13 @@ export async function muteCommandOut(cmd: string, ...args: string[]): Promise<vo
 	return pipeCommandOut(process.stderr, cmd, ...args);
 }
 
+export async function simpleCommandAt(cwd: string, cmd: string, ...args: string[]): Promise<void> {
+	// console.log(' + %s %s | line-output', command, argumentList.join(' '));
+	const stream = _spawnCommand(cmd, args, {cwd});
+	stream.output.pipe(process.stderr);
+	await stream.wait();
+}
+
 export async function simpleCommandOut(cmd: string, ...args: string[]): Promise<void> {
 	// console.log(' + %s %s | line-output', command, argumentList.join(' '));
 	const stream = _spawnCommand(cmd, args);
@@ -45,6 +53,16 @@ export async function pipeCommandOut(pipe: NodeJS.WritableStream, cmd: string, .
 	await stream.wait();
 }
 
+export async function getOutputCommandAt(cwd: string, cmd: string, ...args: string[]): Promise<string> {
+	// console.log(' + %s %s | stream-output', command, argumentList.join(' '));
+	const stream = _spawnCommand(cmd, args, {cwd});
+	const collector = new CollectingStream();
+	stream.output.pipe(collector);
+	await stream.wait();
+	return collector.getOutput().trim();
+}
+
+/**@deprecated*/
 export async function getOutputCommand(cmd: string, ...args: string[]): Promise<string> {
 	// console.log(' + %s %s | stream-output', command, argumentList.join(' '));
 	const stream = _spawnCommand(cmd, args);
@@ -74,15 +92,17 @@ export async function getOutputExitCommand(cmd: string, ...args: string[]): Prom
 	];
 }
 
-function _spawnCommand(cmd: string, args: string[]): ProcessHandler {
+function _spawnCommand(cmd: string, args: string[], opts?: SpawnOptions): ProcessHandler {
 	const output = new PassThrough();
+	opts = {
+		stdio: ['ignore', 'pipe', 'pipe'],
+		...mergeEnv(),
+		...opts,
+	};
 	return {
 		output,
 		wait() {
-			const cp = spawnWithLog(cmd, args, {
-				stdio: ['ignore', 'pipe', 'pipe'],
-				...mergeEnv(),
-			});
+			const cp = spawnWithLog(cmd, args, opts);
 			
 			cp.stdout.pipe(output, {end: false});
 			cp.stderr.pipe(output, {end: false});
@@ -92,7 +112,7 @@ function _spawnCommand(cmd: string, args: string[]): ProcessHandler {
 			});
 			
 			const [command, argumentList] = parseCommand(cmd, args);
-			return processPromise(cp, [command, argumentList]);
+			return processPromise(cp, [command, argumentList], opts);
 		},
 	};
 }

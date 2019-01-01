@@ -23,8 +23,7 @@ export function createCompileTask(
 			gulpSrc(taskConfig.root, createGlob(taskConfig.sourceFiles))
 				.pipe(filter(['**', '!**/node_modules/'])),
 		)
-			.pipe(gulp.dest(isBuilt? taskConfig.built : taskConfig.output))
-			.pipe(debug({title: 'target:'}));
+			.pipe(gulp.dest(isBuilt? taskConfig.built : taskConfig.output));
 	});
 }
 

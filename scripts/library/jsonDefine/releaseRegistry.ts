@@ -1,107 +1,97 @@
-import { isMac, isWin } from '../../environment';
+import { IPlatformMap, IPlatformTypes, log } from '../gulp';
 import { ExS3 } from '../misc/awsUtil';
-import { OBJKEY_DOWNLOAD_INDEX, OBJKEY_IDE_JSON } from '../releaseInfo/s3Keys';
-
-export interface IDEJson {
-	version: string;
-	updaterVersion: string;
-	offlinePackageVersion: string;
-	homepageUrl: string;
-	patches: IDEPatchJson[];
-	
-	linux: string;
-	mac: string;
-	windows: string;
-	
-	_autoUpdateVersions: {
-		windows: {main: string; patch: string;};
-		mac: {main: string; patch: string;};
-		linux: {main: string; patch: string;};
-	},
-}
+import { OBJKEY_IDE_JSON } from '../releaseInfo/s3Keys';
+import { IPackageJson } from './package.json';
+import deepExtend = require('deep-extend');
+import deepFreeze = require('deep-freeze');
 
 export interface IDEPatchJson {
-	linux: {generic: string};
-	mac: {generic: string};
 	version: string;
-	windows: {generic: string};
+	download: string;
 }
 
-export function latestPatch(state: IDEJson): null|IDEPatchJson {
-	if (!state.patches) {
-		return null;
+export interface IIdeJsonInner {
+	version: string;
+	downloadUrl: string;
+	patchVersion: string;
+	patches: IDEPatchJson[];
+}
+
+export interface IDEJson extends IPlatformMap<IIdeJsonInner> {
+	offlinePackageVersion: string;
+	homepageUrl: string;
+	updaterVersion: string;
+}
+
+let cachedRemoteData: IDEJson;
+let cachedOriginalData: IDEJson;
+
+export async function loadRemoteState(original: boolean = false): Promise<IDEJson> {
+	if (!cachedRemoteData) {
+		cachedRemoteData = await ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
+		cachedOriginalData = deepExtend({}, cachedRemoteData);
+		deepFreeze(cachedOriginalData);
+	}
+	if (original) {
+		return cachedOriginalData;
+	}
+	return cachedRemoteData;
+}
+
+export async function saveRemoteState() {
+	const currentJson = await loadRemoteState();
+	log('---------------- IDE.json ----------------\n%s\n---------------- IDE.json ----------------', JSON.stringify(currentJson, null, 4));
+	return ExS3.instance().putJson(OBJKEY_IDE_JSON, currentJson);
+}
+
+export async function ensureVersionMain(platform: IPlatformTypes, packageData: IPackageJson, url: string) {
+	const data = (await loadRemoteState(true))[platform];
+	const register = await loadRemoteState();
+	
+	if (!data || data.version !== packageData.version) {
+		register[platform] = {
+			version: packageData.version,
+			patchVersion: packageData.patchVersion,
+			downloadUrl: url,
+			patches: [],
+		};
 	}
 	
-	state.patches.sort((a, b) => {
-		return parseFloat(b.version) - parseFloat(a.version);
-	});
+	register[platform].downloadUrl = url;
+	register[platform].patchVersion = packageData.patchVersion;
+}
+
+export async function ensureVersionPatch(platform: IPlatformTypes, packageData: IPackageJson, url: string) {
+	const data = (await loadRemoteState(true))[platform];
 	
-	return state.patches[0] || null;
-}
-
-export function storeRemoteVersion(remote: IDEJson, type: 'main'|'patch', ver: string) {
-	if (!remote._autoUpdateVersions[SYS_NAME]) {
-		remote._autoUpdateVersions[SYS_NAME] = {} as any;
+	if (!data || data.version !== packageData.version) {
+		return false;
 	}
-	remote._autoUpdateVersions[SYS_NAME][type] = ver;
-}
-
-export function makeNewRemote(): IDEJson {
-	return {
-		version: '0.0.0',
-		homepageUrl: ExS3.instance().websiteUrl(OBJKEY_DOWNLOAD_INDEX),
-		patches: [],
-		_autoUpdateVersions: {},
-	} as any;
-}
-
-export function getRemoteVersion(remote: IDEJson, type: 'main'|'patch') {
-	if (!remote._autoUpdateVersions) {
-		remote._autoUpdateVersions = {} as any;
-	}
-	if (!remote._autoUpdateVersions[SYS_NAME]) {
-		remote._autoUpdateVersions[SYS_NAME] = {} as any;
-	}
-	return remote._autoUpdateVersions[SYS_NAME][type] || '';
-}
-
-function ideUrlPropName() {
-	if (isWin) {
-		return 'windows';
-	} else if (isMac) {
-		return 'mac';
+	
+	const register = await loadRemoteState();
+	
+	register[platform].patchVersion = packageData.patchVersion;
+	
+	const patches = register[platform].patches;
+	if (patches.length > 0 && patches[patches.length - 1].version === packageData.patchVersion) {
+		patches[patches.length - 1].download = url;
 	} else {
-		return 'linux';
+		patches.push({
+			version: packageData.patchVersion,
+			download: url,
+		});
 	}
+	return true;
 }
 
-export const SYS_NAME = ideUrlPropName();
-
-export async function loadRemoteState() {
-	const ideState = await  ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
-	if (!ideState.patches) {
-		ideState.patches = [];
+export async function checkRemoteOutdated(platform: IPlatformTypes, local: IPackageJson) {
+	const remote = await loadRemoteState(true);
+	const r = remote[platform];
+	if (!r) {
+		return true;
 	}
-	return ideState;
-}
-
-export function saveRemoteState(remote: IDEJson) {
-	return ExS3.instance().putJson(OBJKEY_IDE_JSON, remote);
-}
-
-export function ensurePatchData(version: any, state: IDEJson): IDEPatchJson {
-	const latest = state.patches.find(item => item.version === version.toFixed(6));
-	if (latest) {
-		if (!latest[SYS_NAME]) {
-			latest[SYS_NAME] = {} as any;
-		}
-		return latest;
+	if (r.version === local.version && r.patchVersion === local.patchVersion) {
+		return false;
 	}
-	const data: IDEPatchJson = {
-		version: version.toFixed(6),
-		[SYS_NAME]: {},
-	} as any;
-	state.patches.push(data);
-	
-	return data;
+	return true;
 }

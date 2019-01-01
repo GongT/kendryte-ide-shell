@@ -1,12 +1,10 @@
 import { readFileSync } from 'fs';
 import { myScriptSourcePath } from '../environment';
 import { log } from '../library/gulp';
-import { IDEJson, latestPatch } from '../library/jsonDefine/releaseRegistry';
-import { ExS3 } from '../library/misc/awsUtil';
+import { loadRemoteState } from '../library/jsonDefine/releaseRegistry';
 import { resolvePath } from '../library/misc/pathUtil';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { updaterFileName } from '../library/paths/updater';
-import { OBJKEY_IDE_JSON } from '../library/releaseInfo/s3Keys';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
 import { buildHead } from './components/head';
@@ -19,12 +17,13 @@ export async function createIndexFileContent(): Promise<string> {
 		'<html>',
 	];
 	
-	const registryFile = await ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
-	const lastPatch = latestPatch(registryFile);
+	const registryFile = await loadRemoteState();
+	const lastPatch = registryFile.linux.patchVersion;
+	const lastVersion = registryFile.linux.version;
 	
-	log('version=%s', registryFile.version);
-	if (lastPatch && lastPatch.version) {
-		log('lastPatch.version=%s', lastPatch.version);
+	log('version=%s', lastVersion);
+	if (lastPatch) {
+		log('lastPatch.version=%s', lastPatch);
 	} else {
 		log('lastPatch.version=No value');
 	}
@@ -46,7 +45,7 @@ export async function createIndexFileContent(): Promise<string> {
 
 <span class="en">main:</span>
 <span class="cn">主程序：</span>
-<span class="badge badge-info">${registryFile.version || '???'}(${lastPatch? lastPatch.version : '???'})</span>
+<span class="badge badge-info">${registryFile || '???'}(${lastPatch || '???'})</span>
 <span>&nbsp;</span>
 
 <span class="en">updater:</span>

@@ -104,6 +104,7 @@ writeScriptFile yarn @"
 			--global-folder '$NODEJS_INSTALL' ``
 			--link-folder '$NODEJS_INSTALL\node_modules' ``
 		`$args
+	exit $LastExitCode
 "@
 ### yarn.ps
 

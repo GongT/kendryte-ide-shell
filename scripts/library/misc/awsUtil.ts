@@ -136,13 +136,14 @@ export class ExS3 implements AWSLogger {
 	async uploadLocalFile(
 		key: string,
 		fileName: string,
+		forceNoHash = false,
 	) {
 		const {mime, hash} = getMime(fileName);
 		return this.uploadStream(
 			key,
 			mime,
 			createReadStream(fileName),
-			hash? createReadStream(fileName) : null,
+			(hash && !forceNoHash)? createReadStream(fileName) : null,
 		);
 	}
 	

@@ -2,7 +2,8 @@ require('source-map-support/register');
 
 import { log, task } from './library/gulp';
 import { createIndexAndUpload } from './task.common/indexPage';
-import { extensionsBuildTask, extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
+import { extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
+import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
 import { awsModifyJsonTask } from './task.kendryteShell/release.aws';
 import { compressTasks } from './task.kendryteShell/release.compress';
@@ -38,6 +39,8 @@ task('offpack', [
 	log('Offline packages upload success.');
 });
 
-task('ide', [extensionsBuildTask], () => {
+task('ide', [
+	ideUploadJson,
+], () => {
 	log('Kendryte IDE build complete.');
 });

@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process';
-import { chmod, mkdirp } from 'fs-extra';
+import { mkdirp } from 'fs-extra';
 import { decodeStream } from 'iconv-lite';
 import { join, resolve } from 'path';
 import { Transform } from 'stream';
@@ -67,7 +67,6 @@ async function createPosix7z(
 	output.write('creating posix 7z file...\n');
 	zipFileName = resolve(releaseZipStorageFolder(), zipFileName);
 	await invoke(output, stderr, 'a', ...zipLzma2Args, ...zipArgs, '--', zipFileName, join(whatToZip, '*'));
-	await chmod(zipFileName, '777');
 }
 
 export async function un7zip(from: string, to: string) {
