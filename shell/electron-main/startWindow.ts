@@ -35,7 +35,7 @@ export function startUpdater() {
 		},
 	});
 	
-	console.log(win.webContents.openDevTools({mode: 'detach'}));
+	// console.log(win.webContents.openDevTools({mode: 'detach'}));
 	win.webContents.on('console-message', (e, level: number, message: string, line: number, sourceId: string) => {
 		console.error('[console][%s] %s', level, message);
 	});
