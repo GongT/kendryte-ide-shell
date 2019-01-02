@@ -71,6 +71,7 @@ export async function startMainLogic() {
 	} else {
 		const newestLocal = localVersions.pop();
 		if (!newestLocal || newestLocal.version !== platformInfo.version) {
+			logger.log(`framework version has updated, from ${newestLocal.version} to ${platformInfo.version}`);
 			// big version has update
 			if (newestLocal && newestLocal.version) {
 				migrateUserData(newestLocal.version);
@@ -81,12 +82,15 @@ export async function startMainLogic() {
 				findRelease(registry),
 			);
 		} else if (lastPatch && lastPatch !== newestLocal.patch) {
+			logger.log(`patch version has updated, from ${newestLocal.patch} to ${lastPatch}`);
 			// big version not update, bug have new patch
 			downloadPatch(
 				newestLocal.fsPath,
 				applicationPath(`app_${platformInfo.version}_${lastPatch}${appExt}`),
 				patchesToDownload(platformInfo.patches, newestLocal.patch),
 			);
+		}else{
+			logger.log(`version and patch both same, just start .`);
 		}
 		launchProduction();
 	}
