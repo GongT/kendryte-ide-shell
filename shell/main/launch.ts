@@ -33,6 +33,9 @@ export function launchProduction() {
 		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			VSCODE_PATH: lastVersion.fsPath,
 		});
+		
+		// TODO: write out latest command line
+		
 	});
 }
 

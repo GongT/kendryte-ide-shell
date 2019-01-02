@@ -9,7 +9,7 @@
 	"main": "./boot.js",
 	"private": true,
 	"scripts": {
-		"start": "cd ../build/DebugContents/Updater ; electron resources/app"
+		"start": "cd .. && yarn electron build/DebugContents/Updater/resources/app"
 	},
 	"dependencies": {
 		"7zip-bin": "^4.1.0",
@@ -17,7 +17,7 @@
 		"@fortawesome/fontawesome-free": "^5.6.1",
 		"electron-util": "^0.10.2",
 		"fs-extra": "^7.0.1",
-		"http-proxy-agent": "^2.1.0",
+		"httplatest patc-proxy-agent": "^2.1.0",
 		"https-proxy-agent": "^2.2.1",
 		"iconv-lite": "^0.4.24",
 		"progress-stream": "^1.2.0",

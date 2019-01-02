@@ -27,6 +27,9 @@ export async function readLocalVersions() {
 				folder: item,
 				fsPath: versionRoot,
 			});
+			
+			logger.log(`found local version: ${item}`);
+			logger.log(`    version=${version}\n    patch=${patchVersion.toFixed(6)}`);
 		} catch (e) {
 			console.error('something wrong in version %s', item);
 		}

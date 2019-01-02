@@ -23,6 +23,16 @@ function findRelease(registry: IRegistryData) {
 	return res.downloadUrl;
 }
 
+function getString(patchVersion: any) {
+	if (typeof patchVersion === 'string') {
+		return patchVersion;
+	} else if (typeof patchVersion === 'number') {
+		return patchVersion.toFixed(6);
+	} else {
+		throw new Error('patchVersion is not valid');
+	}
+}
+
 export async function startMainLogic() {
 	const data = await loadApplicationData();
 	console.info('startMainLogic');
@@ -32,7 +42,7 @@ export async function startMainLogic() {
 	const registry = await getFullRegistry();
 	const platformInfo = registry[platform];
 	logger.debug('latest version: ' + platformInfo.version);
-	const lastPatch = platformInfo.patchVersion;
+	const lastPatch = getString(platformInfo.patchVersion);
 	logger.debug(`latest patch: ${lastPatch || 'No Patch'}`);
 	
 	logger.progress(NaN);
