@@ -13,8 +13,8 @@ export const updateSdkRegistry = task('pm:library.json', [standaloneSdk, freerto
 	return gulpS3.src(OBJKEY_PACKAGE_MANAGER_LIBRARY)
 	             .pipe(jeditor((json: IRemotePackageRegistry) => {
 		             ['kendryte-standalone-sdk', 'kendryte-freertos-sdk'].forEach((name) => {
-			             const reg = findOrPrepend(PackageTypes.Library, name, json);
-			             const down = findOrPrependVersion(getVersionString(), reg.versions);
+			             const reg = findOrPrependPackage(PackageTypes.Library, name, json, true);
+			             const down = findOrAppendVersion(getVersionString(), reg.versions);
 			             down.downloadUrl = ExS3.instance().websiteUrl(
 				             posixJoin(
 					             createKeyBase(PackageTypes.Library, name),
@@ -31,8 +31,8 @@ export const updateExampleRegistry = task('pm:example.json', [standaloneExample,
 	return gulpS3.src(OBJKEY_PACKAGE_MANAGER_EXAMPLE)
 	             .pipe(jeditor((json: IRemotePackageRegistry) => {
 		             exampleList.forEach(({type, name, version}) => {
-			             const reg = findOrPrepend(PackageTypes.Library, name + '_' + type, json);
-			             const down = findOrPrependVersion(version, reg.versions);
+			             const reg = findOrPrependPackage(PackageTypes.Library, name + '_' + type, json, true);
+			             const down = findOrAppendVersion(version, reg.versions);
 			             down.downloadUrl = ExS3.instance().websiteUrl(
 				             posixJoin(
 					             createKeyBase(PackageTypes.Library, name),
@@ -45,7 +45,7 @@ export const updateExampleRegistry = task('pm:example.json', [standaloneExample,
 	             .pipe(gulpS3.dest());
 });
 
-function findOrPrependVersion(version: string, json: IPackageVersionDetail[]) {
+export function findOrAppendVersion(version: string, json: IPackageVersionDetail[]) {
 	const exists = json.find(i => i.versionName === version);
 	if (exists) {
 		return exists;
@@ -55,11 +55,11 @@ function findOrPrependVersion(version: string, json: IPackageVersionDetail[]) {
 		downloadUrl: '',
 		releaseDate: Date.now(),
 	};
-	json.unshift(newData);
+	json.push(newData);
 	return newData;
 }
 
-function findOrPrepend(type: PackageTypes, name: string, json: IRemotePackageRegistry) {
+export function findOrPrependPackage(type: PackageTypes, name: string, json: IRemotePackageRegistry, prepend: boolean) {
 	const exists = json.find(i => i.name === name);
 	if (exists) {
 		return exists;

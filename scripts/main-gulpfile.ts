@@ -7,6 +7,8 @@ import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
 import { awsModifyJsonTask } from './task.kendryteShell/release.aws';
 import { compressTasks } from './task.kendryteShell/release.compress';
+import { clearPmLocalTempTask } from './task.packageManager/clean';
+import { publishUserCustom } from './task.packageManager/custom';
 import { updateExampleRegistry, updateSdkRegistry } from './task.packageManager/registry';
 import { modifyJsonTask } from './task.packages/upload';
 import { scriptsTask, scriptsWatchTask } from './task.script/compile';
@@ -52,3 +54,5 @@ task('pm', [
 	updateSdkRegistry,
 	updateExampleRegistry,
 ]);
+
+task('pm:publish', [clearPmLocalTempTask], publishUserCustom);

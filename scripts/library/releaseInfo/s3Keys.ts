@@ -10,6 +10,7 @@ export const OBJKEY_PACKAGE_MANAGER_LIBRARY = 'package-manager/registry/library.
 export const OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH = 'package-manager/library';
 export const OBJKEY_PACKAGE_MANAGER_EXAMPLE = 'package-manager/registry/example.json';
 export const OBJKEY_PACKAGE_MANAGER_EXAMPLE_PATH = 'package-manager/example';
+export const OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH = 'package-manager/useruploads';
 
 export const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;

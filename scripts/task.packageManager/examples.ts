@@ -9,7 +9,7 @@ import { readFile, writeFile } from '../library/misc/fsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { streamPromise } from '../library/misc/streamUtil';
 import { skipDirectories } from '../library/vscode/uitl';
-import { PM_TEMP_DIR } from './clean';
+import { clearPmLocalTempTask, PM_TEMP_DIR } from './clean';
 import { createKeyBase, createKeyName } from './path';
 import { getVersionString } from './version';
 
@@ -100,10 +100,10 @@ async function working(url: string, type: string) {
 	}
 }
 
-export const standaloneExample = task('pm:standalone:example', [], () => {
+export const standaloneExample = task('pm:standalone:example', [clearPmLocalTempTask], () => {
 	return working('https://github.com/kendryte/kendryte-standalone-demo/archive/master.zip', 'standalone');
 });
 
-export const freertosExample = task('pm:freertos:example', [], () => {
+export const freertosExample = task('pm:freertos:example', [clearPmLocalTempTask], () => {
 	return working('https://github.com/kendryte/kendryte-freertos-demo/archive/master.zip', 'freertos');
 });

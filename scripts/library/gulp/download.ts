@@ -35,7 +35,7 @@ export async function createRequestDownPromise(url: string, saveTo: string) {
 	await new Promise((resolve, reject) => {
 		request(url)
 			.on('error', reject)
-			.pipe(createWriteStream(saveTo))
+			.pipe(createWriteStream(tmp))
 			.on('error', reject)
 			.on('finish', () => resolve());
 	});
