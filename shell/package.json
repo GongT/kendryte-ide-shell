@@ -17,7 +17,7 @@
 		"@fortawesome/fontawesome-free": "^5.6.1",
 		"electron-util": "^0.10.2",
 		"fs-extra": "^7.0.1",
-		"httplatest patc-proxy-agent": "^2.1.0",
+		"http-proxy-agent": "^2.1.0",
 		"https-proxy-agent": "^2.2.1",
 		"iconv-lite": "^0.4.24",
 		"progress-stream": "^1.2.0",
