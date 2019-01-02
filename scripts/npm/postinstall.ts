@@ -91,7 +91,7 @@ runMain(async () => {
 	}
 	
 	chdir(resolvePath(WORKSPACE_ROOT, 'extensions.kendryte'));
-	await shellExec('yarn', 'install');
+	await shellExec('yarn');
 	
 	console.log(' > postinstall COMPLETE');
 });

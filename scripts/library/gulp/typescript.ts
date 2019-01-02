@@ -1,5 +1,6 @@
+import { join, normalize } from 'path';
 import { log, sourcemaps, typescript } from '../gulp';
-import { posixJoin, resolvePath } from '../misc/pathUtil';
+import { resolvePath } from '../misc/pathUtil';
 import { ISourceType, TaskProcessor } from './sourceType';
 import { simpleTransformStream } from './transform';
 
@@ -27,7 +28,7 @@ export function createTypescriptTaskWithRename(taskConfig: ISourceType): TaskPro
 		        .pipe(tsProject())
 		        .pipe(sourcemaps.write(''))
 		        .pipe(simpleTransformStream((file) => {
-			        const distSrc = posixJoin(file.base, 'src');
+			        const distSrc = normalize(join(file.base, 'src'));
 			        file.dirname = file.dirname.replace(distSrc, file.base);
 			        return file;
 		        }));
