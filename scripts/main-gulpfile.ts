@@ -7,6 +7,7 @@ import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
 import { awsModifyJsonTask } from './task.kendryteShell/release.aws';
 import { compressTasks } from './task.kendryteShell/release.compress';
+import { updateExampleRegistry, updateSdkRegistry } from './task.packageManager/registry';
 import { modifyJsonTask } from './task.packages/upload';
 import { scriptsTask, scriptsWatchTask } from './task.script/compile';
 
@@ -39,8 +40,15 @@ task('offpack', [
 	log('Offline packages upload success.');
 });
 
+/* ide main section */
 task('ide', [
 	ideUploadJson,
 ], () => {
 	log('Kendryte IDE build complete.');
 });
+
+/* package manager section */
+task('pm', [
+	updateSdkRegistry,
+	updateExampleRegistry,
+]);

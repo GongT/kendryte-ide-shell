@@ -25,11 +25,11 @@ export interface PathJoiner {
 	(p: string, ...paths: string[]): string;
 }
 
-export const resolvePath: PathJoiner = resolveRelative;
+export const resolvePath: PathJoiner = resolve;
 export const resolveUrl: PathJoiner = _resolve;
-export const nativePath: PathJoiner = resolveRelative;
+export const nativePath: PathJoiner = resolve;
 
-const absolute = /^\/|^[a-z]:\\\//i;
+const absolute = /^\/|^[a-z]:[\\\/]/i;
 
 function resolveRelative(p: string, ...paths: string[]): string {
 	if (isAbsolute(p[0])) {

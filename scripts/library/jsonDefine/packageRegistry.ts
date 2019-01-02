@@ -1,7 +1,7 @@
 /* vs/kendryte/vs/workbench/packageManager/common/distribute */
 export interface IPackageVersionDetail {
 	downloadUrl: string;
-	releaseDate?: string;
+	releaseDate?: number;
 	versionName: string;
 }
 
@@ -10,7 +10,7 @@ export interface IRemotePackageInfo {
 	homepage?: string;
 	icon?: string;
 	name: string;
-	type: 'library';
+	type: PackageTypes;
 	versions: IPackageVersionDetail[];
 }
 
@@ -25,3 +25,10 @@ export interface ICompileOptions {
 	type: 'library';
 	version: string;
 }
+
+/**/
+export enum PackageTypes {
+	Library = 'library',
+	Executable = 'executable',
+}
+

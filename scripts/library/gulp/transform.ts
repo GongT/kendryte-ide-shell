@@ -25,6 +25,7 @@ export function simpleTransformStream(
 				}
 				callback();
 			}, (e) => {
+				console.error(e.stack);
 				callback(pluginError(title, e));
 			});
 		}

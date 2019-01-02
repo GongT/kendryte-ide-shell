@@ -25,9 +25,12 @@ export const jeditor: IAnonGulpPlugin = require('gulp-json-editor');
 export const plumber: IAnonGulpPlugin = require('gulp-plumber');
 export const yarn: IAnonGulpPlugin = require('gulp-yarn');
 export const download: IAnonGulpPlugin = require('gulp-download2');
+export const downloadBuffer: IAnonGulpPlugin = require('gulp-download');
+export const decompress: IAnonGulpPlugin = require('gulp-decompress');
 export const filter: IAnonGulpPlugin = require('gulp-filter');
 export const debug: IAnonGulpPlugin = require('gulp-debug');
 export const zip: IAnonGulpPlugin = require('gulp-vinyl-zip');
+export const buffer: IAnonGulpPlugin = require('vinyl-buffer');
 export const rename: IAnonGulpPlugin = require('gulp-rename');
 export const run = require('gulp-run-command').default;
 export const aws: IAnonGulpPlugin = require('gulp-aws');
@@ -50,12 +53,16 @@ export function pluginError(plugin: string, originalError: string|Error) {
 	}
 }
 
-export function limitSpeedTransform(num: number, transform: (this: Readable, obj: any, self: Readable) => Promise<void>) {
+export function limitSpeedTransform(
+	num: number,
+	transform: (this: Readable, obj: any, self: Readable) => void|Promise<void>,
+	name: string = 'limit-speed',
+) {
 	return through2Concurrent.obj(
 		{maxConcurrency: num},
 		function (this: any, chunk: any, enc: any, callback: Function) {
 			const reject = (e: Error) => {
-				callback(pluginError('limit-speed', e));
+				callback(pluginError(name, e));
 			};
 			
 			Promise.resolve().then(transform.bind(this, chunk, this)).then(() => {
@@ -78,6 +85,10 @@ class SuperVerboseLog extends Transform {
 
 export function printFileContent(): Transform {
 	return new SuperVerboseLog();
+}
+
+export interface VinylFile extends File {
+
 }
 
 export const VinylFile: typeof File = File;

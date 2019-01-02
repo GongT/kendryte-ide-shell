@@ -26,7 +26,7 @@ export function createDownload2Stream(url: string, saveTo: string) {
 }
 
 export async function createRequestDownPromise(url: string, saveTo: string) {
-	if (pathExists(saveTo)) {
+	if (await pathExists(saveTo)) {
 		log('Exists: %s', saveTo);
 		return;
 	}

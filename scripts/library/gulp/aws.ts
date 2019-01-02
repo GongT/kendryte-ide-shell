@@ -1,12 +1,9 @@
-import { tmpdir } from 'os';
-import { join, resolve } from 'path';
 import { Readable } from 'stream';
 import * as File from 'vinyl';
 import { createVinylFile, limitSpeedTransform, log, pluginError } from '../gulp';
 import { ExS3, getMime } from '../misc/awsUtil';
+import { posixPath } from '../misc/pathUtil';
 import { CollectingStream, streamPromise } from '../misc/streamUtil';
-
-const temp = tmpdir();
 
 export interface MimeSetter {
 	(fileName: string): string;
@@ -14,35 +11,30 @@ export interface MimeSetter {
 
 function uploadQueue(opts: gulpS3.DestOptions) {
 	const {s3, base} = opts;
-	return limitSpeedTransform(2, function (this: Readable, file: File): Promise<void> {
+	return limitSpeedTransform(2, async (file: File, self: Readable): Promise<void> => {
 		if (file.isDirectory() || file.isNull()) {
-			return Promise.resolve();
+			self.push(file);
+			return;
 		}
 		if (file.isSymbolic && file.isSymbolic()) {
-			return Promise.resolve();
+			self.push(file);
+			return;
 		}
 		
 		const {mime, hash} = getMime(file.basename);
-		const path = resolve('/', base? base : '.', file.relative);
-		let p: Promise<any>;
+		const path = posixPath(base? base : '.', file.relative);
 		if (file.isStream()) {
-			log('Upload file (stream, %s KB) to S3: %s.', file.stat.size / 1000, path);
-			p = s3.uploadStream(path, mime, file.contents, hash? file.clone().contents : null);
+			log('Upload file (stream, %s KB) to S3: %s.', file.stat? file.stat.size / 1000 : '???', path);
+			await s3.uploadStream(path, mime, file.contents, hash? file.clone().contents : null);
 		} else if (file.isBuffer()) {
-			log('Upload file (buffer, %s KB) to S3: %s.', file.contents.length / 1000, path);
-			p = s3.uploadBuffer(path, mime, file.contents, hash);
+			log('Upload file (buffer, %s KB) to S3: %s.', file.stat? file.contents.length / 1000 : '???', path);
+			await s3.uploadBuffer(path, mime, file.contents, hash);
 		} else {
 			return Promise.reject(pluginError('s3-upload', new Error('failed to upload, not support file type.')));
 		}
-		
-		p.then(() => {
-			this.push(file);
-		});
-		
-		return p.catch((e: Error) => {
-			throw pluginError('s3-upload', e);
-		});
-	});
+		self.push(file);
+		return;
+	}, 's3-upload');
 }
 
 export namespace gulpS3 {
@@ -104,7 +96,7 @@ function streamMode(s3: ExS3, files: string[], stream: Readable) {
 	(async () => {
 		for (const file of files) {
 			const loadStream = s3.downloadStream(file);
-			stream.push(createVinylFile(join(temp, file), temp, loadStream));
+			stream.push(createVinylFile(file, '.', loadStream));
 			await streamPromise(loadStream);
 		}
 		stream.push(null);
@@ -117,7 +109,7 @@ function bufferMode(s3: ExS3, files: string[], stream: Readable) {
 	(async () => {
 		for (const file of files) {
 			const content = await new CollectingStream(s3.downloadStream(file)).promise();
-			stream.push(createVinylFile(join(temp, file), temp, content));
+			stream.push(createVinylFile(file, '.', content));
 		}
 		stream.push(null);
 	})().catch((e) => {
