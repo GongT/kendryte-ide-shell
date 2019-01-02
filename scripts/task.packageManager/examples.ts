@@ -24,7 +24,7 @@ function createPackage(packageName: string, type: string) {
 	return `{
 	// cmake config file
 	"$schema": "vscode://schemas/CMakeLists",
-	"name": "${packageName}_type",
+	"name": "${packageName}_${type}",
 	"version": "${getVersionString()}",
 	"type": "${PackageTypes.Executable}",
 	"entry": "src/main.c",

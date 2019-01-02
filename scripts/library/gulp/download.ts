@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { createWriteStream, pathExists, rename } from 'fs-extra';
+import { createWriteStream, mkdirp, pathExists, rename } from 'fs-extra';
 import { basename, dirname } from 'path';
 import * as request from 'request';
 import * as File from 'vinyl';
@@ -30,6 +30,7 @@ export async function createRequestDownPromise(url: string, saveTo: string) {
 		log('Exists: %s', saveTo);
 		return;
 	}
+	await mkdirp(dirname(saveTo));
 	const tmp = saveTo + '.tmp';
 	log('Downloading: %s', url);
 	await new Promise((resolve, reject) => {
