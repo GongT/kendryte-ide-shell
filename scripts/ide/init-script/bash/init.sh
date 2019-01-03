@@ -24,11 +24,12 @@ if [ ! -e "$PRIVATE_BINS/node" ]; then
 	echo "Install Node.js"
 
 	VERSION=11.6.0
+	VERSION_OLD=8.12.0
 	if [ "$SYSTEM" = "linux" ]; then
-		downloadFile "https://nodejs.org/dist/v8.11.2/node-v8.11.2-linux-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
 		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node.tar.xz"
 	else
-		downloadFile "https://nodejs.org/dist/v8.11.2/node-v8.11.2-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
 		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node.tar.xz"
 	fi
 	echo "Extracting node from node.tar.xz to $NODEJS_INSTALL"
