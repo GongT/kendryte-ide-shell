@@ -1,10 +1,12 @@
 import { resolve } from 'path';
 import { BUILD_ASAR_DIR, myScriptSourcePath, SHELL_ROOT } from '../environment';
 import { everyPlatform, filter, gulp, gulpSrc, jeditor, mergeStream, rename, zip } from '../library/gulp';
+import { cleanReleaseTask } from '../library/gulp/cleanup';
+import { ExS3 } from '../library/misc/awsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
+import { getIDEJsonObjectKey, getIndexPageObjectKey } from '../library/releaseInfo/s3Keys';
 import { skipDirectories } from '../library/vscode/uitl';
-import { cleanReleaseTask } from '../library/gulp/cleanup';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
 
@@ -72,6 +74,8 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 	const createChannelJson = gulpSrc(SHELL_ROOT, 'channel.json')
 		.pipe(jeditor({
 			channel: getReleaseChannel(),
+			registry: ExS3.instance().websiteUrl(getIDEJsonObjectKey(getReleaseChannel())),
+			downloadPage: ExS3.instance().websiteUrl(getIndexPageObjectKey(getReleaseChannel())),
 		}));
 	
 	return mergeStream(
