@@ -1,6 +1,6 @@
 import { IPlatformMap, IPlatformTypes, log } from '../gulp';
 import { ExS3 } from '../misc/awsUtil';
-import { OBJKEY_IDE_JSON } from '../releaseInfo/s3Keys';
+import { getIDEJsonObjectKey } from '../releaseInfo/s3Keys';
 import { IPackageJson } from './package.json';
 import deepExtend = require('deep-extend');
 import deepFreeze = require('deep-freeze');
@@ -28,7 +28,7 @@ let cachedOriginalData: IDEJson;
 
 export async function loadRemoteState(original: boolean = false): Promise<IDEJson> {
 	if (!cachedRemoteData) {
-		cachedRemoteData = await ExS3.instance().loadJson<IDEJson>(OBJKEY_IDE_JSON);
+		cachedRemoteData = await ExS3.instance().loadJson<IDEJson>(getIDEJsonObjectKey());
 		cachedOriginalData = deepExtend({}, cachedRemoteData);
 		deepFreeze(cachedOriginalData);
 	}
@@ -41,7 +41,7 @@ export async function loadRemoteState(original: boolean = false): Promise<IDEJso
 export async function saveRemoteState() {
 	const currentJson = await loadRemoteState();
 	log('---------------- IDE.json ----------------\n%s\n---------------- IDE.json ----------------', JSON.stringify(currentJson, null, 4));
-	return ExS3.instance().putJson(OBJKEY_IDE_JSON, currentJson);
+	return ExS3.instance().putJson(getIDEJsonObjectKey(), currentJson);
 }
 
 export async function ensureVersionMain(platform: IPlatformTypes, packageData: IPackageJson, url: string) {

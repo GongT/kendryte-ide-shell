@@ -24,7 +24,7 @@ export function myScriptSourcePath(path: string) {
 export const WORKSPACE_ROOT = resolve(myScriptSourcePath(__dirname), '..');
 /**@deprecated*/ export const MY_SCRIPT_ROOT = resolve(WORKSPACE_ROOT, 'scripts/ide');
 /**@deprecated*/ export const MY_SCRIPT_ROOT_BUILT = resolve(buildTo, 'ide');
-export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, 'kendryte-ide');
+export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, '../kendryte-ide');
 export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
 export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
 export const DOWNLOAD_PATH = resolve(BUILD_ROOT, 'download');
