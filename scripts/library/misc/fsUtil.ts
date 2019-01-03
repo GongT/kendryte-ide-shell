@@ -17,7 +17,7 @@ import {
 import { remove } from 'fs-extra';
 import { resolve } from 'path';
 import { promisify } from 'util';
-import { isMac, VSCODE_ROOT } from '../../environment';
+import { VSCODE_ROOT } from '../../environment';
 import { IPackageJson } from '../jsonDefine/package.json';
 import { IProductJson } from '../jsonDefine/product.json';
 
@@ -97,15 +97,6 @@ export function writeFile(path: string, data: Buffer|string): Promise<void> {
 /**@deprecated*/export const close = promisify(closeAsync);
 /**@deprecated*/export const rename = promisify(renameAsync);
 /**@deprecated*/export const readlink = promisify(readlinkAsync);
-
-export function calcCompileFolderName() {
-	const product = getProductData();
-	return product.nameShort + (isMac? '.app' : '');
-}
-
-export function calcCompileRootFolderName() {
-	return isMac? resolve(calcCompileFolderName(), 'Contents') : calcCompileFolderName();
-}
 
 const cache: {[fn: string]: any} = {};
 

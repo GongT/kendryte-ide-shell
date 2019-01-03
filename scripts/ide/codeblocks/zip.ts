@@ -6,9 +6,9 @@ import { Transform } from 'stream';
 import { isWin, RELEASE_ROOT } from '../../environment';
 import { pipeCommandBoth, pipeCommandOut } from '../../library/childprocess/complex';
 import { mergeEnv } from '../../library/childprocess/env';
-import { calcCompileFolderName, removeIfExists } from '../../library/misc/fsUtil';
+import { removeIfExists } from '../../library/misc/fsUtil';
 import { chdir } from '../../library/misc/pathUtil';
-import { nameReleaseFile, TYPE_ZIP_FILE } from './zip.name';
+import { TYPE_ZIP_FILE } from './zip.name';
 
 const _7z = isWin? require('7zip-bin')['7z'] : '7z';
 
@@ -125,12 +125,6 @@ export async function creatingUniversalZip(sourceDir: string, namer: (type: stri
 	} else {
 		await createPosix7z(process.stdout, process.stderr, sourceDir, await namer(TYPE_ZIP_FILE));
 	}
-}
-
-export async function creatingReleaseZip() {
-	chdir(RELEASE_ROOT);
-	
-	return creatingUniversalZip(await calcCompileFolderName(), nameReleaseFile());
 }
 
 function normalOutput(

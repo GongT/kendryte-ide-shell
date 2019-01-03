@@ -1,4 +1,3 @@
-import { getProductData } from '../misc/fsUtil';
 export function getReleaseChannel() {
 	let channel = '' + process.env.CHANNEL;
 	switch (channel) {
@@ -15,12 +14,8 @@ export function getReleaseChannel() {
 		channel = 'stable';
 		break;
 	default:
-		try {
-			return getProductData().quality;
-		} catch (e) {
-			console.error('Please checkout submodule `kendryte-ide`.\nOr set env `CHANNEL` to "alpha" or "beta" or "stable". (or a/b/s)');
-			process.exit(1);
-		}
+		console.error('Please set env `CHANNEL` to "alpha" or "beta" or "stable". (or a/b/s)');
+		process.exit(1);
 	}
 	return channel;
 }

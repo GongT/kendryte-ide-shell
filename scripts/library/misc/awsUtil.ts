@@ -2,9 +2,10 @@ import { S3 } from 'aws-sdk';
 import { createReadStream } from 'fs';
 import { log } from '../gulp';
 import { ICompileOptions } from '../jsonDefine/packageRegistry';
+import { getReleaseChannel } from '../releaseInfo/qualityChannel';
 import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../releaseInfo/s3Keys';
 import { ProgressPromise } from './asyncUtil';
-import { getPackageData, getProductData } from './fsUtil';
+import { getPackageData } from './fsUtil';
 import { hashBuffer, hashStream } from './hashUtil';
 import { CollectingStream } from './streamUtil';
 
@@ -221,30 +222,25 @@ function s3AssertConfig() {
 }
 
 export function calcReleaseFileAwsKey(platform: string, type: string): string {
-	const product = getProductData();
 	const packageJson = getPackageData();
 	
 	const pv = parseFloat(packageJson.patchVersion).toFixed(6).replace(/\./g, '');
-	return `release/download/${product.quality}/v${packageJson.version}/${pv}/${platform}.${type}`;
+	return `release/download/${getReleaseChannel()}/v${packageJson.version}/${pv}/${platform}.${type}`;
 }
 
 export function calcUpdaterAwsKey(platform: string, type: string): string {
-	const product = getProductData();
-	
-	return `release/updater/${product.quality}.${platform}.${type}`;
+	return `release/updater/${getReleaseChannel()}.${platform}.${type}`;
 }
 
 export function calcPackageAwsKey(platform: string, type: string): string {
-	const product = getProductData();
-	return `release/offlinepackages/${product.quality}/${platform}.offlinepackages.${type}`;
+	return `release/offlinepackages/${getReleaseChannel()}/${platform}.offlinepackages.${type}`;
 }
 
 export function calcPatchFileAwsKey(platform: string): string {
-	const product = getProductData();
 	const packageJson = getPackageData();
 	
 	const pv = parseFloat(packageJson.patchVersion).toFixed(6).replace(/\./g, '');
-	return `release/patches/${product.quality}/v${packageJson.version}/${pv}/${platform}.tar.gz`;
+	return `release/patches/${getReleaseChannel()}/v${packageJson.version}/${pv}/${platform}.tar.gz`;
 }
 
 export function calcLibraryFileAwsKey(data: ICompileOptions): string {
