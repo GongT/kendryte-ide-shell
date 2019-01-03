@@ -4,6 +4,7 @@ import { ensureDir, pathExistsSync, readJson } from 'fs-extra';
 import { myArgs, nativePath, resourceLocation, systemTempPath, userDataPath } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
+import { removeDirectory } from '../library/removeDirectory';
 import { registerWork, workTitle } from '../library/work';
 import { ISelfConfig } from './appdata';
 import { rememberThisVersion } from './error';
@@ -61,7 +62,7 @@ export async function launchIDE(exe: string|string[], cwd: string, args: string[
 	logger.sub2(msg);
 	
 	const userData = userDataPath('latest');
-	await ensureDir(nativePath(userData, 'tmp'));
+	await removeDirectory(nativePath(userData, 'tmp'));
 	
 	await new Promise((resolve, reject) => {
 		ipcRenderer.once('spawnCallback', (event: any, se: Error) => {
