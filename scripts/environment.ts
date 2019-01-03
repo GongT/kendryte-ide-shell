@@ -29,7 +29,7 @@ export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
 export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
 export const DOWNLOAD_PATH = resolve(BUILD_ROOT, 'download');
 export const RELEASE_ROOT = resolve(BUILD_ROOT, 'ide-main-release');
-export const ARCH_RELEASE_ROOT = isCI? VSCODE_ROOT : resolve(RELEASE_ROOT, 'kendryte-ide-release-x64');
+/**@deprecated*/ export const ARCH_RELEASE_ROOT = isCI? VSCODE_ROOT : resolve(RELEASE_ROOT, 'kendryte-ide-release-x64');
 export const FAKE_HOME = resolve(BUILD_ROOT, 'FAKE_HOME');
 
 if (!process.env.ORIGINAL_HOME) {
