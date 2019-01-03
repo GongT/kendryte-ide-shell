@@ -1,6 +1,7 @@
 import { myScriptSourcePath } from '../../environment';
 import { getWithCache } from '../../library/misc/httpUtil';
 import { resolvePath } from '../../library/misc/pathUtil';
+import { styleMainType } from './styleMainType';
 
 const {renderSync} = require('sass');
 
@@ -12,6 +13,7 @@ export async function buildHead(pieces: string[]) {
 		'\t<meta charset="utf-8"/>',
 		'\t<title>Kendryte IDE Downloads</title>',
 		`\t<style type="text/css">${bs}</style>`,
+		`\t<script type=text/javascript>window.styleMainType = "${styleMainType()}"</script>`,
 		'\t<style type="text/css">',
 	);
 	

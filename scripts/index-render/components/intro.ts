@@ -1,5 +1,17 @@
-<div class="jumbotron">
-	<h1 class="display-4">Kendryte IDE</h1>
+import { getReleaseChannel } from '../../library/releaseInfo/qualityChannel';
+import { styleMainType } from './styleMainType';
+
+export function createIntro() {
+	let versionLabel: string = '';
+	if (getReleaseChannel() !== 'stable') {
+		versionLabel = `&nbsp;
+<span style="font-size:smaller" class="text-${styleMainType()}">
+	(${getReleaseChannel().toUpperCase()})
+</span>
+`;
+	}
+	return `<div class="jumbotron">
+	<h1 class="display-4">Kendryte IDE${versionLabel}</h1>
 	<p class="lead en">
 		To extract: just run the self extractor, or right click on it and choose "Extract to".<br/>
 		Mac notice: this app is NOT signed now, do not place it in /Applications dir.<br/>
@@ -12,7 +24,7 @@
 	<div id="fastDown" class="d-hide">
 		<hr class="my-4">
 		<p></p>
-		<a class="btn btn-primary btn-lg main" href="#" role="button">
+		<a class="btn btn-${styleMainType()} btn-lg main" href="#" role="button">
 			<span class="en">Download Kendryte IDE @&nbsp;</span>
 			<span class="cn">下载 Kendryte IDE @&nbsp;</span>
 		</a>
@@ -21,4 +33,5 @@
 			<span class="cn" title="解压缩，并将data文件夹覆盖到KendryteIDE中">下载离线依赖包</span>
 		</a>
 	</div>
-</div>
+</div>`;
+}

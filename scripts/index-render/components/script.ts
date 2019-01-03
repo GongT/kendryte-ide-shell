@@ -1,4 +1,6 @@
 /// <reference lib="dom"/>
+declare const styleMainType: string;
+
 (() => {
 	if (navigator.language.toLowerCase().includes('zh')) {
 		document.body.classList.remove('en');
@@ -26,8 +28,8 @@
 		item.classList.add('col-md-6');
 	});
 	
-	current.querySelector('.card').classList.add('border-primary');
-	current.querySelector('.card-title').classList.add('text-primary');
+	current.querySelector('.card').classList.add('border-' + styleMainType);
+	current.querySelector('.card-title').classList.add('text-' + styleMainType);
 	
 	const fastDown = document.getElementById('fastDown');
 	fastDown.classList.remove('d-hide');

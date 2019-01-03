@@ -1,6 +1,7 @@
 require('source-map-support/register');
 
 import { log, task } from './library/gulp';
+import { createIndexAndUpload } from './task.common/indexPage';
 import { extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
 import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
@@ -53,3 +54,7 @@ task('pm', [
 ]);
 
 task('pm:publish', [clearPmLocalTempTask], publishUserCustom);
+
+/* extra section */
+task('aws:create.index', [], createIndexAndUpload);
+

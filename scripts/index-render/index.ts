@@ -8,6 +8,7 @@ import { updaterFileName } from '../library/paths/updater';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
 import { buildHead } from './components/head';
+import { createIntro } from './components/intro';
 import { notSupportHtml } from './components/not-supported';
 import { wrapTable } from './components/wrapTable';
 
@@ -58,7 +59,7 @@ export async function createIndexFileContent(): Promise<string> {
 <span class="badge badge-info">${registryFile.offlinePackageVersion || '???'}</span>
 
 </div>`);
-	pieces.push(readFileSync(resolvePath(myScriptSourcePath(__dirname), 'components/intro.html'), 'utf8'));
+	pieces.push(createIntro());
 	pieces.push(notSupportHtml());
 	pieces.push('<div id="platformContainer" class="row">');
 	
