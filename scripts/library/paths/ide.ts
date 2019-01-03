@@ -5,12 +5,16 @@ import { ExS3 } from '../misc/awsUtil';
 import { nativePath } from '../misc/pathUtil';
 import { getReleaseChannel } from '../releaseInfo/qualityChannel';
 
+function cutChannel(v: string) {
+	return v.replace(/-(beta|alpha|stable)$/, '');
+}
+
 export function ideDownloadKey(packageJson: IPackageJson, platform: IPlatformTypes) {
-	return `release/${getReleaseChannel()}/v${packageJson.version}/IDE.${packageJson.patchVersion}.${platform}.7z`;
+	return `release/${getReleaseChannel()}/v${cutChannel(packageJson.version)}/IDE.${packageJson.patchVersion}.${platform}.7z`;
 }
 
 export function patchDownloadKey(packageJson: IPackageJson, platform: IPlatformTypes) {
-	return `release/${getReleaseChannel()}/v${packageJson.version}/Patch.${packageJson.patchVersion}.${platform}.tar.gz`;
+	return `release/${getReleaseChannel()}/v${cutChannel(packageJson.version)}/Patch.${packageJson.patchVersion}.${platform}.tar.gz`;
 }
 
 export function artifactsS3TempUrl(platform: string) {

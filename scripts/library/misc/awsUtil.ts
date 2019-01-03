@@ -220,29 +220,3 @@ function s3AssertConfig() {
 		return;
 	}
 }
-
-export function calcReleaseFileAwsKey(platform: string, type: string): string {
-	const packageJson = getPackageData();
-	
-	const pv = parseFloat(packageJson.patchVersion).toFixed(6).replace(/\./g, '');
-	return `release/download/${getReleaseChannel()}/v${packageJson.version}/${pv}/${platform}.${type}`;
-}
-
-export function calcUpdaterAwsKey(platform: string, type: string): string {
-	return `release/updater/${getReleaseChannel()}.${platform}.${type}`;
-}
-
-export function calcPackageAwsKey(platform: string, type: string): string {
-	return `release/offlinepackages/${getReleaseChannel()}/${platform}.offlinepackages.${type}`;
-}
-
-export function calcPatchFileAwsKey(platform: string): string {
-	const packageJson = getPackageData();
-	
-	const pv = parseFloat(packageJson.patchVersion).toFixed(6).replace(/\./g, '');
-	return `release/patches/${getReleaseChannel()}/v${packageJson.version}/${pv}/${platform}.tar.gz`;
-}
-
-export function calcLibraryFileAwsKey(data: ICompileOptions): string {
-	return `package-manager/${data.type}/${data.name}/${data.version}.tar.gz`;
-}
