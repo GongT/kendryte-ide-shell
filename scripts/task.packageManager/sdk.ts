@@ -18,6 +18,8 @@ export const standaloneSdk = task('pm:standalone', [], () => {
 		gulpSrc(myScriptSourcePath(__dirname), 'standalone.json')
 			.pipe(jeditor({version: getVersionString()}))
 			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
+		gulpSrc(myScriptSourcePath(__dirname), 'standalone.cmake')
+			.pipe(rename((e: VinylFile) => e.basename = 'asm')),
 	)
 		.pipe(zip.zip(getVersionString() + '.zip'))
 		.pipe(buffer())
@@ -37,6 +39,8 @@ export const freertosSdk = task('pm:freertos', [], () => {
 		gulpSrc(myScriptSourcePath(__dirname), 'freertos.json')
 			.pipe(jeditor({version: getVersionString()}))
 			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
+		gulpSrc(myScriptSourcePath(__dirname), 'freertos.cmake')
+			.pipe(rename((e: VinylFile) => e.basename = 'asm')),
 	)
 		.pipe(zip.zip(getVersionString() + '.zip'))
 		.pipe(buffer())

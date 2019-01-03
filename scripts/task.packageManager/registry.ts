@@ -35,7 +35,7 @@ export const updateExampleRegistry = task('pm:example.json', [standaloneExample,
 			             const down = findOrAppendVersion(version, reg.versions);
 			             down.downloadUrl = ExS3.instance().websiteUrl(
 				             posixJoin(
-					             createKeyBase(PackageTypes.Library, name),
+					             createKeyBase(PackageTypes.Executable, name),
 					             createKeyName(version, type),
 				             ),
 			             );

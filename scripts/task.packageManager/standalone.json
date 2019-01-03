@@ -1,7 +1,7 @@
 {
 	"$schema": "vscode://schemas/CMakeLists",
 	"name": "kendryte-standalone-sdk",
-	"version": "0.5.2",
+	"version": "master",
 	"type": "library",
 	"extraList": "asm.cmake",
 	"include": [
