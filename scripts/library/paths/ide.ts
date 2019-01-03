@@ -18,11 +18,11 @@ export function patchDownloadKey(packageJson: IPackageJson, platform: IPlatformT
 }
 
 export function artifactsS3TempUrl(platform: string) {
-	return ExS3.instance().websiteUrl(`pipeline-artifacts/latest-${platform}.7z`);
+	return ExS3.instance().websiteUrl(`pipeline-artifacts/latest-${getReleaseChannel()}-${platform}.7z`);
 }
 
 export function artifactsLocalTempPath(platform: string, type: 'latest'|'prev') {
-	return nativePath(BUILD_ARTIFACTS_DIR, `artifact-${type}-${platform}.7z`);
+	return nativePath(BUILD_ARTIFACTS_DIR, `artifact-${getReleaseChannel()}-${type}-${platform}.7z`);
 }
 
 export function artifactsExtractedTempPath(platform: string, type: 'latest'|'prev') {
