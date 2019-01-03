@@ -44,7 +44,7 @@ function createPackage(packageName: string, type: string) {
 async function working(url: string, type: string) {
 	const zipFile = nativePath(PM_TEMP_DIR, type + '.zip');
 	await createRequestDownPromise(url, zipFile);
-	const tempPath = nativePath(PM_TEMP_DIR, type + '-master');
+	const tempPath = nativePath(PM_TEMP_DIR, type + '-demo-master');
 	await streamPromise(
 		zip.src(zipFile)
 		   .pipe(rename(removeFirstComponent))
@@ -69,8 +69,9 @@ async function working(url: string, type: string) {
 			await mkdir(src);
 			for (const f of contents) {
 				if (f.startsWith('README') || f.startsWith('LICENSE') || f === 'kendryte-package.json') {
-					await move(nativePath(dir, f), nativePath(src, f));
+					continue;
 				}
+				await move(nativePath(dir, f), nativePath(src, f));
 			}
 		}
 		

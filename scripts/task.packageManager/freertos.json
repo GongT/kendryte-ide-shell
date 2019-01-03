@@ -5,8 +5,12 @@
 	"type": "library",
 	"extraList": "asm.cmake",
 	"include": [
-		"lib/drivers/include",
+		"lib/arch/include",
 		"lib/bsp/include",
+		"lib/drivers/include",
+		"lib/freertos/include",
+		"lib/hal/include",
+		"lib/posix/include",
 		"lib/utils/include"
 	],
 	"source": [

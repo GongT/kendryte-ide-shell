@@ -12,14 +12,14 @@ import { upgradeLocalPackages } from './upgradeLocalPackages';
 
 function findRelease(registry: IRegistryData) {
 	const res = registry[platform];
-	
+
 	if (!res) {
 		if (!isBuilt) {
 			debugger;
 		}
 		throw new Error('Registry is invalid.');
 	}
-	
+
 	return res.downloadUrl;
 }
 
@@ -38,15 +38,16 @@ export async function startMainLogic() {
 	console.info('startMainLogic');
 	logger.progress(Infinity);
 	logger.action('connecting');
-	
+
 	const registry = await getFullRegistry();
 	const platformInfo = registry[platform];
 	logger.debug('latest version: ' + platformInfo.version);
 	const lastPatch = getString(platformInfo.patchVersion);
 	logger.debug(`latest patch: ${lastPatch || 'No Patch'}`);
-	
+
 	logger.progress(NaN);
-	
+
+	logger.debug(`latest updater: ${registry.updaterVersion || 'No Updater'}`);
 	if (isBuilt && registry.updaterVersion + '' !== SELF_VERSION) {
 		logger.log('remote: ' + registry.updaterVersion);
 		logger.log('local: ' + SELF_VERSION);
@@ -54,17 +55,17 @@ export async function startMainLogic() {
 		logger.sub2('Please click the Download button below 👇');
 		return;
 	}
-	
+
 	logger.action('checking');
 	logger.debug('-------------------------');
-	
+
 	await upgradeLocalPackages(data.thirdParty);
-	
+
 	const localVersions = await readLocalVersions();
 	if (localVersions.length > 3) {
 		uninstallOldVersion(localVersions);
 	}
-	
+
 	if (await isRunSource(data)) {
 		launchSource(data);
 	} else {
@@ -91,17 +92,17 @@ export async function startMainLogic() {
 	}
 	logger.debug(`check complete. ${getWorkCount()} work to be done.`);
 	logger.debug('-------------------------');
-	
+
 	if (getWorkCount() !== 0) {
 		logger.action('...');
 		await doActualWork();
 	}
 	logger.debug('All jobs complete. window will close now!');
-	
+
 	logger.progress(NaN);
 	logger.sub1('');
 	logger.sub2('');
-	
+
 	window.close();
 }
 
