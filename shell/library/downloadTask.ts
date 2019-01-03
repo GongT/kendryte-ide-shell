@@ -169,6 +169,22 @@ async function checkInfo(partInfo: IDownloadTargetInfo) {
 	}
 	
 	parsePartInfoFromResponse(partInfo, res);
+	
+	if (!partInfo.total) {
+		const {res} = await nodeHttpFetch('GET', partInfo.url, {Range: 'bytes=0-0'});
+		if (getFirstHeader(res.headers, 'content-range')) {
+			const crHeader = getFirstHeader(res.headers, 'content-range');
+			const total = parseInt(crHeader.split('/').pop());
+			if (total) {
+				partInfo.total = total;
+				console.log('request HEAD got size (from alternative method): ', partInfo.total);
+			}
+			console.log('request HEAD got size (from alternative method): Not Valid -- ', crHeader);
+		} else {
+			console.log('request HEAD cannot got size (even alternative method)');
+		}
+	}
+	
 	await flush(partInfo);
 }
 

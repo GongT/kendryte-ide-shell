@@ -4,6 +4,7 @@ import { streamPromise } from './streamPromise';
 
 export function nodeHttpFetch(method: string, url: string, headers: object = {}) {
 	const opt = {
+		keepAlive: true,
 		type: method,
 		url,
 		headers,
