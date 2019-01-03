@@ -1,7 +1,6 @@
 require('source-map-support/register');
 
 import { log, task } from './library/gulp';
-import { createIndexAndUpload } from './task.common/indexPage';
 import { extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
 import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
@@ -30,7 +29,6 @@ task('build', [
 task('release', [
 	awsModifyJsonTask,
 ], async () => {
-	await createIndexAndUpload();
 	log('Kendryte shell (updater) release version success.');
 });
 
@@ -38,7 +36,6 @@ task('release', [
 task('offpack', [
 	modifyJsonTask,
 ], async () => {
-	await createIndexAndUpload();
 	log('Offline packages upload success.');
 });
 

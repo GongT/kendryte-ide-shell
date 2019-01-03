@@ -4,12 +4,12 @@ export const AWS_RELEASE_UPDATER_PATH = `release/updater/`;
 export const AWS_RELEASE_PACKAGES_PATH = `3rd-party/offline/`;
 export const AWS_RELEASE_PACKAGES_REGISTRY = `3rd-party/offline/index-creation-file.json`;
 
-export function getIDEJsonObjectKey() {
-	return 'release/IDE.' + getReleaseChannel() + '.json';
+export function getIDEJsonObjectKey(channel: string = getReleaseChannel()) {
+	return 'release/IDE.' + channel + '.json';
 }
 
-export function getIndexPageObjectKey() {
-	return getReleaseChannel() === 'beta'? 'index.html' : getReleaseChannel() + '.html';
+export function getIndexPageObjectKey(channel = getReleaseChannel()) {
+	return channel === 'beta'? 'index.html' : channel + '.html';
 }
 
 export const OBJKEY_PACKAGE_MANAGER_LIBRARY = 'package-manager/registry/library.json';

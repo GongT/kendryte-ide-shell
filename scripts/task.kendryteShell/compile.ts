@@ -1,9 +1,12 @@
-import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, SHELL_OUTPUT, SHELL_ROOT, WORKSPACE_ROOT } from '../environment';
+import { BUILD_DIST_SOURCE, DEBUG_APP_ROOT, isBuilding, SHELL_OUTPUT, SHELL_ROOT, WORKSPACE_ROOT } from '../environment';
 import { jeditor, log, sass, sourcemaps, task, } from '../library/gulp';
 import { createClean } from '../library/gulp/cleanup';
 import { createCompileTask, createTypescriptWatch, createWatchTask } from '../library/gulp/compileTaskBuild';
 import { ISourceType } from '../library/gulp/sourceType';
 import { createTypescriptTask } from '../library/gulp/typescript';
+import { ExS3 } from '../library/misc/awsUtil';
+import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
+import { getIDEJsonObjectKey, getIndexPageObjectKey } from '../library/releaseInfo/s3Keys';
 
 const TASK_CATEGORY = 'shell';
 
@@ -47,13 +50,20 @@ const channelJsonTask: ISourceType = {
 	built: BUILD_DIST_SOURCE,
 	sourceFiles: 'channel.json',
 	task() {
+		let channel: string;
+		if (!process.env.CHANNEL && !isBuilding) {
+			channel = 'sourcecode';
+		} else {
+			channel = getReleaseChannel();
+		}
 		return (p: NodeJS.ReadWriteStream) => {
-			const CHANNEL = process.env.CHANNEL || 'sourcecode';
-			log(`Local building \x1B[38;5;9m${CHANNEL}\x1B[0m version.`);
+			log(`Local building \x1B[38;5;9m${channel}\x1B[0m version.`);
 			const modify: any = {
-				channel: CHANNEL,
+				channel: channel,
+				registry: ExS3.instance().websiteUrl(getIDEJsonObjectKey(channel)),
+				downloadPage: ExS3.instance().websiteUrl(getIndexPageObjectKey(channel)),
 			};
-			if (CHANNEL === 'sourcecode') {
+			if (channel === 'sourcecode') {
 				modify.sourceRoot = WORKSPACE_ROOT;
 			}
 			return p.pipe(jeditor(modify));

@@ -2,5 +2,6 @@
 	"title": "Kendryte IDE",
 	"channel": "/*auto*/",
 	"registry": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/release/IDE.beta.json",
-	"thirdParty": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/3rd-party/versions.json"
+	"thirdParty": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/3rd-party/versions.json",
+	"downloadPage": "http://kendryte-ide.s3-website.cn-northwest-1.amazonaws.com.cn/index.html"
 }

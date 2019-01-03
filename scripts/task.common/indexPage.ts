@@ -3,9 +3,7 @@ import { task } from '../library/gulp';
 import { ExS3 } from '../library/misc/awsUtil';
 import { getIndexPageObjectKey } from '../library/releaseInfo/s3Keys';
 
-export async function createIndexAndUpload() {
+export const awsCreateIndexTask = task('aws:create.index', [], async () => {
 	const indexData = await createIndexFileContent();
 	await ExS3.instance().putText(getIndexPageObjectKey(), indexData, 'text/html');
-}
-
-export const awsCreateIndexTask = task('aws:create.index', [], createIndexAndUpload);
+});

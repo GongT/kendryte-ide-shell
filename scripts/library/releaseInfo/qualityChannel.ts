@@ -14,7 +14,8 @@ export function getReleaseChannel() {
 		channel = 'stable';
 		break;
 	default:
-		console.trace('\x1B[38;5;9mPlease set env `CHANNEL` to "alpha" or "beta" or "stable". (or a/b/s)\x1B[0m');
+		console.error('\x1B[38;5;9mPlease set env `CHANNEL` to "alpha" or "beta" or "stable". (or a/b/s)\x1B[0m');
+		console.trace();
 		process.exit(1);
 	}
 	return channel;

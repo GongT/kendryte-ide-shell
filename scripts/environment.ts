@@ -2,6 +2,8 @@ import { platform } from 'os';
 import { normalize, resolve } from 'path';
 
 export const isCI = !!process.env.SYSTEM_COLLECTIONID; // azure
+export const isBuilding = !!process.env.BUILDING;
+
 export const isWin = platform() === 'win32';
 export const isMac = platform() === 'darwin';
 export const isLinux = platform() === 'linux';

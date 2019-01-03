@@ -73,6 +73,8 @@ function mainLogic(): Promise<boolean> {
 		.resolve()
 		.then(loadApplicationData)
 		.then(async (data) => {
+			const btnDown = document.getElementById('btnDownload') as HTMLAnchorElement;
+			btnDown.href = data.downloadPage;
 			await createLogger(
 				document.querySelector('#viewMain .doing .line1'),
 				document.querySelector('#viewMain .doing .line2'),
