@@ -13,11 +13,11 @@ export function downloadAndExtract(from: string, target: string, what?: string) 
 	logger.debug(`Will download object from:\n    ${from}\n extract to:\n    ${target}`);
 	const fromBase = basename(from);
 	workTitle('Downloading', what + from);
-	registerWork('download extract - ' + (what || from), () => {
+	registerWork('download - ' + (what || from), () => {
 		return downloadFile(from, fromBase);
 	});
 	workTitle('Installing', what + target);
-	registerWork('install - ' + (what || target), () => {
+	registerWork('extract (install) - ' + (what || target), () => {
 		const zipFile = downloadedFilePath(fromBase);
 		if (/\.7z$/i.test(zipFile)) {
 			return un7z(zipFile, target);

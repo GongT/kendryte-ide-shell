@@ -1,10 +1,12 @@
 import { extract, extractSfx, I7zHandler } from '7zip-bin-wrapper';
+import { is } from 'electron-util';
 import { copy, lstat, readdir, rename } from 'fs-extra';
 import { tmpdir } from 'os';
 import { basename } from 'path';
 import { nativePath } from './environment';
 import { logger } from './logger';
 import { removeDirectory } from './removeDirectory';
+import { timeout } from './timeout';
 
 export async function runSfx(from: string, to: string): Promise<void> {
 	logger.debug(`unzip(sfx) ${from} -> ${to}`);
@@ -19,6 +21,7 @@ export async function runSfx(from: string, to: string): Promise<void> {
 export async function un7z(from: string, to: string): Promise<void> {
 	logger.debug(`unzip ${from} -> ${to}`);
 	await removeDirectory(to);
+	await timeout(is.windows? 5000 : 1000);
 	
 	const handler = extract(from, to);
 	await waitHandle(handler);

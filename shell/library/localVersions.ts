@@ -10,6 +10,10 @@ export interface ILocalStatus {
 	fsPath: string;
 }
 
+function ensureString(patchVersion: any) {
+	return typeof patchVersion === 'number'? patchVersion.toFixed(6) : patchVersion;
+}
+
 export async function readLocalVersions() {
 	const root = applicationPath('.');
 	if (!pathExistsSync(root)) {
@@ -23,7 +27,7 @@ export async function readLocalVersions() {
 			const {version, patchVersion} = require(nativePath(versionRoot, resourceLocation, 'package.json'));
 			results.push({
 				version,
-				patch: patchVersion.toFixed(6),
+				patch: ensureString(patchVersion),
 				folder: item,
 				fsPath: versionRoot,
 			});
@@ -31,7 +35,7 @@ export async function readLocalVersions() {
 			logger.log(`found local version: ${item}`);
 			logger.log(`    version=${version}\n    patch=${patchVersion.toFixed(6)}`);
 		} catch (e) {
-			console.error('something wrong in version %s', item);
+			logger.error(`something wrong in version: ${item}`);
 		}
 	}
 	
