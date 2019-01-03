@@ -1,5 +1,0 @@
-[submodule "kendryte-ide"]
-	path = kendryte-ide
-	url = https://github.com/kendryte/kendryte-ide.git
-	branch = development
-
