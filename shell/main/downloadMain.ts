@@ -1,10 +1,8 @@
-import { copy } from 'fs-extra';
 import { basename } from 'path';
 import { userDataPath } from '../library/environment';
 import { ILocalStatus } from '../library/localVersions';
-import { logger } from '../library/logger';
 import { willRemove } from '../library/removeDirectory';
-import { registerWork, workTitle } from '../library/work';
+import { workTitle } from '../library/work';
 import { downloadAndExtract } from './downloadAndExtract';
 
 export function downloadMain(targetPath: string, url: string) {
@@ -14,13 +12,13 @@ export function downloadMain(targetPath: string, url: string) {
 }
 
 export function migrateUserData(backupVersion: string) {
-	workTitle('Backup', backupVersion);
+	/*workTitle('Backup', backupVersion);
 	registerWork('backup user data', async () => {
 		const latestUserData = userDataPath('latest');
 		logger.debug('latest user data = ' + latestUserData);
 		logger.debug('backup user data = ' + userDataPath(backupVersion));
 		await copy(latestUserData, userDataPath(backupVersion));
-	});
+	});*/
 }
 
 export function uninstallOldVersion(localVersions: ILocalStatus[]) {

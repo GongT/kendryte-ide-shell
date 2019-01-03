@@ -77,7 +77,7 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 	});
 	
 	envVars.SYSTEM_TEMP = tmpdir();
-	envVars.TEMP = envVars.TMP = systemTempPath();
+	envVars.TEMP = envVars.TMP = envVars.TMPDIR = systemTempPath();
 	
 	const dbg = new DebugScript(cwd, envVars);
 	dbg.command(exe, args);
@@ -124,7 +124,7 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 		await new Promise((resolve, reject) => {
 			dialog.showMessageBox(opener, {
 				type: 'question',
-				buttons: ['Prevent start', 'Really start',],
+				buttons: ['Prevent start', 'Really start'],
 				defaultId: 1,
 				title: 'Development message',
 				message: 'running in development mode.\nIDE start progress paused.',
