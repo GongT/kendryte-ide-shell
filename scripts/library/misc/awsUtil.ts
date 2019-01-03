@@ -1,11 +1,8 @@
 import { S3 } from 'aws-sdk';
 import { createReadStream } from 'fs';
 import { log } from '../gulp';
-import { ICompileOptions } from '../jsonDefine/packageRegistry';
-import { getReleaseChannel } from '../releaseInfo/qualityChannel';
 import { AWS_ACCESS_KEY_ID, AWS_BUCKET, AWS_REGION, AWS_SECRET_ACCESS_KEY } from '../releaseInfo/s3Keys';
 import { ProgressPromise } from './asyncUtil';
-import { getPackageData } from './fsUtil';
 import { hashBuffer, hashStream } from './hashUtil';
 import { CollectingStream } from './streamUtil';
 
