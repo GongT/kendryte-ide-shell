@@ -2,7 +2,7 @@ import { simpleTransformStream } from './transform';
 
 export function skipDirectories(): NodeJS.ReadWriteStream {
 	return simpleTransformStream(f => {
-		if (f.stat && f.stat.isSymbolicLink()) {
+		if (f.isSymbolic()) {
 			return f;
 		}
 		if (f.isDirectory()) {

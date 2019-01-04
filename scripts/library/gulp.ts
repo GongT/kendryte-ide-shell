@@ -30,6 +30,7 @@ export const decompress: IAnonGulpPlugin = require('gulp-decompress');
 export const filter: IAnonGulpPlugin = require('gulp-filter');
 export const debug: IAnonGulpPlugin = require('gulp-debug');
 export const zip: IAnonGulpPlugin = require('gulp-vinyl-zip');
+export const vfs: IAnonGulpPlugin = require('vinyl-fs');
 export const buffer: IAnonGulpPlugin = require('vinyl-buffer');
 export const rename: IAnonGulpPlugin = require('gulp-rename');
 export const run = require('gulp-run-command').default;
