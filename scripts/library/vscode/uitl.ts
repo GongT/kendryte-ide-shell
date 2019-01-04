@@ -1,8 +1,6 @@
 ///<reference path="event-stream.d.ts"/>
 
-import * as es from 'event-stream';
 import * as _rimraf from 'rimraf';
-import * as VinylFile from 'vinyl';
 
 export function rimraf(dir: string): (cb: any) => void {
 	let retries = 0;
@@ -22,13 +20,4 @@ export function rimraf(dir: string): (cb: any) => void {
 	};
 	
 	return cb => retry(cb);
-}
-
-export function skipDirectories(): NodeJS.ReadWriteStream {
-	return es.mapSync<VinylFile, VinylFile|undefined>(f => {
-		if (!f.isDirectory()) {
-			return f;
-		}
-		return void 0;
-	});
 }

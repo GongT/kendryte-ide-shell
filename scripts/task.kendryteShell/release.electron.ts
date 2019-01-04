@@ -2,11 +2,12 @@ import { resolve } from 'path';
 import { BUILD_ASAR_DIR, myScriptSourcePath, SHELL_ROOT } from '../environment';
 import { everyPlatform, filter, gulp, gulpSrc, jeditor, mergeStream, rename, zip } from '../library/gulp';
 import { cleanReleaseTask } from '../library/gulp/cleanup';
+import { skipDirectories } from '../library/gulp/skipDirectories';
+import { simpleTransformStream } from '../library/gulp/transform';
 import { ExS3 } from '../library/misc/awsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
 import { getIDEJsonObjectKey, getIndexPageObjectKey } from '../library/releaseInfo/s3Keys';
-import { skipDirectories } from '../library/vscode/uitl';
 import { asarTask } from './release.electron.asar';
 import { downloadTask, getElectronZipPath } from './release.electron.download';
 
@@ -69,7 +70,13 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 		.pipe(asarResultEditor[platform]());
 	const selfDir = nativePath(myScriptSourcePath(__dirname), 'release-assets', platform);
 	
-	const copyAssetsFiles = gulpSrc(selfDir, '**');
+	const copyAssetsFiles = gulpSrc(selfDir, '**')
+		.pipe(simpleTransformStream((f) => {
+			if (f.basename === 'KendryteIDE.sh') {
+				f.stat.mode = 493; // 755
+			}
+			return f;
+		}));
 	
 	const createChannelJson = gulpSrc(SHELL_ROOT, 'channel.json')
 		.pipe(jeditor({

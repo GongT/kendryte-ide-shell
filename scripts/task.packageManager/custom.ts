@@ -3,6 +3,7 @@ import { isForceRun } from '../environment';
 import { buffer, downloadBuffer, gulp, gulpSrc, log, rename, zip } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { removeFirstComponent } from '../library/gulp/pathTools';
+import { skipDirectories } from '../library/gulp/skipDirectories';
 import { simpleTransformStream } from '../library/gulp/transform';
 import { IRemotePackageRegistry, PackageTypes } from '../library/jsonDefine/packageRegistry';
 import { ExS3 } from '../library/misc/awsUtil';
@@ -14,7 +15,6 @@ import {
 	OBJKEY_PACKAGE_MANAGER_LIBRARY,
 	OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH,
 } from '../library/releaseInfo/s3Keys';
-import { skipDirectories } from '../library/vscode/uitl';
 import { PM_TEMP_DIR } from './clean';
 import { findOrAppendVersion, findOrPrependPackage } from './registry';
 
