@@ -1,5 +1,5 @@
-import { BUILD_ARTIFACTS_DIR } from '../environment';
-import { debug, gulp, jeditor, platforms, task } from '../library/gulp';
+import { BUILD_ARTIFACTS_DIR, isMac } from '../environment';
+import { debug, gulp, jeditor, platformDeps, platforms, task } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { resolvePath } from '../library/misc/pathUtil';
 import { updaterFileName } from '../library/paths/updater';
@@ -22,7 +22,18 @@ task('aws:upload:test', [], () => {
 	return realAwsUpload();
 });
 
-const awsUploadZipFilesTask = task('aws:upload', [compressTasks], realAwsUpload);
+function getDeps() {
+	if (isMac) {
+		return platformDeps('darwin', [compressTasks]);
+	} else {
+		return [
+			...platformDeps('win32', [compressTasks]),
+			...platformDeps('linux', [compressTasks]),
+		];
+	}
+}
+
+const awsUploadZipFilesTask = task('aws:upload', getDeps(), realAwsUpload);
 
 export const awsModifyJsonTask = task('aws:update.json', [awsUploadZipFilesTask], () => {
 	const version = createReleaseTag();

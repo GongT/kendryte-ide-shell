@@ -208,3 +208,13 @@ export function gulpChokidar(base: string, glob: string[]|string, eventHandler: 
 	return watch(wrapGlob(rel, glob), {base: rel, dot: true}, eventHandler)
 		.pipe(filter(['**', '!**/node_modules/']));
 }
+
+export function platformDeps(platform: IPlatformTypes, depList: ITask[]): ISingleTask[] {
+	return depList.map((obj) => {
+		if (platform && Object.prototype.hasOwnProperty.call(obj, platform)) {
+			return (obj as IPlatformMap<ISingleTask>)[platform];
+		} else {
+			return obj;
+		}
+	});
+}
