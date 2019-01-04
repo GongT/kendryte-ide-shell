@@ -152,9 +152,9 @@ export interface IMyTaskFunc {
 	(platform: IPlatformTypes, root: string): Q.Promise<any>|stream.Stream|any;
 }
 
-export function everyPlatform(task: string, cb: IMyTaskFunc): ITask;
-export function everyPlatform(task: string, deps: ITask[], cb?: IMyTaskFunc): ITask;
-export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyTaskFunc): ITask {
+export function everyPlatform(task: string, cb: IMyTaskFunc): ITaskPlatform;
+export function everyPlatform(task: string, deps: ITask[], cb?: IMyTaskFunc): ITaskPlatform;
+export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyTaskFunc): ITaskPlatform {
 	const ret: IPlatformMap<ITask> = {} as any;
 	for (const platform of platforms) {
 		const currentPlatformDir = resolvePath(BUILD_DIST_TARGETS, platform);

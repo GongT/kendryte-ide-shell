@@ -2,7 +2,7 @@ import { copy, readJson } from 'fs-extra';
 import { basename } from 'path';
 import { isForceRun } from '../environment';
 import { getOutputCommandAt, simpleCommandAt } from '../library/childprocess/complex';
-import { everyPlatform, log, task } from '../library/gulp';
+import { everyPlatform, ITaskPlatform, log, task } from '../library/gulp';
 import { compress7z } from '../library/gulp/7z';
 import { IPackageJson } from '../library/jsonDefine/package.json';
 import { checkRemoteNeedPatch } from '../library/jsonDefine/releaseRegistry';
@@ -13,13 +13,13 @@ import { artifactsExtractedTempPath, extractTempDir, patchDownloadKey } from '..
 import { artifactsPrepareTask } from './artifacts';
 import { prevBuildDownloadAndExtractTask } from './download.prev';
 
-function noop() {
+function noop(): any {
 	return task('ide:patches:create', () => {
 		log('is force run, skip patch');
 	});
 }
 
-export const createPatchesFiles = isForceRun? noop() : everyPlatform('ide:patches:create', [
+export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatform('ide:patches:create', [
 	prevBuildDownloadAndExtractTask,
 	artifactsPrepareTask,
 ], async (platform) => {
