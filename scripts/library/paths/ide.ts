@@ -1,4 +1,4 @@
-import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../../environment';
+import { BUILD_ARTIFACTS_DIR, BUILD_ROOT, isCI } from '../../environment';
 import { IPlatformTypes } from '../gulp';
 import { IPackageJson } from '../jsonDefine/package.json';
 import { ExS3 } from '../misc/awsUtil';
@@ -26,6 +26,9 @@ export function artifactsLocalTempPath(platform: string, type: 'latest'|'prev') 
 }
 
 export function artifactsExtractedTempPath(platform: string, type: 'latest'|'prev') {
+	if (type === 'latest' && isCI) {
+		return nativePath(BUILD_ARTIFACTS_DIR, platform);
+	}
 	return extractTempDir(`${type}-${platform}`);
 }
 

@@ -1,6 +1,6 @@
 import { copy, readJson } from 'fs-extra';
 import { basename } from 'path';
-import { BUILD_ARTIFACTS_DIR, isForceRun } from '../environment';
+import { BUILD_ARTIFACTS_DIR, isCI, isForceRun } from '../environment';
 import { everyPlatform, log } from '../library/gulp';
 import { compress7z, extract7z } from '../library/gulp/7z';
 import { createDownload2Stream } from '../library/gulp/download';
@@ -15,6 +15,9 @@ import { EXTENSIONS_DIST_PATH_RESULT, listExtension } from '../task.extensions/p
 import { cleanExtractTask } from './cleanup';
 
 const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (platform: string) => {
+	if (isCI) {
+		return Promise.resolve();
+	}
 	const url = artifactsS3TempUrl(platform);
 	const saveTo = artifactsLocalTempPath(platform, 'latest');
 	return createDownload2Stream(url, saveTo);
