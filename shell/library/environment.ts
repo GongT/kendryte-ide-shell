@@ -15,10 +15,12 @@ console.log(`packageJson=${packageJson}`);
 export const SELF_VERSION: string = '' + require(packageJson).releaseTag;
 console.log(`SELF_VERSION=${SELF_VERSION}`);
 
+export const appExt = is.macos? '.app' : '';
+
 export const isBuilt = SELF_VERSION !== 'sourcecode';
 console.log(`isBuilt=${isBuilt}`);
 
-export const appRoot = resolve(__dirname, '../../../../');
+export const appRoot = resolve(__dirname, '../../../../', is.macos? '..' : '.');
 console.log(`appRoot=${appRoot}`);
 
 export const contentRoot = appRoot;

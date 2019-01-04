@@ -54,6 +54,10 @@ export async function onlyChild(to: string) {
 		logger.debug(`only child: ${onlyChild}`);
 		logger.sub1('post processing...');
 		if ((await lstat(onlyChild)).isDirectory()) {
+			if (onlyChild.endsWith('.app')) {
+				logger.debug(`    - is like macos app, no rename.`);
+				return;
+			}
 			await removeDirectory(to + '.rename-temp');
 			logger.debug(`rename(${onlyChild}, ${to}.rename-temp)`);
 			await rename(onlyChild, to + '.rename-temp');

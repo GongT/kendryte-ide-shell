@@ -153,8 +153,8 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 	
 	const cp = newSpawn(exe, args, cwd, envVars, connectId);
 	
-	cp.stdout.pipe(logOut);
-	cp.stderr.pipe(logOut);
+	cp.stdout.pipe(logOut, {end: false});
+	cp.stderr.pipe(logOut, {end: false});
 	
 	function log(tag: LogLevel, message: string, ...args: any[]) {
 		const msg = format(`[${tag}] ${message}`, ...args);
