@@ -117,7 +117,7 @@ export async function checkRemoteNeedPatch(platform: IPlatformTypes, local: IPac
 	}
 	if (r.patchVersion === local.patchVersion) {
 		log('checkRemoteNeedPatch: platform `%s` has same patch, NO patch need', platform);
-		return true;
+		return false;
 	}
 	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', local.patchVersion, r.patchVersion, platform);
 	return false;

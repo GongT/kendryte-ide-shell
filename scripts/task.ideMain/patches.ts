@@ -5,7 +5,7 @@ import { getOutputCommandAt, simpleCommandAt } from '../library/childprocess/com
 import { everyPlatform, ITaskPlatform, log, task } from '../library/gulp';
 import { compress7z } from '../library/gulp/7z';
 import { IPackageJson } from '../library/jsonDefine/package.json';
-import { checkRemoteNeedPatch } from '../library/jsonDefine/releaseRegistry';
+import { checkRemoteNeedPatch, ensureVersionPatch } from '../library/jsonDefine/releaseRegistry';
 import { ExS3 } from '../library/misc/awsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
@@ -76,4 +76,6 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	const zipFile = extractTempDir(basename(patchFileKey));
 	await compress7z(zipFile, resultDir);
 	await ExS3.instance().uploadLocalFile(patchFileKey, zipFile);
+	
+	await ensureVersionPatch(platform, resultVersion, ExS3.instance().websiteUrl(patchFileKey));
 });
