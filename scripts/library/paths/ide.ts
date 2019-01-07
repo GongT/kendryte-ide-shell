@@ -1,4 +1,4 @@
-import { BUILD_ARTIFACTS_DIR, BUILD_ROOT, isCI } from '../../environment';
+import { BUILD_ARTIFACTS_DIR, BUILD_ROOT } from '../../environment';
 import { IPlatformTypes } from '../gulp';
 import { IPackageJson } from '../jsonDefine/package.json';
 import { ExS3 } from '../misc/awsUtil';
@@ -22,13 +22,14 @@ export function artifactsS3TempUrl(platform: string) {
 }
 
 export function artifactsLocalTempPath(platform: string, type: 'latest'|'prev') {
-	return nativePath(BUILD_ARTIFACTS_DIR, `artifact-${getReleaseChannel()}-${type}-${platform}.7z`);
+	if (type === 'prev') {
+		return nativePath(BUILD_ARTIFACTS_DIR, `artifact-${getReleaseChannel()}-${type}-${platform}.7z`);
+	} else {
+		return nativePath(BUILD_ARTIFACTS_DIR, platform, `latest-${getReleaseChannel()}-${platform}.7z`);
+	}
 }
 
 export function artifactsExtractedTempPath(platform: string, type: 'latest'|'prev') {
-	if (type === 'latest' && isCI) {
-		return nativePath(BUILD_ARTIFACTS_DIR, platform);
-	}
 	return extractTempDir(`${type}-${platform}`);
 }
 
