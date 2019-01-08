@@ -35,7 +35,7 @@ function getReleaseChannel() {
 process.env.LANG = 'C';
 process.env.LC_ALL = 'C';
 
-process.chdir(__dirname);
+process.chdir(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY);
 const lstFile = `${require('os').tmpdir()}/listFile.lst`;
 const distFolder = process.env.BUILD_ARTIFACTSTAGINGDIRECTORY || process.env.TMP;
 

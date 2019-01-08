@@ -31,7 +31,7 @@ function getReleaseChannel() {
 	return channel;
 }
 
-process.chdir(__dirname);
+process.chdir(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY);
 const pkg = require('./package.json');
 pkg.patchVersion = createReleaseTag();
 writeFileSync('./package.json', JSON.stringify(pkg, null, 4), 'utf8');
