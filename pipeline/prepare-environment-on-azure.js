@@ -11,9 +11,17 @@ if (!isCI) {
 const pwsh = platform() === 'win32'? 'powershell.exe' : 'pwsh';
 
 process.chdir(__dirname);
-spawnSync(pwsh, [
+const cp = spawnSync(pwsh, [
 	__filename.replace(/\.js$/, '.ps1'),
 ], {
 	stdio: 'inherit',
 	shell: false,
 });
+if (cp.error) {
+	throw cp.error;
+}
+if (cp.signal) {
+	console.error('process exit by signal:', cp.signal);
+	process.exit(1);
+}
+process.exit(cp.status);

@@ -2,9 +2,9 @@
 	"name": "pipeline",
 	"version": "1.0.0",
 	"description": "",
-	"scripts": {},
+	"scripts": {
+		"install": "node ./prepare-environment-on-azure.js"
+	},
 	"author": "",
-	"license": "ISC",
-	"dependencies": {
-	}
+	"license": "ISC"
 }
