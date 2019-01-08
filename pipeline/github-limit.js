@@ -1,6 +1,6 @@
 console.log('GET https://api.github.com/rate_limit');
 require('https').get({
-	protocol: 'https',
+	protocol: 'https:',
 	host: 'api.github.com',
 	path: '/rate_limit',
 	headers: {
