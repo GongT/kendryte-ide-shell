@@ -67,18 +67,9 @@ Else
 	# windows
 	$TMP = $env:TMP
 	Write-Output "WindowsPath is $env:PATH"
+	exec { python --version } "python not executable..."
 	
-	exec { npm install '@kendryte-ide/windows-python2' '7zip' }
-	
-	$python = exec { yarn --silent run python -c 'import sys; print sys.executable' }
-	Write-Output "Python is at $python"
-	$pythonCallScript = @"
-@echo off
-`"$python`" %*
-"@
-	Write-Output $pythonCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/python.bat" -Encoding "ascii"
-	
-	npm config -g set python $python
+	exec { npm install '7zip' }
 	
 	Write-Output "7Zip is at $PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe"
 	$7zipCallScript = @"
@@ -90,7 +81,6 @@ Else
 	
 	Remove-Item -Recurse -Force $PSScriptRoot\node_modules\.bin
 	
-	exec { python --version } "python not executable..."
 	exec { 7za -h | Out-Null } "7za not executable..."
 	exec { 7z -h | Out-Null } "7za not executable..."
 }
