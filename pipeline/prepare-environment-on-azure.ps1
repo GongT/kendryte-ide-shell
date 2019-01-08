@@ -59,8 +59,11 @@ ElseIf ($env:AGENT_OS -eq "Darwin")
 	exec { tar xf "$TMP/7zb.tar.gz" -C $TMP } "Cannot extract 7zip-bin tar.gz"
 	exec { sudo mkdir -p "$HOME/bin" } "Cannot create HOME/bin folder"
 	exec { sudo cp "$TMP/package/mac/7za" "$HOME/bin/7za" } "Cannot copy 7za to HOME/bin"
+	exec { sudo cp "$TMP/package/mac/7za" "$HOME/bin/7z" } "Cannot copy 7z to HOME/bin"
 	exec { sudo chmod a+x "$HOME/bin/7za" } "Cannot chmod (a+x) HOME/bin/7za"
+	exec { sudo chmod a+x "$HOME/bin/7z" } "Cannot chmod (a+x) HOME/bin/7z"
 	exec { 7za -h | Out-Null } "7za not executable, HOME/bin not in Path?"
+	exec { 7z -h | Out-Null } "7z not executable, HOME/bin not in Path?"
 }
 Else
 {
@@ -82,5 +85,5 @@ Else
 	Remove-Item -Recurse -Force $PSScriptRoot\node_modules\.bin
 	
 	exec { 7za -h | Out-Null } "7za not executable..."
-	exec { 7z -h | Out-Null } "7za not executable..."
+	exec { 7z -h | Out-Null } "7z not executable..."
 }
