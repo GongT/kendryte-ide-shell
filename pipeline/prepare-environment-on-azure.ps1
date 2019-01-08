@@ -70,15 +70,15 @@ Else
 	
 	exec { npm install '@kendryte-ide/windows-python2' '7zip' }
 	
-	$python = exec { yarn run python -c 'import sys; print sys.executable' }
+	$python = exec { yarn --silent run python -c 'import sys; print sys.executable' }
+	Write-Host "Python is at $python"
 	$pythonCallScript = @"
 @echo off
 `"$python`" %*
 "@
-	Write-Host "Python is at $python"
-	exec { python --version }
 	Write-Host $pythonCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/python.bat" -Encoding "ascii"
 	
+	Write-Host "7Zip is at $PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe"
 	$7zipCallScript = @"
 @echo off
 `"$PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe`" %*
@@ -86,6 +86,9 @@ Else
 	Write-Host $7zipCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/7z.bat" -Encoding "ascii"
 	Write-Host $7zipCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/7za.bat" -Encoding "ascii"
 	
+	Remove-Item -Recurse -Force $PSScriptRoot\node_modules\.bin
+	
+	exec { python --version } "python not executable..."
 	exec { 7za -h | Out-Null } "7za not executable..."
 	exec { 7z -h | Out-Null } "7za not executable..."
 }
