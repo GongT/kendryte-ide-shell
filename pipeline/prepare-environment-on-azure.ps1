@@ -92,14 +92,3 @@ Else
 	exec { 7za -h | Out-Null } "7za not executable..."
 	exec { 7z -h | Out-Null } "7za not executable..."
 }
-
-$request = [ System.Net.WebRequest ]::Create( "https://api.github.com/rate_limit" )
-$request.Headers.Add( 'User-Agent', 'Azure pipelines, powershell, GongT' )
-$request.Headers.Add( 'Accept', '*/*' )
-$request.Headers.Add( 'Host', 'api.github.com' )
-$response = $request.GetResponse()
-$response.Headers.AllKeys |
-	Select-Object @{ Name = "Key"; Expression = { $_ } },
-	@{ Name = "Value"; Expression = { $headers.GetValues( $_ ) } }
-$sr = new-object System.IO.StreamReader $response.GetResponseStream()
-Write-Output $sr.ReadToEnd()
