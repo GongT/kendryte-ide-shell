@@ -73,14 +73,12 @@ Else
 	$python = exec { yarn --silent run python -c 'import sys; print sys.executable' }
 	Write-Host "Python is at $python"
 	$pythonCallScript = @"
-@echo off
 `"$python`" %*
 "@
 	Write-Host $pythonCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/python.bat" -Encoding "ascii"
 	
 	Write-Host "7Zip is at $PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe"
 	$7zipCallScript = @"
-@echo off
 `"$PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe`" %*
 "@
 	Write-Host $7zipCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/7z.bat" -Encoding "ascii"
