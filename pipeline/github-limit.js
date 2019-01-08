@@ -1,8 +1,12 @@
 console.log('GET https://api.github.com/rate_limit');
-require('https').get('https://api.github.com/rate_limit', {
+require('https').get({
+	protocol: 'https',
+	host: 'api.github.com',
+	path: '/rate_limit',
 	headers: {
 		'user-agent': 'Azure pipelines, powershell, GongT',
 		'accept': 'application/json',
+		'host': 'api.github.com',
 	},
 }, (res) => {
 	Object.entries(res.headers).forEach(([k, v]) => {
