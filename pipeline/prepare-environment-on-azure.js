@@ -27,5 +27,3 @@ if (cp.signal) {
 if (cp.status !== 0) {
 	process.exit(cp.status);
 }
-
-require(__dirname + '/github-limit.js');
