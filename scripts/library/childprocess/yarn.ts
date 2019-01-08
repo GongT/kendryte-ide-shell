@@ -1,6 +1,7 @@
 import { createWriteStream, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
 import { PassThrough } from 'stream';
+import { isCI } from '../../environment';
 import { log } from '../gulp';
 import { useWriteFileStream } from '../misc/myBuildSystem';
 import { chdir } from '../misc/pathUtil';
@@ -31,7 +32,7 @@ export async function yarn(cmd: string, ...args: string[]) {
 	}
 	
 	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
-	const logTarget = process.env.SYSTEM_COLLECTIONID? process.stderr : useWriteFileStream('logs/yarn-install.log');
+	const logTarget = isCI? process.stderr : useWriteFileStream('logs/yarn-install.log');
 	await pipeCommandOut(logTarget, 'yarn', cmd, '--verbose', ...args).catch((e) => {
 		showError(cmd, 'yarn-install.log');
 		throw e;

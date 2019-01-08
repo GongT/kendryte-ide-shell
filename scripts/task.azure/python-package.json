@@ -1,0 +1,9 @@
+{
+	"name": "@kendryte-ide/windows-python2",
+	"version": "1.0.0",
+	"main": "index.js",
+	"bin": {
+		"python": "python.exe"
+	},
+	"license": "Python 2.7 license"
+}
