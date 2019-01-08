@@ -28,32 +28,4 @@ if (cp.status !== 0) {
 	process.exit(cp.status);
 }
 
-require('https').get('https://api.github.com/rate_limit', {
-	headers: {
-		'user-agent': 'Azure pipelines, powershell, GongT',
-		'accept': '*/*',
-	},
-}, (res) => {
-	Object.entries(res.headers).forEach(([k, v]) => {
-		console.log('%s: %s', k, v);
-	});
-	let s = '';
-	res.on('data', (d) => {
-		s += d.toString('utf-8');
-	});
-	try {
-		const data = JSON.parse(s);
-		console.log(data);
-		if (data.rate.remaining < 5) {
-			console.error('GitHub rate limit is reaching! reset at %s', (new Date(data.rate.reset)).toISOString());
-			process.exit(1);
-		}
-	} catch (e) {
-		console.error(e.message);
-		console.log(s);
-	}
-	process.exit(0);
-}).on('error', (e) => {
-	console.error('Cannot read github rate limit', e.message);
-	process.exit(0);
-});
+require(__dirname + '/github-limit.js');
