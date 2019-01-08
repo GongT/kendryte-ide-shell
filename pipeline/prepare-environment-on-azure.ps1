@@ -78,6 +78,8 @@ Else
 "@
 	Write-Output $pythonCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/python.bat" -Encoding "ascii"
 	
+	npm config -g set python $python
+	
 	Write-Output "7Zip is at $PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe"
 	$7zipCallScript = @"
 @echo off

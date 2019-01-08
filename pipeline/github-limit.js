@@ -21,7 +21,7 @@ require('https').get({
 		try {
 			const data = JSON.parse(s);
 			console.log(JSON.stringify(data, null, 4));
-			console.error('RESET at %s', (new Date(data.rate.reset)).toISOString());
+			console.error('RESET at %s', (new Date(data.rate.reset * 1000)).toISOString());
 			if (data.rate.remaining < 5) {
 				console.error('GitHub rate limit is reaching!');
 				process.exit(1);
