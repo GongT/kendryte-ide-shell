@@ -75,10 +75,11 @@ Else
   Set-Location "$env:TMP\szip"
   Write-Host "-->> vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
   Write-Host "##vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
-  
+
+  exec { npm init -y }
   exec { npm install '7zip' }
 
-  Copy-Item -Path "szip\node_modules\7zip\7zip-lite\7z.exe" -Destination "szip\node_modules\7zip\7zip-lite\7za.exe" -Verbose
+  Copy-Item -Path "node_modules\7zip\7zip-lite\7z.exe" -Destination "node_modules\7zip\7zip-lite\7za.exe" -Verbose
 #  exec { 7za -h | Out-Null } "7za not executable..."
 #  exec { 7z -h | Out-Null } "7z not executable..."
 }
