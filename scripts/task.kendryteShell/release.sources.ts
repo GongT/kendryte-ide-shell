@@ -3,7 +3,7 @@ import { BUILD_DIST_SOURCE, SHELL_ROOT } from '../environment';
 import { gulp, jeditor, mergeStream, task, yarn } from '../library/gulp';
 import { resolvePath } from '../library/misc/pathUtil';
 import { cleanupBuild, productionTask } from './compile';
-import { createReleaseTag } from './releaseTag';
+import { createReleaseTag } from '../library/releaseInfo/releaseTag';
 
 function createYarnTask() {
 	return task('build:yarn', [cleanupBuild], function () {

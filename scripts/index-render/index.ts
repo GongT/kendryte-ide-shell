@@ -5,6 +5,7 @@ import { loadRemoteState } from '../library/jsonDefine/releaseRegistry';
 import { resolvePath } from '../library/misc/pathUtil';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { updaterFileName } from '../library/paths/updater';
+import { getReleaseUpdaterPath } from '../library/releaseInfo/s3Keys';
 import { createCard } from './components/card';
 import { createReleaseDownload, createUpdateDownload } from './components/createDownload';
 import { buildHead } from './components/head';
@@ -63,9 +64,12 @@ export async function createIndexFileContent(): Promise<string> {
 	pieces.push(notSupportHtml());
 	pieces.push('<div id="platformContainer" class="row">');
 	
-	const downWin32 = updaterFileName('win32', registryFile.updaterVersion);
-	const downLinux = updaterFileName('linux', registryFile.updaterVersion);
-	const downDarwin = updaterFileName('darwin', registryFile.updaterVersion);
+	const downWin32 = getReleaseUpdaterPath(registryFile.updaterVersion)
+	                  + updaterFileName('win32', registryFile.updaterVersion);
+	const downLinux = getReleaseUpdaterPath(registryFile.updaterVersion)
+	                  + updaterFileName('linux', registryFile.updaterVersion);
+	const downDarwin = getReleaseUpdaterPath(registryFile.updaterVersion)
+	                   + updaterFileName('darwin', registryFile.updaterVersion);
 	
 	const packageWin32 = offlinePackageFileName('win32', registryFile.offlinePackageVersion);
 	const packageLinux = offlinePackageFileName('linux', registryFile.offlinePackageVersion);

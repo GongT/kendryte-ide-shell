@@ -4,7 +4,7 @@ import { gulpS3 } from '../library/gulp/aws';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
 import { AWS_RELEASE_PACKAGES_PATH } from '../library/releaseInfo/s3Keys';
-import { createReleaseTag } from '../task.kendryteShell/releaseTag';
+import { createReleaseTag } from '../library/releaseInfo/releaseTag';
 import { createZipFiles } from './compress';
 
 const uploadPackage = everyPlatform('offpack:upload', [createZipFiles], (platform) => {

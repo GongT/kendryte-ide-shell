@@ -1,11 +1,16 @@
 import { getReleaseChannel } from './qualityChannel';
+import { createReleaseTag } from './releaseTag';
 
-export const AWS_RELEASE_UPDATER_PATH = `release/updater/`;
 export const AWS_RELEASE_PACKAGES_PATH = `3rd-party/offline/`;
 export const AWS_RELEASE_PACKAGES_REGISTRY = `3rd-party/offline/index-creation-file.json`;
 
 export function getIDEJsonObjectKey(channel: string = getReleaseChannel()) {
 	return 'release/IDE.' + channel + '.json';
+}
+
+export function getReleaseUpdaterPath(version: string = createReleaseTag()) {
+	const versionPart = version.split(/\./)[0].slice(0, 6); // yyyy mm
+	return `release/updater/${getReleaseChannel()}/${versionPart}/`;
 }
 
 export function getIndexPageObjectKey(channel = getReleaseChannel()) {

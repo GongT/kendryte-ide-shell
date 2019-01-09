@@ -1,20 +1,17 @@
 import { BUILD_ARTIFACTS_DIR } from '../environment';
-import { debug, gulp, jeditor, platforms, task } from '../library/gulp';
+import { debug, gulpSrc, jeditor, mergeStream, platforms, task } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
-import { resolvePath } from '../library/misc/pathUtil';
 import { updaterFileName } from '../library/paths/updater';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
-import { AWS_RELEASE_UPDATER_PATH } from '../library/releaseInfo/s3Keys';
+import { createReleaseTag } from '../library/releaseInfo/releaseTag';
+import { getReleaseUpdaterPath } from '../library/releaseInfo/s3Keys';
 import { compressTasks } from './release.compress';
-import { createReleaseTag } from './releaseTag';
 
 function realAwsUpload() {
-	const matches = platforms.map((platform) => {
-		return resolvePath(BUILD_ARTIFACTS_DIR, updaterFileName(platform));
-	});
-	return gulp.src(matches, {base: BUILD_ARTIFACTS_DIR, buffer: true})
-	           .pipe(gulpS3.dest({base: AWS_RELEASE_UPDATER_PATH}))
-	           .pipe(debug({title: 'uploadComplete:'}));
+	return mergeStream(...platforms.map((platform) => {
+		return gulpSrc(BUILD_ARTIFACTS_DIR, updaterFileName(platform))
+			.pipe(gulpS3.dest({base: getReleaseUpdaterPath()}));
+	})).pipe(debug({title: 'uploadComplete:'}));
 }
 
 task('aws:upload:test', [], () => {
