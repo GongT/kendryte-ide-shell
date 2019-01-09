@@ -57,6 +57,7 @@ ElseIf ($env:AGENT_OS -eq "Darwin")
   
   New-Item -ItemType Directory -Path "$env:TMPDIR/szip"
   Set-Location "$env:TMPDIR/szip"
+  Write-Host "-->> vso[task.prependpath]$env:TMPDIR/szip"
   Write-Host "##vso[task.prependpath]$env:TMPDIR/szip"
   
   downloadFile "https://registry.npmjs.org/7zip-bin/-/7zip-bin-4.1.0.tgz" "7zb.tar.gz"
