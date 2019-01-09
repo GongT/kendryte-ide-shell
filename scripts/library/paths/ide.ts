@@ -25,7 +25,7 @@ export function artifactsLocalTempPath(platform: string, type: 'latest'|'prev') 
 	if (type === 'prev') {
 		return nativePath(BUILD_ARTIFACTS_DIR, `artifact-${getReleaseChannel()}-${type}-${platform}.7z`);
 	} else {
-		return nativePath(BUILD_ARTIFACTS_DIR, platform, `latest-${getReleaseChannel()}-${platform}.7z`);
+		return nativePath(BUILD_ARTIFACTS_DIR, getReleaseChannel(), `latest-${getReleaseChannel()}-${platform}.7z`);
 	}
 }
 
