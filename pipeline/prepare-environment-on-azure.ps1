@@ -73,6 +73,7 @@ Else
   
   New-Item -ItemType Directory -Path "$env:TMP\szip"
   Set-Location "$env:TMP\szip"
+  Write-Host "-->> vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
   Write-Host "##vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
   
   exec { npm install '7zip' }
