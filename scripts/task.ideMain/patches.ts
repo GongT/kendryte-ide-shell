@@ -11,7 +11,8 @@ import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
 import { artifactsExtractedTempPath, extractTempDir, patchDownloadKey } from '../library/paths/ide';
 import { artifactsPrepareTask } from './artifacts';
-import { prevBuildDownloadAndExtractTask } from './download.prev';
+import { cleanExtractTask } from './cleanup';
+import { downloadPrevVersion } from './download.prev';
 
 function noop(): any {
 	return task('ide:patches:create', () => {
@@ -20,17 +21,19 @@ function noop(): any {
 }
 
 export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatform('ide:patches:create', [
-	prevBuildDownloadAndExtractTask,
+	cleanExtractTask,
 	artifactsPrepareTask,
 ], async (platform) => {
 	const result = nativePath(artifactsExtractedTempPath(platform, 'latest'), platformResourceAppDir(platform));
+	log('read latest package.json from %s', result);
 	const resultVersion: IPackageJson = await readJson(nativePath(result, 'package.json'));
 	
 	if (!await checkRemoteNeedPatch(platform, resultVersion)) {
-		log('patch for %s is ignored, remote version is same with local.', platform);
+		log('patch for %s is ignored.', platform);
 		return;
 	}
 	
+	await downloadPrevVersion(platform);
 	const base = nativePath(artifactsExtractedTempPath(platform, 'prev'), platformResourceAppDir(platform));
 	const baseVersion: IPackageJson = await readJson(nativePath(base, 'package.json'));
 	

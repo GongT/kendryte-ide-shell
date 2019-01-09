@@ -1,4 +1,4 @@
-import { everyPlatform, IPlatformTypes } from '../library/gulp';
+import { IPlatformTypes, log } from '../library/gulp';
 import { extract7z } from '../library/gulp/7z';
 import { createRequestDownPromise } from '../library/gulp/download';
 import { IProductJson } from '../library/jsonDefine/product.json';
@@ -8,19 +8,16 @@ import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
 import { artifactsExtractedTempPath, artifactsLocalTempPath } from '../library/paths/ide';
 import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
-import { cleanExtractTask } from './cleanup';
 
-export const prevBuildDownloadAndExtractTask = everyPlatform('ide:download:prev', [cleanExtractTask], async (platform) => {
+export async function downloadPrevVersion(platform: IPlatformTypes) {
 	const state = await loadRemoteState(true);
 	if (!state[platform]) {
+		log('patch for %s is impossible. remote does not has any version.', platform);
 		return;
 	}
-	await processSingle(state[platform].downloadUrl, platform);
-});
-
-async function processSingle(from: string, platform: IPlatformTypes) {
+	
 	const saveTo = artifactsLocalTempPath(platform, 'prev');
-	await createRequestDownPromise(from, saveTo);
+	await createRequestDownPromise(state[platform].downloadUrl, saveTo);
 	
 	const extractTo = artifactsExtractedTempPath(platform, 'prev');
 	await extract7z(saveTo, extractTo);

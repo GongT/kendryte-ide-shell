@@ -1,3 +1,4 @@
+import { DeepReadonly } from 'deep-freeze';
 import { IPlatformMap, IPlatformTypes, log } from '../gulp';
 import { ExS3 } from '../misc/awsUtil';
 import { getIDEJsonObjectKey } from '../releaseInfo/s3Keys';
@@ -23,19 +24,25 @@ export interface IDEJson extends IPlatformMap<IIdeJsonInner> {
 	updaterVersion: string;
 }
 
-let cachedRemoteData: IDEJson;
-let cachedOriginalData: IDEJson;
+let cachedOriginalData: DeepReadonly<IDEJson>;
+let cachedRemotePromise: Promise<IDEJson>;
 
-export async function loadRemoteState(original: boolean = false): Promise<IDEJson> {
-	if (!cachedRemoteData) {
-		cachedRemoteData = await ExS3.instance().loadJson<IDEJson>(getIDEJsonObjectKey());
-		cachedOriginalData = deepExtend({}, cachedRemoteData);
-		deepFreeze(cachedOriginalData);
+export function loadRemoteState(original: true): Promise<DeepReadonly<IDEJson>>;
+export function loadRemoteState(original?: false): Promise<IDEJson>;
+export function loadRemoteState(original: boolean = false): Promise<DeepReadonly<IDEJson>|IDEJson> {
+	if (!cachedRemotePromise) {
+		cachedRemotePromise = ExS3.instance().loadJson<IDEJson>(getIDEJsonObjectKey()).then((data) => {
+			console.log('-----------------------------\n%s\n-----------------------------', JSON.stringify(data, null, 4));
+			cachedOriginalData = deepFreeze(deepExtend({}, data));
+			return data;
+		});
 	}
-	if (original) {
-		return cachedOriginalData;
-	}
-	return cachedRemoteData;
+	return cachedRemotePromise.then((remoteData) => {
+		if (original) {
+			return cachedOriginalData;
+		}
+		return remoteData;
+	});
 }
 
 export async function saveRemoteState() {
@@ -111,12 +118,11 @@ export async function checkRemoteNeedPatch(platform: IPlatformTypes, local: IPac
 		return false;
 	}
 	if (r.version !== local.version) {
-		log('checkRemoteNeedPatch: remote do not have platform `%s`, NO patch need.', platform);
-		log('checkRemoteNeedPatch: platform `%s` big version has changed, NO patch need.', platform);
+		log('checkRemoteNeedPatch: platform `%s` big version has changed (%s update-to %s), NO patch need.', r.version, local.version, platform);
 		return false;
 	}
 	if (r.patchVersion === local.patchVersion) {
-		log('checkRemoteNeedPatch: platform `%s` has same patch, NO patch need', platform);
+		log('checkRemoteNeedPatch: platform `%s` has exact same patch version (both %s), NO patch need', r.patchVersion, platform);
 		return false;
 	}
 	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', local.patchVersion, r.patchVersion, platform);

@@ -23,9 +23,11 @@ const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (platform: s
 	return createDownload2Stream(url, saveTo);
 });
 
-export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [cleanExtractTask,
+export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
+	cleanExtractTask,
 	artifactsFetchTask,
-	extensionsPackageTask], async (platform) => {
+	extensionsPackageTask,
+], async (platform) => {
 	const saveTo = artifactsLocalTempPath(platform, 'latest');
 	const extractTo = artifactsExtractedTempPath(platform, 'latest');
 	
