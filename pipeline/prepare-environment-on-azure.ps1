@@ -3,87 +3,79 @@ $env:CHILD_CONCURRENCY = "1"
 
 function Exec
 {
-	[ CmdletBinding() ]
-	param (
-		[ Parameter(Position = 0, Mandatory = 1) ][ scriptblock ]$cmd,
-		[ Parameter(Position = 1, Mandatory = 0) ][ string ]$errorMessage = ($msgs.error_bad_command -f $cmd)
-	)
-	& $cmd
-	if ( $lastexitcode -ne 0 )
-	{
-		throw ("Exec: " + $errorMessage)
-	}
+  [ CmdletBinding() ]
+  param (
+    [ Parameter(Position = 0, Mandatory = 1) ][ scriptblock ]$cmd,
+    [ Parameter(Position = 1, Mandatory = 0) ][ string ]$errorMessage = ($msgs.error_bad_command -f $cmd)
+  )
+  & $cmd
+  if ( $lastexitcode -ne 0 )
+  {
+    throw ("Exec: " + $errorMessage)
+  }
 }
 
 function downloadFile()
 {
-	param (
-		[ parameter(Mandatory = $true) ] [ String ] $Uri,
-		[ parameter(Mandatory = $true) ] [ String ] $resultDownload
-	)
-	
-	if ( !(Test-Path -Path $resultDownload) )
-	{
-		Write-Output "Downloading file From: $Uri, To: $resultDownload"
-		$tempDownload = "${resultDownload}.partial"
-		[ Net.ServicePointManager ]::SecurityProtocol = [ Net.SecurityProtocolType ]::Tls12
-		if ( $env:HTTPS_PROXY )
-		{
-			Write-Output "Using proxy: $env:HTTPS_PROXY"
-			Invoke-WebRequest -Uri $Uri -OutFile $tempDownload -Proxy $env:HTTPS_PROXY
-		}
-		else
-		{
-			Write-Output "Using direct connection."
-			Invoke-WebRequest -Uri $Uri -OutFile $tempDownload
-		}
-		Write-Output "Downloaded file: $resultDownload"
-		Rename-Item -Path $tempDownload -NewName $resultDownload -Force
-	}
-	else
-	{
-		Write-Output "Exists file: $resultDownload"
-	}
+  param (
+    [ parameter(Mandatory = $true) ] [ String ] $Uri,
+    [ parameter(Mandatory = $true) ] [ String ] $resultDownload
+  )
+  
+  if ( !(Test-Path -Path $resultDownload) )
+  {
+    Write-Output "Downloading file From: $Uri, To: $resultDownload"
+    $tempDownload = "${resultDownload}.partial"
+    [ Net.ServicePointManager ]::SecurityProtocol = [ Net.SecurityProtocolType ]::Tls12
+    if ( $env:HTTPS_PROXY )
+    {
+      Write-Output "Using proxy: $env:HTTPS_PROXY"
+      Invoke-WebRequest -Uri $Uri -OutFile $tempDownload -Proxy $env:HTTPS_PROXY
+    }
+    else
+    {
+      Write-Output "Using direct connection."
+      Invoke-WebRequest -Uri $Uri -OutFile $tempDownload
+    }
+    Write-Output "Downloaded file: $resultDownload"
+    Rename-Item -Path $tempDownload -NewName $resultDownload -Force
+  }
+  else
+  {
+    Write-Output "Exists file: $resultDownload"
+  }
 }
 
 if ( $env:AGENT_OS -eq "Linux" )
 {
-	Write-Output "LinuxPath is $env:PATH"
-	sudo apt-get install p7zip-full
+  Write-Output "LinuxPath is $env:PATH"
+  sudo apt-get install p7zip-full
 }
 ElseIf ($env:AGENT_OS -eq "Darwin")
 {
-	Write-Output "MacPath is $env:PATH"
-	$TMP = $env:TMPDIR
-	downloadFile 'https://registry.npmjs.org/7zip-bin/-/7zip-bin-4.1.0.tgz' "$TMP/7zb.tar.gz"
-	exec { tar xf "$TMP/7zb.tar.gz" -C $TMP } "Cannot extract 7zip-bin tar.gz"
-	exec { sudo mkdir -p "$HOME/bin" } "Cannot create HOME/bin folder"
-	exec { sudo cp "$TMP/package/mac/7za" "$HOME/bin/7za" } "Cannot copy 7za to HOME/bin"
-	exec { sudo cp "$TMP/package/mac/7za" "$HOME/bin/7z" } "Cannot copy 7z to HOME/bin"
-	exec { sudo chmod a+x "$HOME/bin/7za" } "Cannot chmod (a+x) HOME/bin/7za"
-	exec { sudo chmod a+x "$HOME/bin/7z" } "Cannot chmod (a+x) HOME/bin/7z"
-	exec { 7za -h | Out-Null } "7za not executable, HOME/bin not in Path?"
-	exec { 7z -h | Out-Null } "7z not executable, HOME/bin not in Path?"
+  Write-Output "MacPath is $env:PATH"
+  
+  New-Item -ItemType Directory -Path "$env:TMPDIR/szip"
+  Set-Location "$env:TMPDIR/szip"
+  Write-Host "##vso[task.prependpath]$env:TMPDIR/szip"
+  
+  downloadFile "https://registry.npmjs.org/7zip-bin/-/7zip-bin-4.1.0.tgz" "7zb.tar.gz"
+  exec { tar xf "7zb.tar.gz" } "Cannot extract 7zip-bin tar.gz"
+  Copy-Item -Path "package/mac/7za" -Destination "7za" -Verbose
+  Copy-Item -Path "package/mac/7za" -Destination "7z" -Verbose
 }
 Else
 {
-	# windows
-	$TMP = $env:TMP
-	Write-Output "WindowsPath is $env:PATH"
-	exec { python --version } "python not executable..."
-	
-	exec { npm install '7zip' }
-	
-	Write-Output "7Zip is at $PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe"
-	$7zipCallScript = @"
-@echo off
-`"$PSScriptRoot\node_modules\7zip\7zip-lite\7z.exe`" %*
-"@
-	Write-Output $7zipCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/7z.bat" -Encoding "ascii"
-	Write-Output $7zipCallScript.Replace( "`n", "`r`n" ) | Out-File -FilePath "C:/Windows/7za.bat" -Encoding "ascii"
-	
-	Remove-Item -Recurse -Force $PSScriptRoot\node_modules\.bin
-	
-	exec { 7za -h | Out-Null } "7za not executable..."
-	exec { 7z -h | Out-Null } "7z not executable..."
+  # windows
+  Write-Output "WindowsPath is $env:PATH"
+  exec { python --version } "Error: python not executable..."
+  
+  New-Item -ItemType Directory -Path "$env:TMP\szip"
+  Set-Location "$env:TMP\szip"
+  Write-Host "##vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
+  
+  exec { npm install '7zip' }
+  
+#  exec { 7za -h | Out-Null } "7za not executable..."
+#  exec { 7z -h | Out-Null } "7z not executable..."
 }

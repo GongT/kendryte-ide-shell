@@ -23,12 +23,21 @@ exec { yarn config set prefix $npmGlobal }
 
 exec {
   node -e @"
+    console.log('================================ environment check ================================');
+    console.log('CWD %s', process.cwd());
     const {platform} = require('os');
 
     const platformName = platform();
     const builtName = platformName === 'darwin'? platformName : platformName + '-x64';
     
     console.log('##vso[task.setvariable variable=platform]%s', platformName);
+    console.log('Azure SetVariable: platform=%s', platformName);
     console.log('##vso[task.setvariable variable=builtName]%s', builtName);
+    console.log('Azure SetVariable: builtName=%s', builtName);
+
+    console.log('ENV: BUILD_ARTIFACTSTAGINGDIRECTORY=%s', process.env.BUILD_ARTIFACTSTAGINGDIRECTORY);
+    console.log('ENV: CHANNEL=%s', process.env.CHANNEL);
+
+    console.log('================================ environment check end ================================');
 "@
 }
