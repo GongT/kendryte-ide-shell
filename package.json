@@ -1,4 +1,5 @@
 {
+	"name": "kendryte-ide-shell",
 	"private": true,
 	"scripts": {
 		"start": "yarn workspace shell run start",
