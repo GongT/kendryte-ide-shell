@@ -36,7 +36,7 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	}
 	handle.end();
 	
-	const bundleFile = createPackagesExtractPath(platform, 'bundled-versions.json');
+	const bundleFile = createPackagesExtractPath(platform, '.');
 	return mergeStream(
 		handle,
 		filesToStream(createVinylFile('bundled-versions.json', undefined, JSON.stringify(bundledVersions)))
