@@ -71,7 +71,7 @@ export async function startMainLogic() {
 	} else {
 		const newestLocal = localVersions.pop();
 		if (!newestLocal || newestLocal.version !== platformInfo.version) {
-			logger.log(`framework version has updated, from ${newestLocal.version} to ${platformInfo.version}`);
+			logger.log(`framework version has updated, from ${newestLocal? newestLocal.version : 'no any version'} to ${platformInfo.version}`);
 			// big version has update
 			if (newestLocal && newestLocal.version) {
 				migrateUserData(newestLocal.version);
@@ -89,7 +89,7 @@ export async function startMainLogic() {
 				applicationPath(`app_${platformInfo.version}_${lastPatch}${appExt}`),
 				patchesToDownload(platformInfo.patches, newestLocal.patch),
 			);
-		}else{
+		} else {
 			logger.log(`version and patch both same, just start .`);
 		}
 		launchProduction();
