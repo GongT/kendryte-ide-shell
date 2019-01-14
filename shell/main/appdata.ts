@@ -8,6 +8,7 @@ export interface ISelfConfig {
 	title: string;
 	channel: string;
 	sourceRoot: string;
+	workspaceRoot: string;
 	registry: string;
 	thirdParty: string;
 	downloadPage: string;
@@ -22,9 +23,9 @@ let config: ISelfConfig;
 export async function loadApplicationData(): Promise<ISelfConfig> {
 	if (!config) {
 		console.info('loadApplicationData');
-		config = await readJson(configFile, { encoding: 'utf8' }) as any;
+		config = await readJson(configFile, {encoding: 'utf8'}) as any;
 		console.info(config);
 	}
-
+	
 	return config;
 }

@@ -20,7 +20,6 @@
 		"chromium-pickle-js": "^0.2.0",
 		"deep-extend": "^0.6.0",
 		"deep-freeze": "^0.0.1",
-		"electron": "^4.0.0",
 		"gulp": "^3.9.1",
 		"gulp-aws": "^0.1.0",
 		"gulp-dart-sass": "^0.9.1",

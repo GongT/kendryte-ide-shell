@@ -9,6 +9,7 @@
 		"lib/bsp/include",
 		"lib/drivers/include",
 		"lib/freertos/include",
+		"lib/freertos/conf",
 		"lib/hal/include",
 		"lib/posix/include",
 		"lib/utils/include"

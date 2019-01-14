@@ -43,13 +43,12 @@ export function launchProduction() {
 export function launchSource(data: ISelfConfig) {
 	workTitle('starting', 'source code');
 	registerWork('launch application source', async () => {
-		const sourceRoot = ideSourceRoot(data);
-		const exe = await ideSourceCmdline(sourceRoot);
+		const exe = await ideSourceCmdline(data);
 		
 		rememberThisVersion(null);
 		await launchIDE(exe, remote.process.cwd(), myArgs(), {
 			IS_SOURCE_RUN: 'yes',
-			VSCODE_PATH: sourceRoot,
+			VSCODE_PATH: data.sourceRoot,
 		});
 	});
 }
@@ -84,17 +83,13 @@ export function isRunSource(data: ISelfConfig): boolean {
 	return data.channel === 'sourcecode';
 }
 
-async function ideSourceCmdline(sourceRoot: string) {
-	logger.debug('try to find IDE source code at: ' + sourceRoot);
-	if (!await pathExistsSync(nativePath(sourceRoot, 'kendryte-ide/package.json'))) {
+async function ideSourceCmdline(data: ISelfConfig) {
+	logger.log('try to find IDE source code at: ' + data.sourceRoot);
+	if (!await pathExistsSync(nativePath(data.sourceRoot, 'package.json'))) {
 		throw new Error('Unable to detect IDE source code. Did you checked it out?');
 	}
 	return [
-		nativePath(sourceRoot, 'scripts/start.' + (is.windows? 'ps1' : 'sh')),
+		nativePath(data.workspaceRoot, 'scripts/start.' + (is.windows? 'ps1' : 'sh')),
 		'start-debug',
 	];
-}
-
-export function ideSourceRoot(data: ISelfConfig) {
-	return data.sourceRoot;
 }

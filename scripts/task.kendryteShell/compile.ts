@@ -65,6 +65,7 @@ const channelJsonTask: ISourceType = {
 			};
 			if (channel === 'sourcecode') {
 				modify.sourceRoot = WORKSPACE_ROOT;
+				modify.workspaceRoot = WORKSPACE_ROOT;
 			}
 			return p.pipe(jeditor(modify));
 		};
