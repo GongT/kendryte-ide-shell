@@ -39,10 +39,14 @@ console.log('working inside directory: %s', process.cwd());
 const packageJson = resolve(process.cwd(), 'package.json');
 const pkg = require(packageJson);
 pkg.patchVersion = createReleaseTag();
+console.error('update package.json `patchVersion` to %s', pkg.patchVersion);
 writeFileSync(packageJson, JSON.stringify(pkg, null, 4), 'utf8');
+console.error('=====================\n%s\n=====================', JSON.stringify(pkg, null, 2));
 
 // product
 const productJson = resolve(process.cwd(), 'product.json');
 const product = require(productJson);
 product.quality = getReleaseChannel();
+console.error('update product.json `quality` to %s', product.quality);
 writeFileSync(productJson, JSON.stringify(product, null, 2), 'utf8');
+console.error('=====================\n%s\n=====================', JSON.stringify(product, null, 2));
