@@ -10,6 +10,7 @@
 		"lib/drivers/include",
 		"lib/freertos/include",
 		"lib/freertos/conf",
+		"lib/freertos/portable",
 		"lib/hal/include",
 		"lib/posix/include",
 		"lib/utils/include"

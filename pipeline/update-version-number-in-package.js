@@ -1,4 +1,5 @@
 const {writeFileSync} = require('fs');
+const {resolve} = require('path');
 
 function createReleaseTag() {
 	if (process.env.BUILD_BUILDNUMBER) {
@@ -32,10 +33,16 @@ function getReleaseChannel() {
 }
 
 process.chdir(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY);
-const pkg = require('./package.json');
-pkg.patchVersion = createReleaseTag();
-writeFileSync('./package.json', JSON.stringify(pkg, null, 4), 'utf8');
+console.log('working inside directory: %s', process.cwd());
 
-const product = require('./product.json');
+// package
+const packageJson = resolve(process.cwd(), 'package.json');
+const pkg = require(packageJson);
+pkg.patchVersion = createReleaseTag();
+writeFileSync(packageJson, JSON.stringify(pkg, null, 4), 'utf8');
+
+// product
+const productJson = resolve(process.cwd(), 'product.json');
+const product = require(productJson);
 product.quality = getReleaseChannel();
-writeFileSync('./product.json', JSON.stringify(product, null, 2), 'utf8');
+writeFileSync(productJson, JSON.stringify(product, null, 2), 'utf8');

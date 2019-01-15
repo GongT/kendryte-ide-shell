@@ -14,11 +14,21 @@ function ignoreSomeSdkFile(f: VinylFile) {
 	if (f.isDirectory()) {
 		return void 0;
 	}
+	
+	if (f.basename.startsWith('.')) {
+		return void 0;
+	}
+	
 	if (
 		startsWithFolder(f, 'cmake') ||
 		startsWithFolder(f, 'src') ||
-		startsWithFolder(f, 'third_party')
+		startsWithFolder(f, 'third_party') ||
+		startsWithFolder(f, '.github')
 	) {
+		return void 0;
+	}
+	
+	if (f.basename.startsWith('CMakeLists.txt')) {
 		return void 0;
 	}
 	
@@ -29,8 +39,8 @@ export const standaloneSdk = task('pm:standalone', [], () => {
 	return mergeStream(
 		downloadBuffer('https://github.com/kendryte/kendryte-standalone-sdk/archive/master.zip')
 			.pipe(zip.src())
-			.pipe(simpleTransformStream(ignoreSomeSdkFile))
-			.pipe(rename(removeFirstComponent)),
+			.pipe(rename(removeFirstComponent))
+			.pipe(simpleTransformStream(ignoreSomeSdkFile)),
 		gulpSrc(myScriptSourcePath(__dirname), 'standalone.json')
 			.pipe(jeditor({version: getVersionString()}))
 			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
@@ -49,8 +59,8 @@ export const freertosSdk = task('pm:freertos', [], () => {
 	return mergeStream(
 		downloadBuffer('https://github.com/kendryte/kendryte-freertos-sdk/archive/master.zip')
 			.pipe(zip.src())
-			.pipe(simpleTransformStream(ignoreSomeSdkFile))
-			.pipe(rename(removeFirstComponent)),
+			.pipe(rename(removeFirstComponent))
+			.pipe(simpleTransformStream(ignoreSomeSdkFile)),
 		gulpSrc(myScriptSourcePath(__dirname), 'freertos.json')
 			.pipe(jeditor({version: getVersionString()}))
 			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
