@@ -99,14 +99,14 @@ export async function checkRemoteOutdated(platform: IPlatformTypes, local: IPack
 		return true;
 	}
 	if (r.version !== local.version) {
-		log('checkRemoteOutdated: platform `%s` version is %s, remote is %s, result is outdated', local.version, r.version, platform);
+		log('checkRemoteOutdated: platform `%s` version is %s, remote is %s, result is outdated', platform, local.version, r.version);
 		return true;
 	}
-	if (r.patchVersion === local.patchVersion) {
-		log('checkRemoteOutdated: platform `%s` patch is %s, remote is %s, result is outdated', local.patchVersion, r.patchVersion, platform);
+	if (r.patchVersion !== local.patchVersion) {
+		log('checkRemoteOutdated: platform `%s` patch is %s, remote is %s, result is outdated', platform, local.patchVersion, r.patchVersion);
 		return true;
 	}
-	log('checkRemoteOutdated: platform `%s` has same version and patch, result is up-to-date', platform);
+	log('checkRemoteOutdated: platform `%s` has same version (%s) and patch (%s), result is up-to-date', platform, r.version, r.patchVersion);
 	return false;
 }
 
@@ -118,13 +118,13 @@ export async function checkRemoteNeedPatch(platform: IPlatformTypes, local: IPac
 		return false;
 	}
 	if (r.version !== local.version) {
-		log('checkRemoteNeedPatch: platform `%s` big version has changed (%s update-to %s), NO patch need.', r.version, local.version, platform);
+		log('checkRemoteNeedPatch: platform `%s` big version has changed (%s update-to %s), NO patch need.', platform, r.version, local.version);
 		return false;
 	}
 	if (r.patchVersion === local.patchVersion) {
-		log('checkRemoteNeedPatch: platform `%s` has exact same patch version (both %s), NO patch need', r.patchVersion, platform);
+		log('checkRemoteNeedPatch: platform `%s` has exact same patch version (both %s), NO patch need', platform, r.patchVersion);
 		return false;
 	}
-	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', local.patchVersion, r.patchVersion, platform);
+	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', platform, local.patchVersion, r.patchVersion);
 	return false;
 }
