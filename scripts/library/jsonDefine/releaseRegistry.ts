@@ -126,5 +126,5 @@ export async function checkRemoteNeedPatch(platform: IPlatformTypes, local: IPac
 		return false;
 	}
 	log('checkRemoteNeedPatch: platform `%s` patch is %s, remote is %s, patch need!', platform, local.patchVersion, r.patchVersion);
-	return false;
+	return true;
 }
