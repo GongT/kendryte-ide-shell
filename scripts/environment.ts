@@ -15,6 +15,7 @@ process.env.ORIGINAL_HOME = ORIGINAL_HOME;
 
 export const ORIGINAL_PATH = process.env.ORIGINAL_PATH || process.env.PATH;
 process.env.ORIGINAL_PATH = ORIGINAL_PATH;
+delete process.env.Path;
 
 const buildTo = __dirname;
 const sourceFrom = resolve(__dirname, '../../scripts');
@@ -72,7 +73,12 @@ if (platform() === 'win32') {
 	sp = ':';
 	PATHS.push('/bin', '/usr/bin');
 }
-export const PATH = process.env.PATH = PATHS.map(normalize).join(sp) + isCI? sp + ORIGINAL_PATH : '';
+PATHS = PATHS.map(normalize);
+if (isCI) {
+	PATHS.push(ORIGINAL_PATH);
+}
+export const PATH_SP = sp;
+export const PATH = process.env.PATH = PATHS.join(sp);
 if (isCI) {
 	console.error('PATH=%s', process.env.PATH);
 }

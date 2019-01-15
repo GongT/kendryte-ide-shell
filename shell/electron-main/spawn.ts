@@ -1,7 +1,8 @@
 import { spawn } from 'child_process';
 import { BrowserWindow, dialog, MessageBoxOptions } from 'electron';
-import { createWriteStream } from 'fs-extra';
+import { createWriteStream, mkdirp } from 'fs-extra';
 import { tmpdir } from 'os';
+import { dirname } from 'path';
 import { format } from 'util';
 import { alwaysPromise } from '../library/alwaysPromise';
 import { createLogPack } from '../library/createLogPack';
@@ -143,6 +144,7 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 	const connectId = (++connId).toFixed(0);
 	
 	const currentLog = myProfilePath('logs/output-' + (new Date()).toISOString() + '.log');
+	await mkdirp(dirname(currentLog));
 	const logOut = createWriteStream(currentLog);
 	registerCleanupStream(logOut, () => {
 		if (cp) {
@@ -158,8 +160,11 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 	
 	function log(tag: LogLevel, message: string, ...args: any[]) {
 		const msg = format(`[${tag}] ${message}`, ...args);
-		logOut.write(msg + '\n');
 		console.error('[child]' + msg);
+		try {
+			logOut.write(msg + '\n');
+		} catch (e) {
+		}
 	}
 	
 	const p = new Promise((resolve, reject) => {

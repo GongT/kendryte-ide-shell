@@ -25,7 +25,8 @@ setSystemVar 'PRIVATE_BINS' (resolvePath $BUILD_ROOT wrapping-bins)
 
 $CommonPaths = "C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0"
 $LocalNodePath = (resolvePath $WORKSPACE_ROOT node_modules\.bin)
-setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$LocalNodePath;$CommonPaths"
+$PythonPath = 'C:\Users\gongt\.windows-build-tools\python27'
+setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$LocalNodePath;$PythonPath;$CommonPaths"
 
 if ($env:KENDRYTE_PROXY) {
 	setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"

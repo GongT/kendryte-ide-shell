@@ -1,5 +1,5 @@
 [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
-if ( ! $env:SYSTEM_COLLECTIONID ){
+if (!$env:SYSTEM_COLLECTIONID) {
 	chcp 65001 | Out-Null
 }
 $ErrorActionPreference = "Stop"
@@ -35,20 +35,22 @@ node "$MY_SCRIPT_ROOT_BUILT\init-script\help.js" --what-is-this
 
 Write-Host " > The anwser is 42 <" -ForegroundColor Green
 
-if ( ! $env:SYSTEM_COLLECTIONID ) {
-	[console]::WindowWidth = 100
-	[console]::WindowHeight = 24
-	[console]::BufferWidth = [console]::WindowWidth
-}
-
 cd $VSCODE_ROOT # required last item
 
-if( $args.Count -ne 0 ) {
-	$cnt=$args.Count
-	$cmd, $rst=$args
+if ($args.Count -ne 0) {
+	$env:BS_RUN_SCRIPT = 'YES'
+	$cnt = $args.Count
+	$cmd, $rst = $args
 	Write-Host "Passing $cnt arguments, running it."
 	Write-Host "   Command=$cmd"
 	Write-Host "   Arguments=$rst"
+	$ErrorActionPreference = "Continue"
 	& $cmd @rst
 	exit $LastExitCode
+}
+
+if (!$env:SYSTEM_COLLECTIONID) {
+	[console]::WindowWidth = 100
+	[console]::WindowHeight = 24
+	[console]::BufferWidth = [console]::WindowWidth
 }

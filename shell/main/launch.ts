@@ -88,8 +88,17 @@ async function ideSourceCmdline(data: ISelfConfig) {
 	if (!await pathExistsSync(nativePath(data.sourceRoot, 'package.json'))) {
 		throw new Error('Unable to detect IDE source code. Did you checked it out?');
 	}
-	return [
-		nativePath(data.workspaceRoot, 'scripts/start.' + (is.windows? 'ps1' : 'sh')),
-		'start-debug',
-	];
+	if (is.windows) {
+		return [
+			'powershell.exe',
+			nativePath(data.workspaceRoot, 'scripts/start.ps1'),
+			'start-debug',
+		];
+	} else {
+		return [
+			'bash',
+			nativePath(data.workspaceRoot, 'scripts/start.sh'),
+			'start-debug',
+		];
+	}
 }

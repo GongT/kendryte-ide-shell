@@ -1,12 +1,14 @@
 import { spawnSync } from 'child_process';
 import { existsSync, unlinkSync } from 'fs';
+import { readJsonSync } from 'fs-extra';
 import { resolve } from 'path';
-import { isWin, VSCODE_ROOT } from '../../environment';
+import { isWin, ORIGINAL_PATH, PATH, PATH_SP, VSCODE_ROOT } from '../../environment';
 import { cleanScreen } from '../../library/misc/clsUtil';
 import { mkdirpSync } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { preventProxy, runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
+import { builtInExtensions } from '../codeblocks/builtInExtensions';
 import { getElectronIfNot } from '../codeblocks/getElectron';
 
 whatIsThis(
@@ -26,8 +28,10 @@ runMain(async () => {
 			delete env[i];
 		}
 	}
+	env.PATH = PATH + PATH_SP + ORIGINAL_PATH;
 	
 	await getElectronIfNot();
+	await builtInExtensions();
 	
 	delete process.env.VSCODE_PORTABLE;
 	
@@ -38,6 +42,10 @@ runMain(async () => {
 	delete process.env.HTTP_PROXY;
 	delete process.env.HTTPS_PROXY;
 	delete process.env.ALL_PROXY;
+	
+	if (passArgs.includes('--builtin')) {
+		return run(['build/builtin'], env);
+	}
 	
 	const inspect = passArgs.find(e => /^--inspect(-brk)?(=|$)/.test(e));
 	if (inspect) {
@@ -60,8 +68,18 @@ runMain(async () => {
 function run(passArgs: string[], env: any) {
 	console.log(passArgs);
 	if (isWin) {
-		console.error('cmd.exe /c scripts\\code.bat %s', passArgs.join(' '));
-		spawnSync('cmd.exe', ['/C', 'scripts\\code.bat', ...passArgs], {
+		const NAMESHORT = env.NAMESHORT = readJsonSync('product.json').nameShort + '.exe';
+		const CODE = env.CODE = '.build//electron//' + NAMESHORT;
+		
+		env.NODE_ENV = 'development';
+		env.VSCODE_DEV = 1;
+		env.VSCODE_CLI = 1;
+		env.ELECTRON_DEFAULT_ERROR_MODE = 1;
+		env.ELECTRON_ENABLE_LOGGING = 1;
+		env.ELECTRON_ENABLE_STACK_DUMPING = 1;
+		
+		console.error(CODE, '.', passArgs.join(' '));
+		spawnSync(CODE, ['.', ...passArgs], {
 			encoding: 'utf8',
 			stdio: 'inherit',
 			env,

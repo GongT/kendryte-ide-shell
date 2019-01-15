@@ -60,7 +60,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
 
 ### npm
 writeCmdFile npm @"
-"$NODEJS" "$MY_SCRIPT_ROOT_BUILT\init-script\mock-npm.js" %*
+node "$MY_SCRIPT_ROOT_BUILT\init-script\mock-npm.js" %*
 "@
 ### npm
 
