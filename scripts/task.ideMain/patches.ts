@@ -1,7 +1,8 @@
 import { copy, readJson } from 'fs-extra';
 import { basename } from 'path';
-import { isForceRun } from '../environment';
+import { isCI, isForceRun } from '../environment';
 import { getOutputCommandAt, simpleCommandAt } from '../library/childprocess/complex';
+import { shellExec } from '../library/childprocess/simple';
 import { everyPlatform, ITaskPlatform, log, task } from '../library/gulp';
 import { compress7z } from '../library/gulp/7z';
 import { IPackageJson } from '../library/jsonDefine/package.json';
@@ -54,6 +55,12 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	log('create patch from %s to %s', base, result);
 	
 	await copy(base, mergingDir, opts);
+	if (isCI) {
+		shellExec('git', 'config', '--global', 'user.email', 'ci@kendryte.com');
+		shellExec('git', 'config', '--global', 'user.name', 'Kendryte CI');
+	} else {
+		console.log('not CI, git config skip');
+	}
 	await simpleCommandAt(mergingDir, 'git', 'init', '.');
 	await simpleCommandAt(mergingDir, 'git', 'add', '.');
 	await simpleCommandAt(mergingDir, 'git', 'commit', '-m', 'old version: ' + baseVersion.patchVersion);
