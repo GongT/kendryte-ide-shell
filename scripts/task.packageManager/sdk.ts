@@ -22,13 +22,20 @@ function ignoreSomeSdkFile(f: VinylFile) {
 	if (
 		startsWithFolder(f, 'cmake') ||
 		startsWithFolder(f, 'src') ||
-		startsWithFolder(f, 'third_party') ||
 		startsWithFolder(f, '.github')
 	) {
 		return void 0;
 	}
 	
-	if (f.basename.startsWith('CMakeLists.txt')) {
+	if (
+		f.relative.includes('third_party/fatfs/documents') ||
+		f.relative.includes('third_party/lwip/doc') ||
+		f.relative.includes('third_party/lwip/test')
+	) {
+		return void 0;
+	}
+	
+	if (f.relative.startsWith('CMakeLists.txt')) {
 		return void 0;
 	}
 	

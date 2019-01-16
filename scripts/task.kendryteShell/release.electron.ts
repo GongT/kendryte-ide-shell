@@ -80,9 +80,8 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 	const selfDir = nativePath(myScriptSourcePath(__dirname), 'release-assets', platform);
 	const copyAssetsFiles = gulpSrc(selfDir, '**')
 		.pipe(simpleTransformStream((f) => {
-			if (f.basename === 'KendryteIDE.sh') {
-				console.log(f);
-				f.stat.mode = 493; // 755
+			if (f.basename === 'KendryteIDE.sh' || f.basename === 'KendryteIDE.command') {
+				f.stat.mode = 33261; // 100755
 			}
 			return f;
 		}));

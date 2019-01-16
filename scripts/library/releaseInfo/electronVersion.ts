@@ -11,6 +11,8 @@ export function parseElectronVer(pkgFile: string) {
 		v = pkg.dependencies.electron;
 	} else if (pkg.devDependencies && pkg.devDependencies.electron) {
 		v = pkg.devDependencies.electron;
+	} else {
+		throw new Error('Cannot detect electron version.');
 	}
 	if (/^\d/.test(v)) {
 		return 'v' + v;

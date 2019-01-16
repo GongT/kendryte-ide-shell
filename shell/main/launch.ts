@@ -14,9 +14,18 @@ export async function resolveExecutable(fsPath: string) {
 	const data: any = await readJson(product);
 	console.log('production = ', data);
 	
-	const executableName = is.windows? data.nameShort + '.exe' : data.applicationName;
-	console.log('executable name = %s', executableName);
-	return nativePath(fsPath, executableName);
+	let executablePath = '';
+	
+	if (is.windows) {
+		executablePath = nativePath(fsPath, data.nameShort + '.exe');
+	} else if (is.linux) {
+		executablePath = nativePath(fsPath, data.applicationName);
+	} else { // is mac
+		executablePath = nativePath(fsPath, 'Contents/MacOS/Electron');
+	}
+	
+	console.log('executable path = %s', executablePath);
+	return executablePath;
 }
 
 export function launchProduction() {

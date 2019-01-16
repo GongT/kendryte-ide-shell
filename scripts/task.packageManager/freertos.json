@@ -13,7 +13,10 @@
 		"lib/freertos/portable",
 		"lib/hal/include",
 		"lib/posix/include",
-		"lib/utils/include"
+		"lib/utils/include",
+		"third_party",
+		"third_party/fatfs/source",
+		"third_party/lwip/src/include"
 	],
 	"source": [
 		"lib/*.c",
