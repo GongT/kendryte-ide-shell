@@ -35,6 +35,7 @@ export async function readLocalVersions() {
 			logger.log(`found local version: ${item}`);
 			logger.log(`    version=${version}\n    patch=${patchVersion.toFixed(6)}`);
 		} catch (e) {
+			logger.error(e.stack);
 			logger.error(`something wrong in version: ${item}`);
 		}
 	}

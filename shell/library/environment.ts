@@ -29,7 +29,7 @@ console.log(`contentRoot=${contentRoot}`);
 export const configFile = resolve(contentRoot, configFileName);
 console.log(`configFile=${configFile}`);
 
-export const resourceLocation = is.macos? 'Resources/app' : 'resources/app';
+export const resourceLocation = is.macos? 'Contents/Resources/app' : 'resources/app';
 
 export function myArgs() {
 	const args = [...remote.process.argv];
