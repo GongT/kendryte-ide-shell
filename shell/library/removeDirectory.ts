@@ -48,7 +48,7 @@ export async function removeDirectory(path: string) {
 function wrapFs(of: Function): Function {
 	return ((...args: any[]) => {
 		logger.sub2(`${of.name}: ${args[0]}`);
-		return of.apply(undefined, args);
+		return of(...args);
 	}) as any;
 }
 
