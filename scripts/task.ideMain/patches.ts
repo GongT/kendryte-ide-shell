@@ -9,6 +9,7 @@ import { compress7z } from '../library/gulp/7z';
 import { IPackageJson } from '../library/jsonDefine/package.json';
 import { checkRemoteNeedPatch, ensureVersionPatch } from '../library/jsonDefine/releaseRegistry';
 import { ExS3 } from '../library/misc/awsUtil';
+import { writeFile } from '../library/misc/fsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
 import { artifactsExtractedTempPath, extractTempDir, patchDownloadKey } from '../library/paths/ide';
@@ -77,19 +78,21 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	const fileList = await getOutputCommandAt(mergingDir, 'git', 'diff', '--name-only', 'HEAD');
 	const lines = fileList.trim().split(/\n/g).map(e => e.trim()).filter(e => e);
 	
-	if (lines.length === 0) {
-		throw new Error('Nothing changed.');
-	}
-	log('---------------------------');
-	lines.forEach(l => log(l));
-	log('---------------------------');
-	
 	const resultDir = extractTempDir('patch-result-' + platform);
-	for (const file of lines) {
-		if (file.startsWith('node_modules.asar')) {
-			continue;
+	if (lines.length === 0) {
+		log('Nothing changed');
+		await writeFile(nativePath(resultDir, 'empty-patch.txt'), (new Date()).toISOString());
+	} else {
+		log('---------------------------');
+		lines.forEach(l => log(l));
+		log('---------------------------');
+		
+		for (const file of lines) {
+			if (file.startsWith('node_modules.asar')) {
+				continue;
+			}
+			await copy(nativePath(mergingDir, file), nativePath(resultDir, file));
 		}
-		await copy(nativePath(mergingDir, file), nativePath(resultDir, file));
 	}
 	
 	const patchFileKey = patchDownloadKey(resultVersion, platform);
