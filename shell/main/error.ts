@@ -11,6 +11,9 @@ export function rememberThisVersion(fsPath: string) {
 	lastRun = fsPath;
 }
 
+export class KnownFatalError extends Error {
+}
+
 export function handleError(error: Error) {
 	if (error.message === DEVELOPER_PREVENT_START) {
 		logger.action('Start prevented');
@@ -31,10 +34,16 @@ export function handleError(error: Error) {
 	}
 	
 	logger.error(error.stack);
-	logger.action('Fail to Start', 'try to start latest working version.');
 	logger.progress(NaN);
 	
-	if (lastRun !== null) { // null means run from source code
+	if (
+		error instanceof KnownFatalError ||
+		lastRun === null // null means run from source code
+	) {
+		logger.action('Fail to Start', 'something wrong');
+		logger.sub2(error.message);
+	} else {
+		logger.action('Fail to Start', 'try to start latest working version.');
 		finalTry(error.stack);
 	}
 	

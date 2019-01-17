@@ -66,16 +66,16 @@ export function localPackagePath(what: string) {
 	return resolve(contentRoot, 'LocalPackage', what);
 }
 
-export function systemTempPath() {
-	return resolve(contentRoot, 'PortableSystemTemp');
-}
-
 export function myProfilePath(what: string) {
 	return resolve(contentRoot, 'UserData/updater/user-data/', what);
 }
 
-export function tempDir(what: string) {
-	return nativePath(tmpdir(), 'KendryteIDE', what);
+export function tempDir(what?: string) {
+	if (what) {
+		return nativePath(tmpdir(), 'KendryteIDE_Cache', what);
+	} else {
+		return nativePath(tmpdir(), 'KendryteIDE_Cache');
+	}
 }
 
 const logdir = myProfilePath('logs');

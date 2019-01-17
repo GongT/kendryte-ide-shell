@@ -7,7 +7,7 @@ import { format } from 'util';
 import { alwaysPromise } from '../library/alwaysPromise';
 import { createLogPack } from '../library/createLogPack';
 import { DEVELOPER_PREVENT_START } from '../library/debug';
-import { contentRoot, isBuilt, localPackagePath, myProfilePath, systemTempPath, userDataPath } from '../library/environment';
+import { contentRoot, isBuilt, localPackagePath, myProfilePath, tempDir, userDataPath } from '../library/environment';
 import { registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
 import { DebugScript } from './debugScript';
@@ -78,7 +78,7 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 	});
 	
 	envVars.SYSTEM_TEMP = tmpdir();
-	envVars.TEMP = envVars.TMP = envVars.TMPDIR = systemTempPath();
+	envVars.TEMP = envVars.TMP = envVars.TMPDIR = tempDir();
 	
 	const dbg = new DebugScript(cwd, envVars);
 	dbg.command(exe, args);
@@ -123,19 +123,25 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 	console.log('spawnIDE:\n  exe=%s\n  args=%j\n  cwd=%s\n  env=%j)', exe, args, cwd, envVars);
 	if (!isBuilt) {
 		await new Promise((resolve, reject) => {
-			dialog.showMessageBox(opener, {
-				type: 'question',
-				buttons: ['Prevent start', 'Really start'],
-				defaultId: 1,
-				title: 'Development message',
-				message: 'running in development mode.\nIDE start progress paused.',
-			} as MessageBoxOptions, (shoudContinue) => {
+			const cb = (shoudContinue: number) => {
 				if (shoudContinue) {
 					resolve();
 				} else {
 					reject(new Error(DEVELOPER_PREVENT_START));
 				}
-			});
+			};
+			const options: MessageBoxOptions = {
+				type: 'question',
+				buttons: ['Prevent start', 'Really start'],
+				defaultId: 1,
+				title: 'Development message',
+				message: 'running in development mode.\nIDE start progress paused.',
+			};
+			if (opener) {
+				dialog.showMessageBox(opener, options, cb);
+			} else {
+				dialog.showMessageBox(options, cb);
+			}
 		});
 	}
 	

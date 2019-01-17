@@ -2,13 +2,16 @@ import { is } from 'electron-util';
 import { EventEmitter } from 'events';
 import { createServer, Server, Socket } from 'net';
 import { alwaysPromise } from '../library/alwaysPromise';
+import { tempDir } from '../library/environment';
 import { registerCleanup, registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
 import split2 =require('split2');
 
 const defTimeout = is.windows? 30000 : 20000;
 
-export const ipcPipe = '127.0.0.1:' + (50000 * Math.random() + 10000).toFixed(0);
+const pipeSchema = is.windows? '\\\\?\\pipe' : '';
+
+export const ipcPipe = pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
 
 let pipe: Server;
 
@@ -233,8 +236,7 @@ export async function ensureIpcServer() {
 			reject(e);
 		});
 		
-		const hp = ipcPipe.split(':');
-		pipe.listen(parseInt(hp[1]), hp[0], () => {
+		pipe.listen(ipcPipe, () => {
 			resolve();
 		});
 	});
