@@ -1,6 +1,7 @@
-import { copy, readJson } from 'fs-extra';
+import { copy, mkdirp, readJson, rename } from 'fs-extra';
 import { basename } from 'path';
-import { isCI, isForceRun } from '../environment';
+import { BUILD_ARTIFACTS_DIR, isCI, isForceRun } from '../environment';
+import { removeDirectory } from '../ide/codeblocks/removeDir';
 import { getOutputCommandAt, simpleCommandAt } from '../library/childprocess/complex';
 import { shellExec } from '../library/childprocess/simple';
 import { everyPlatform, ITaskPlatform, log, task } from '../library/gulp';
@@ -39,10 +40,10 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	const baseVersion: IPackageJson = await readJson(nativePath(base, 'package.json'));
 	
 	if (resultVersion.version !== baseVersion.version) {
-		throw new Error('impossible: remote BIG version is not same with current.');
+		throw new Error(`impossible: current released BIG version (${baseVersion.version}) is not same with pipeline result (${resultVersion.version}).`);
 	}
 	if (resultVersion.patchVersion === baseVersion.patchVersion) {
-		throw new Error('impossible: remote patchVersion is same with current.');
+		throw new Error(`impossible: current released patchVersion (${baseVersion.patchVersion}) is same with  pipeline result (${resultVersion.patchVersion}).`);
 	}
 	
 	const mergingDir = extractTempDir('patch-merging-' + platform);
@@ -54,17 +55,23 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	
 	log('create patch from %s to %s', base, result);
 	
-	await copy(base, mergingDir, opts);
+	const baseGit = nativePath(base, '.git');
+	await removeDirectory(baseGit);
 	if (isCI) {
 		shellExec('git', 'config', '--global', 'user.email', 'ci@kendryte.com');
 		shellExec('git', 'config', '--global', 'user.name', 'Kendryte CI');
 	} else {
 		console.log('not CI, git config skip');
 	}
-	await simpleCommandAt(mergingDir, 'git', 'init', '.');
-	await simpleCommandAt(mergingDir, 'git', 'add', '.');
-	await simpleCommandAt(mergingDir, 'git', 'commit', '-m', 'old version: ' + baseVersion.patchVersion);
+	await simpleCommandAt(base, 'git', 'init', '.');
+	await simpleCommandAt(base, 'git', 'add', '.');
+	await simpleCommandAt(base, 'git', 'commit', '--quiet', '-m', 'old version: ' + baseVersion.patchVersion);
 	
+	log('move %s to %s', baseGit, mergingDir);
+	await mkdirp(mergingDir);
+	await rename(baseGit, nativePath(mergingDir, '.git'));
+	
+	log('copy replace from %s to %s', result, mergingDir);
 	await copy(result, mergingDir, opts);
 	await simpleCommandAt(mergingDir, 'git', 'add', '.');
 	const fileList = await getOutputCommandAt(mergingDir, 'git', 'diff', '--name-only', 'HEAD');
@@ -79,11 +86,14 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	
 	const resultDir = extractTempDir('patch-result-' + platform);
 	for (const file of lines) {
+		if (file.startsWith('node_modules.asar')) {
+			continue;
+		}
 		await copy(nativePath(mergingDir, file), nativePath(resultDir, file));
 	}
 	
 	const patchFileKey = patchDownloadKey(resultVersion, platform);
-	const zipFile = extractTempDir(basename(patchFileKey));
+	const zipFile = nativePath(BUILD_ARTIFACTS_DIR, basename(patchFileKey));
 	await compress7z(zipFile, resultDir);
 	await ExS3.instance().uploadLocalFile(patchFileKey, zipFile);
 	

@@ -14,7 +14,7 @@ export function ideDownloadKey(packageJson: IPackageJson, platform: IPlatformTyp
 }
 
 export function patchDownloadKey(packageJson: IPackageJson, platform: IPlatformTypes) {
-	return `release/${getReleaseChannel()}/v${cutChannel(packageJson.version)}/Patch.${packageJson.patchVersion}.${platform}.tar.gz`;
+	return `release/${getReleaseChannel()}/v${cutChannel(packageJson.version)}/Patch.${packageJson.patchVersion}.${platform}.7z`;
 }
 
 export function artifactsS3TempUrl(platform: string) {

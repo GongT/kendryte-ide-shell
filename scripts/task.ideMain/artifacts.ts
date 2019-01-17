@@ -16,6 +16,7 @@ import { cleanExtractTask } from './cleanup';
 
 const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (platform: string) => {
 	if (isCI) {
+		log('isCI, `ide:artifacts:fetch` skip.');
 		return Promise.resolve();
 	}
 	const url = artifactsS3TempUrl(platform);
