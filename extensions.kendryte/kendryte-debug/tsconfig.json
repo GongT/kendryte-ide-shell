@@ -14,7 +14,7 @@
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"pretty": true,
-		"outDir": "dist",
+		"outDir": "../../build/DebugContents/UserData/latest/extensions/kendryte-debug",
 		"rootDir": "src",
 		"typeRoots": [
 			"../node_modules",

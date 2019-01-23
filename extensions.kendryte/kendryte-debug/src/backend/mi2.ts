@@ -422,7 +422,7 @@ export class MI2 extends EventEmitter implements IBackend {
 
 	continue(reverse: boolean = false): Thenable<boolean> {
 		if (trace) {
-			this.log('stderr', 'continue');
+			this.log('stderr', 'continue:' + (new Error().stack).split('\n').slice(1).join('\n  '));
 		}
 		return new Promise((resolve, reject) => {
 			this.sendCommand('exec-continue' + (reverse ? ' --reverse' : '')).then((info) => {

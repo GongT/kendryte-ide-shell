@@ -32,7 +32,8 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 	context.subscriptions.push(logger);
 	context.subscriptions.push(vscode.debug.onDidReceiveDebugSessionCustomEvent((e: any) => {
-		logger.info('WOW!!!', e);
+		debugger;
+		logger.info('WOW!!!', e.event, e.body);
 	}));
 
 	vscode.debug.registerDebugConfigurationProvider('kendryte', new Provider(logger));

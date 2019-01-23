@@ -143,6 +143,9 @@ export class MI2DebugSession extends DebugSession {
 	protected handleMsg(type: string, msg: string) {
 		if (type == 'target') {
 			type = 'stdout';
+			if (msg === 'Remote connection closed') {
+				this.quitEvent();
+			}
 		}
 		if (type == 'log') {
 			type = 'stderr';
@@ -354,10 +357,12 @@ export class MI2DebugSession extends DebugSession {
 
 	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
 		this.miDebugger.log('stdout', 'Configuration done!');
-		this.miDebugger.continue().then(done => {
-			this.sendResponse(response);
-		}, msg => {
-			this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);
+		this.sendResponse(response);
+		setImmediate(() => {
+			this.miDebugger.continue().then(done => {
+			}, msg => {
+				this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);
+			});
 		});
 	}
 

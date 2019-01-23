@@ -1,8 +1,8 @@
-import { MI2DebugSession } from './backend/mibase';
 import { DebugSession } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { MI2 } from './backend/mi2';
 import { ValuesFormattingMode } from './backend/backend';
+import { MI2 } from './backend/mi2';
+import { MI2DebugSession } from './backend/mibase';
 import { executableExtension } from './env';
 
 export interface RequestArguments {
@@ -39,7 +39,7 @@ class GDBDebugSession extends MI2DebugSession {
 		response.body.supportsRestartRequest = false;
 		this.sendResponse(response);
 	}
-
+	
 	protected attachAndLaunch(islaunch: boolean, response: DebugProtocol.Response, args: RequestArguments) {
 		this.logger.info('[DAP] attachAndLaunch', islaunch, response, args);
 		this.initDebugger(new MI2(
@@ -65,6 +65,8 @@ class GDBDebugSession extends MI2DebugSession {
 			} else {
 				this.miDebugger.log('stdout', 'is attach request. load has skipped.');
 			}
+			await this.miDebugger.sendUserInput('interrupt');
+			
 			if (args.autorun && args.autorun.length) {
 				this.miDebugger.log('stdout', 'autorun:');
 				for (const command of args.autorun) {
@@ -74,21 +76,21 @@ class GDBDebugSession extends MI2DebugSession {
 			} else {
 				this.miDebugger.log('stdout', 'autorun has skipped.');
 			}
-
+			
 			this.miDebugger.emitReady();
-
+			
 			this.miDebugger.log('stdout', 'Ready.');
-
+			
 			this.sendResponse(response);
 		}, err => {
 			this.sendErrorResponse(response, 102, `Failed to attach: ${err.toString()}`);
 		});
 	}
-
+	
 	protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
 		this.attachAndLaunch(false, response, args);
 	}
-
+	
 	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
 		this.attachAndLaunch(true, response, args);
 	}
