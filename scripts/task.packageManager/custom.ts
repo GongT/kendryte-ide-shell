@@ -2,6 +2,7 @@ import { pathExists } from 'fs-extra';
 import { isForceRun } from '../environment';
 import { buffer, downloadBuffer, gulp, gulpSrc, log, rename, zip } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
+import { normalizeVinyl } from '../library/gulp/normalizeVinyl';
 import { removeFirstComponent } from '../library/gulp/pathTools';
 import { skipDirectories } from '../library/gulp/skipDirectories';
 import { simpleTransformStream } from '../library/gulp/transform';
@@ -30,6 +31,7 @@ export async function publishUserCustom() {
 	
 	const extractStream = downloadBuffer(`https://github.com/${target}/archive/${branch}.zip`)
 		.pipe(zip.src())
+		.pipe(normalizeVinyl())
 		.pipe(skipDirectories())
 		.pipe(rename(removeFirstComponent))
 		.pipe(simpleTransformStream(f => {
@@ -81,6 +83,7 @@ export async function publishUserCustom() {
 	}
 	
 	const uploadStream = gulpSrc(tempDir, '**')
+		.pipe(normalizeVinyl())
 		.pipe(skipDirectories())
 		.pipe(zip.zip(`${target}-${version}.zip`))
 		.pipe(buffer())

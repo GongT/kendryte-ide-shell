@@ -7,7 +7,10 @@
 	"include": [
 		"lib/drivers/include",
 		"lib/bsp/include",
-		"lib/utils/include"
+		"lib/utils/include",
+		"lib/freertos/include",
+		"lib/freertos/conf",
+		"lib/freertos/portable"
 	],
 	"source": [
 		"lib/*.c",

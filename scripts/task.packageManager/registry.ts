@@ -14,6 +14,7 @@ export const updateSdkRegistry = task('pm:library.json', [standaloneSdk, freerto
 	             .pipe(jeditor((json: IRemotePackageRegistry) => {
 		             ['kendryte-standalone-sdk', 'kendryte-freertos-sdk'].forEach((name) => {
 			             const reg = findOrPrependPackage(PackageTypes.Library, name, json, true);
+			             reg.homepage = 'https://github.com/kendryte/' + name;
 			             const down = findOrAppendVersion(getVersionString(), reg.versions);
 			             down.downloadUrl = ExS3.instance().websiteUrl(
 				             posixJoin(

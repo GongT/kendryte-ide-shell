@@ -2,6 +2,7 @@ import { mkdir, move, pathExists, readdir } from 'fs-extra';
 import { buffer, gulp, gulpSrc, rename, task, zip } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { createRequestDownPromise } from '../library/gulp/download';
+import { normalizeVinyl } from '../library/gulp/normalizeVinyl';
 import { removeFirstComponent } from '../library/gulp/pathTools';
 import { skipDirectories } from '../library/gulp/skipDirectories';
 import { simpleTransformStream } from '../library/gulp/transform';
@@ -90,6 +91,7 @@ async function working(url: string, type: string) {
 		
 		exampleList.push({name, version, type});
 		const zipStream = gulpSrc(dir, '**')
+			.pipe(normalizeVinyl())
 			.pipe(skipDirectories())
 			.pipe(zip.zip(createKeyName(version, type)))
 			.pipe(buffer())
