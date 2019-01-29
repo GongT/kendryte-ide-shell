@@ -19,8 +19,12 @@ export async function downloadPrevVersion(platform: IPlatformTypes) {
 	const saveTo = artifactsLocalTempPath(platform, 'prev');
 	await createRequestDownPromise(state[platform].downloadUrl, saveTo);
 	
-	const extractTo = artifactsExtractedTempPath(platform, 'prev');
-	await extract7z(saveTo, extractTo);
+	let extractTo = artifactsExtractedTempPath(platform, 'prev');
+	if (platform === 'darwin') {
+		await extract7z(saveTo, nativePath(extractTo, 'Contents')); // emmmm. publised packages do not have .app folder.
+	} else {
+		await extract7z(saveTo, extractTo);
+	}
 	
 	const productFile = nativePath(extractTo, platformResourceAppDir(platform), 'product.json');
 	const productData: IProductJson = JSON.parse(await readFile(productFile));

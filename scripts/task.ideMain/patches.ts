@@ -28,8 +28,9 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	artifactsPrepareTask,
 ], async (platform) => {
 	const result = nativePath(artifactsExtractedTempPath(platform, 'latest'), platformResourceAppDir(platform));
-	log('read latest package.json from %s', result);
-	const resultVersion: IPackageJson = await readJson(nativePath(result, 'package.json'));
+	const packageJsonFile = nativePath(result, 'package.json');
+	log('patches read latest package.json from %s', packageJsonFile);
+	const resultVersion: IPackageJson = await readJson(packageJsonFile);
 	
 	if (!await checkRemoteNeedPatch(platform, resultVersion)) {
 		log('patch for %s is ignored.', platform);
@@ -38,6 +39,7 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 	
 	await downloadPrevVersion(platform);
 	const base = nativePath(artifactsExtractedTempPath(platform, 'prev'), platformResourceAppDir(platform));
+	log('patches read prev package.json from %s/package.json', base);
 	const baseVersion: IPackageJson = await readJson(nativePath(base, 'package.json'));
 	
 	if (resultVersion.version !== baseVersion.version) {

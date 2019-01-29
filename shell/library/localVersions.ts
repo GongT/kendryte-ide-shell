@@ -36,6 +36,11 @@ export async function readLocalVersions() {
 	const results: ILocalStatus[] = [];
 	for (const item of items) {
 		try {
+			if (item.startsWith('.')) {
+				logger.debug('ignore hidden directory: ' + item);
+				continue;
+			}
+			
 			const versionRoot = nativePath(root, item);
 			if (!await isDir(versionRoot)) {
 				logger.debug('ignore not directory: ' + versionRoot);

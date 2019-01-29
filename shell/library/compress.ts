@@ -8,9 +8,11 @@ import { logger } from './logger';
 import { removeDirectory } from './removeDirectory';
 import { timeout } from './timeout';
 
-export async function runSfx(from: string, to: string): Promise<void> {
+export async function runSfx(from: string, to: string, clear = true): Promise<void> {
 	logger.debug(`unzip(sfx) ${from} -> ${to}`);
-	await removeDirectory(to);
+	if (clear) {
+		await removeDirectory(to);
+	}
 	
 	const handler = extractSfx(from, to);
 	await waitHandle(handler);
@@ -22,9 +24,11 @@ export async function runSfx(from: string, to: string): Promise<void> {
 	}
 }
 
-export async function un7z(from: string, to: string): Promise<void> {
+export async function un7z(from: string, to: string, clear = true): Promise<void> {
 	logger.debug(`unzip ${from} -> ${to}`);
-	await removeDirectory(to);
+	if (clear) {
+		await removeDirectory(to);
+	}
 	await timeout(is.windows? 5000 : 1000);
 	
 	const handler = extract(from, to);

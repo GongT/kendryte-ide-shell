@@ -43,8 +43,10 @@ export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
 
 export const artifactsRepackTask = everyPlatform('ide:artifacts:repack', [artifactsPrepareTask], async (platform) => {
 	const sourceFrom = artifactsExtractedTempPath(platform, 'latest');
+	const packageJsonFile = nativePath(sourceFrom, platformResourceAppDir(platform), 'package.json');
+	log('repack read latest package.json from %s', packageJsonFile);
 	
-	const packageJson: IPackageJson = await readJson(nativePath(sourceFrom, platformResourceAppDir(platform), 'package.json'));
+	const packageJson: IPackageJson = await readJson(packageJsonFile);
 	
 	if (!await checkRemoteOutdated(platform, packageJson) && !isForceRun) {
 		log('upload for %s is ignored, remote version is same with local.\n    set -f to force overwrite.', platform);

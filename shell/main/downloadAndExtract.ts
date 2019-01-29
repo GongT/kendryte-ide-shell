@@ -20,9 +20,9 @@ export function downloadAndExtract(from: string, target: string, what?: string) 
 	registerWork('extract (install) - ' + (what || target), () => {
 		const zipFile = downloadedFilePath(fromBase);
 		if (/\.7z$/i.test(zipFile)) {
-			return un7z(zipFile, target);
+			return un7z(zipFile, target, false);
 		} else {
-			return runSfx(zipFile, target);
+			return runSfx(zipFile, target, false);
 		}
 	});
 }

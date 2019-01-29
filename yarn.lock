@@ -98,6 +98,14 @@
   dependencies:
     "@types/node" "*"
 
+"@types/glob-stream@*":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@types/glob-stream/-/glob-stream-6.1.0.tgz#7ede8a33e59140534f8d8adfb8ac9edfb31897bc"
+  integrity sha512-RHv6ZQjcTncXo3thYZrsbAVwoy4vSKosSWhuhuQxLOTv74OJuFQxXkmUuZCr3q9uNBEVCvIzmZL/FeRNbHZGUg==
+  dependencies:
+    "@types/glob" "*"
+    "@types/node" "*"
+
 "@types/glob@*":
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.1.tgz#aa59a1c6e3fbc421e07ccd31a944c30eba521575"
@@ -245,6 +253,16 @@
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-2.3.4.tgz#821878b81bfab971b93a265a561d54ea61f9059f"
   integrity sha512-Set5ZdrAaKI/qHdFlVMgm/GsAv/wkXhSTuZFkJ+JI7HK+wIkIlOaUXSXieIvJ0+OvGIqtREFoE+NHJtEq0gtEw==
+
+"@types/vinyl-fs@^2.4.9":
+  version "2.4.9"
+  resolved "https://registry.yarnpkg.com/@types/vinyl-fs/-/vinyl-fs-2.4.9.tgz#d312c24b5ba8d2db456d23ee4a66f9d016af82ea"
+  integrity sha512-Q0EXd6c1fORjiOuK4ZaKdfFcMyFzJlTi56dqktwaWVLIDAzE49wUs3bKnYbZwzyMWoH+NcMWnRuR73S9A0jnRA==
+  dependencies:
+    "@types/events" "*"
+    "@types/glob-stream" "*"
+    "@types/node" "*"
+    "@types/vinyl" "*"
 
 "@types/vinyl@*":
   version "2.0.2"

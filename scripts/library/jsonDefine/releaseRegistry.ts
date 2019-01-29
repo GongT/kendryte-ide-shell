@@ -1,7 +1,9 @@
 import { DeepReadonly } from 'deep-freeze';
 import { IPlatformMap, IPlatformTypes, log } from '../gulp';
 import { ExS3 } from '../misc/awsUtil';
+import { getReleaseChannel } from '../releaseInfo/qualityChannel';
 import { getIDEJsonObjectKey } from '../releaseInfo/s3Keys';
+import { pad } from '../strings';
 import { IPackageJson } from './package.json';
 import deepExtend = require('deep-extend');
 import deepFreeze = require('deep-freeze');
@@ -46,6 +48,17 @@ export function loadRemoteState(original: boolean = false): Promise<DeepReadonly
 }
 
 export async function saveRemoteState() {
+	const prevJson = await loadRemoteState(true);
+	const d = new Date;
+	const tag = d.getFullYear().toFixed(0)
+	            + pad(d.getMonth() + 1)
+	            + '/'
+	            + pad(d.getDate())
+	            + pad(d.getHours())
+	            + pad(d.getMinutes())
+	            + pad(d.getSeconds());
+	await ExS3.instance().putJson(`ide-json-backup/${getReleaseChannel()}/${tag}.json`, prevJson);
+	
 	const currentJson = await loadRemoteState();
 	log('---------------- IDE.json ----------------\n%s\n---------------- IDE.json ----------------', JSON.stringify(currentJson, null, 4));
 	return ExS3.instance().putJson(getIDEJsonObjectKey(), currentJson);
