@@ -3,10 +3,11 @@ import { rmdir as rmdirAsync, unlink as unlinkAsync } from 'fs';
 import { pathExists } from 'fs-extra';
 import { isAbsolute, normalize } from 'path';
 import { logger } from './logger';
+import { noAsar } from './noAsar';
 import { timeout } from './timeout';
 import { registerWork } from './work';
 
-export async function removeDirectory(path: string) {
+export async function removeDirectory(path: string): Promise<void> {
 	logger.progress(Infinity);
 	
 	path = normalize(path);
@@ -54,7 +55,7 @@ function wrapFs(of: Function): Function {
 
 export function willRemove(path: string) {
 	logger.debug(`will remove directory: ${path}`);
-	registerWork(() => {
+	registerWork('remove-dir', () => noAsar(() => {
 		return removeDirectory(path);
-	});
+	}));
 }

@@ -1,9 +1,9 @@
 import { rename } from 'fs-extra';
 import { basename } from 'path';
-import { alwaysPromise } from '../library/alwaysPromise';
 import { ecopy } from '../library/electronCopy';
 import { nativePath, resourceLocation } from '../library/environment';
 import { logger } from '../library/logger';
+import { noAsar } from '../library/noAsar';
 import { removeDirectory } from '../library/removeDirectory';
 import { registerWork, workTitle } from '../library/work';
 import { downloadAndExtract } from './downloadAndExtract';
@@ -25,11 +25,4 @@ export function downloadPatch(template: string, target: string, urls: string[]) 
 		logger.debug('rename ' + targetTemp + ' -> ' + target);
 		await rename(targetTemp, target);
 	}));
-}
-
-function noAsar<T>(action: () => Promise<T>): Promise<T> {
-	process.noAsar = true;
-	return alwaysPromise(action(), () => {
-		process.noAsar = false;
-	}, true);
 }
