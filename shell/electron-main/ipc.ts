@@ -9,7 +9,7 @@ import split2 =require('split2');
 
 const defTimeout = is.windows? 30000 : 20000;
 
-const pipeSchema = is.windows? '\\\\?\\pipe' : '';
+const pipeSchema = is.windows? '\\\\?\\pipe\\' : '';
 
 export const ipcPipe = pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
 
