@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { basename, resolve } from 'path';
 import { Transform } from 'stream';
 import { createVinylFile, everyPlatform, filesToStream, gulp, mergeStream, pluginError } from '../library/gulp';
 import { extract7z } from '../library/gulp/7z';
@@ -40,6 +40,6 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	return mergeStream(
 		handle,
 		filesToStream(createVinylFile('bundled-versions.json', undefined, JSON.stringify(bundledVersions)))
-			.pipe(gulp.dest(bundleFile)),
+			.pipe(gulp.dest(basename(bundleFile))),
 	);
 });
