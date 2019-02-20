@@ -11,7 +11,9 @@ const defTimeout = is.windows? 30000 : 20000;
 
 const pipeSchema = is.windows? '\\\\?\\pipe\\' : '';
 
-export const ipcPipe = pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
+export function ipcPipe() {
+	return pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
+}
 
 let pipe: Server;
 
@@ -236,7 +238,7 @@ export async function ensureIpcServer() {
 			reject(e);
 		});
 		
-		pipe.listen(ipcPipe, () => {
+		pipe.listen(ipcPipe(), () => {
 			resolve();
 		});
 	});

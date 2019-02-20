@@ -4,6 +4,7 @@ import { readdir, unlink } from 'fs-extra';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { configFileName } from '../main/appdata';
+import { prepareTempDir } from './prepareRun';
 
 console.log(`__dirname=${__dirname}`);
 
@@ -70,11 +71,22 @@ export function myProfilePath(what: string) {
 	return resolve(contentRoot, 'UserData/updater/user-data/', what);
 }
 
+let tempPath: string;
+
+function _tempDir() {
+	if (!tempPath) {
+		tempPath = nativePath(tmpdir(), 'KendryteIDE_Cache');
+		prepareTempDir();
+	}
+	
+	return tempPath;
+}
+
 export function tempDir(what?: string) {
 	if (what) {
-		return nativePath(tmpdir(), 'KendryteIDE_Cache', what);
+		return nativePath(_tempDir(), what);
 	} else {
-		return nativePath(tmpdir(), 'KendryteIDE_Cache');
+		return _tempDir();
 	}
 }
 

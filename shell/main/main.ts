@@ -2,7 +2,6 @@ import { ensureDir } from 'fs-extra';
 import { appExt, applicationPath, isBuilt, SELF_VERSION } from '../library/environment';
 import { readLocalVersions } from '../library/localVersions';
 import { logger } from '../library/logger';
-import { prepareRun } from '../library/prepareRun';
 import { doActualWork, getWorkCount } from '../library/work';
 import { IRegistryData, loadApplicationData } from './appdata';
 import { downloadMain, migrateUserData, uninstallOldVersion } from './downloadMain';
@@ -35,8 +34,6 @@ function getString(patchVersion: any) {
 }
 
 export async function startMainLogic() {
-	await prepareRun();
-	
 	const data = await loadApplicationData();
 	console.info('startMainLogic');
 	logger.progress(Infinity);

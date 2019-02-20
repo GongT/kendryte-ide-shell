@@ -68,7 +68,7 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 	envVars.KENDRYTE_IDE_UPDATER_IS_BUILT = isBuilt? 'yes' : '';
 	envVars.KENDRYTE_IDE_UPDATER_CONTENT_ROOT = contentRoot;
 	envVars.KENDRYTE_IDE_LOCAL_PACKAGE_DIR = localPackagePath('.');
-	envVars.KENDRYTE_IDE_UPDATER_PIPE = ipcPipe;
+	envVars.KENDRYTE_IDE_UPDATER_PIPE = ipcPipe();
 	envVars.KENDRYTE_IDE_UPDATER_PIPE_ID = channel;
 	
 	envVars.VSCODE_NLS_CONFIG = JSON.stringify({

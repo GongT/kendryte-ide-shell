@@ -1,16 +1,24 @@
-import { KnownFatalError } from '../main/error';
+import { is } from 'electron-util';
 import { tempDir } from './environment';
 
 const invalidTemp = /[\[\]!|:*?"<>\s]/;
 const windowsDriveLetter = /^[a-z]:/i;
 
-export function prepareRun() {
-	const tempdir = tempDir().replace(windowsDriveLetter, '');
-	if (invalidTemp.test(tempdir)) {
-		const invalid = invalidTemp.exec(tempdir);
-		throw new KnownFatalError(`Your system temporary directory contains invalid character "${invalid}".\n(value is: ${tempdir})`);
+export function prepareTempDir(): void {
+	let tDir = tempDir().replace(windowsDriveLetter, '');
+	if (invalidTemp.test(tDir)) {
+		const invalid = invalidTemp.exec(tDir);
+		throw new Error(`Your system temporary directory contains invalid character "${invalid}".\n(value is: ${tDir})`);
 	}
-	if (tempdir.length > 64) {
-		throw new KnownFatalError(`Your system temporary directory is too long, will cause connection error.\n(value is: ${tempdir})`);
+	if (tDir.length > 64) {
+		if (is.macos) {
+			tDir = '/private/tmp';
+		} else if (is.linux) {
+			tDir = '/tmp';
+		} else if (is.windows) {
+			tDir = 'C:\\Windows\\Temp';
+		}
+		
+		throw new Error(`Your system temporary directory is too long, will cause connection error.\n(value is: ${tDir})`);
 	}
 }
