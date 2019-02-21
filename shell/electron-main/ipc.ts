@@ -7,12 +7,15 @@ import { registerCleanup, registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
 import split2 =require('split2');
 
-const defTimeout = is.windows? 30000 : 20000;
-
-const pipeSchema = is.windows? '\\\\?\\pipe\\' : '';
+const defTimeout = is.windows? 35000 : 20000;
+let pipePath = '';
 
 export function ipcPipe() {
-	return pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
+	if (!pipePath) {
+		const pipeSchema = is.windows? '\\\\?\\pipe\\' : '';
+		pipePath = pipeSchema + tempDir((50000 * Math.random() + 10000).toFixed(0) + '_updater.sock');
+	}
+	return pipePath;
 }
 
 let pipe: Server;
