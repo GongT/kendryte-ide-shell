@@ -13,12 +13,10 @@
 		"lib/freertos/portable"
 	],
 	"source": [
-		"lib/*.c",
-		"lib/*.cpp",
-		"lib/*.h",
-		"lib/*.hpp",
-		"lib/*.s",
-		"lib/*.S"
+		"lib/**/*.c",
+		"lib/**/*.cpp",
+		"lib/**/*.s",
+		"lib/**/*.S"
 	],
 	"c_flags": [
 		"-std=gnu11",

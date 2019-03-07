@@ -8,7 +8,7 @@ import { simpleTransformStream } from '../library/gulp/transform';
 import { nativePath } from '../library/misc/pathUtil';
 import { OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH } from '../library/releaseInfo/s3Keys';
 import { PM_TEMP_DIR } from './clean';
-import { getVersionString } from './version';
+import { SdkBranch, SdkType } from './version';
 
 function ignoreSomeSdkFile(f: VinylFile) {
 	if (f.isDirectory()) {
@@ -42,42 +42,34 @@ function ignoreSomeSdkFile(f: VinylFile) {
 	return f;
 }
 
-export const standaloneSdk = task('pm:standalone', [], () => {
-	return mergeStream(
-		downloadBuffer('https://github.com/kendryte/kendryte-standalone-sdk/archive/master.zip')
-			.pipe(zip.src())
-			.pipe(rename(removeFirstComponent))
-			.pipe(simpleTransformStream(ignoreSomeSdkFile)),
-		gulpSrc(myScriptSourcePath(__dirname), 'standalone.json')
-			.pipe(jeditor({version: getVersionString()}))
-			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
-		gulpSrc(myScriptSourcePath(__dirname), 'standalone.cmake')
-			.pipe(rename((e: VinylFile) => e.basename = 'asm')),
-	)
-		.pipe(gulp.dest(nativePath(PM_TEMP_DIR, 'standalone-sdk')))
-		.pipe(zip.zip(getVersionString() + '.zip'))
-		.pipe(buffer())
-		.pipe(gulpS3.dest({
-			base: join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, 'kendryte-standalone-sdk'),
-		}));
-});
+function createSdkTask(type: SdkType, branch: SdkBranch) {
+	return task(`pm:${type}:${branch}`, () => {
+		return mergeStream(
+			downloadBuffer(`https://github.com/kendryte/kendryte-${type}-sdk/archive/${branch}.zip`)
+				.pipe(zip.src())
+				.pipe(rename(removeFirstComponent))
+				.pipe(simpleTransformStream(ignoreSomeSdkFile)),
+			gulpSrc(myScriptSourcePath(__dirname), `${type}.json`)
+				.pipe(jeditor({version: branch}))
+				.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
+			gulpSrc(myScriptSourcePath(__dirname), `${type}.cmake`)
+				.pipe(rename((e: VinylFile) => e.basename = 'asm')),
+		)
+			.pipe(gulp.dest(nativePath(PM_TEMP_DIR, `${type}-sdk-${branch}`)))
+			.pipe(zip.zip(`${branch}.zip`))
+			.pipe(buffer())
+			.pipe(gulpS3.dest({
+				base: join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, `kendryte-${type}-sdk`),
+			}));
+	});
+}
 
-export const freertosSdk = task('pm:freertos', [], () => {
-	return mergeStream(
-		downloadBuffer('https://github.com/kendryte/kendryte-freertos-sdk/archive/master.zip')
-			.pipe(zip.src())
-			.pipe(rename(removeFirstComponent))
-			.pipe(simpleTransformStream(ignoreSomeSdkFile)),
-		gulpSrc(myScriptSourcePath(__dirname), 'freertos.json')
-			.pipe(jeditor({version: getVersionString()}))
-			.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
-		gulpSrc(myScriptSourcePath(__dirname), 'freertos.cmake')
-			.pipe(rename((e: VinylFile) => e.basename = 'asm')),
-	)
-		.pipe(gulp.dest(nativePath(PM_TEMP_DIR, 'freertos-sdk')))
-		.pipe(zip.zip(getVersionString() + '.zip'))
-		.pipe(buffer())
-		.pipe(gulpS3.dest({
-			base: join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, 'kendryte-freertos-sdk'),
-		}));
-});
+export const standaloneSdk = task('pm:standalone', [
+	createSdkTask(SdkType.standalone, SdkBranch.master),
+	createSdkTask(SdkType.standalone, SdkBranch.develop),
+]);
+
+export const freertosSdk = task('pm:freertos', [
+	createSdkTask(SdkType.freertos, SdkBranch.master),
+	createSdkTask(SdkType.freertos, SdkBranch.develop),
+]);

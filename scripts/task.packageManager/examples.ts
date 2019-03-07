@@ -12,7 +12,7 @@ import { nativePath } from '../library/misc/pathUtil';
 import { streamPromise } from '../library/misc/streamUtil';
 import { clearPmLocalTempTask, PM_TEMP_DIR } from './clean';
 import { createKeyBase, createKeyName } from './path';
-import { getVersionString } from './version';
+import { SdkBranch, SdkType } from './version';
 
 const ignoredFiles = /^(shared|tflite_label_image|\.github)(\\|\/|$)/;
 export const exampleList: {
@@ -21,12 +21,12 @@ export const exampleList: {
 	version: string;
 }[] = [];
 
-function createPackage(packageName: string, type: string) {
+function createPackage(packageName: string, type: SdkType, branch: SdkBranch) {
 	return `{
 	// cmake config file
 	"$schema": "vscode://schemas/CMakeLists",
 	"name": "${packageName}_${type}",
-	"version": "${getVersionString()}",
+	"version": "${branch}",
 	"type": "${PackageTypes.Executable}",
 	"entry": "src/main.c",
 	"source": [
@@ -36,16 +36,17 @@ function createPackage(packageName: string, type: string) {
 		"src/*.hpp"
 	],
 	"dependency": {
-		"kendryte-${type}-sdk": "${getVersionString()}"
+		"kendryte-${type}-sdk": "${branch}"
 	}
 }
 `;
 }
 
-async function working(url: string, type: string) {
-	const zipFile = nativePath(PM_TEMP_DIR, type + '.zip');
+async function working(type: SdkType, version: SdkBranch) {
+	const url = `https://github.com/kendryte/kendryte-${type}-demo/archive/${version}.zip`;
+	const zipFile = nativePath(PM_TEMP_DIR, `${type}-demo-${version}.zip`);
 	await createRequestDownPromise(url, zipFile);
-	const tempPath = nativePath(PM_TEMP_DIR, type + '-demo-master');
+	const tempPath = nativePath(PM_TEMP_DIR, `${type}-demo-${version}`);
 	await streamPromise(
 		zip.src(zipFile)
 		   .pipe(rename(removeFirstComponent))
@@ -64,7 +65,6 @@ async function working(url: string, type: string) {
 		const dir = nativePath(tempPath, dirName);
 		const src = nativePath(dir, 'src');
 		let name: string = dirName;
-		const version = getVersionString();
 		if (!await pathExists(src)) {
 			const contents = await readdir(dir);
 			await mkdir(src);
@@ -86,7 +86,7 @@ async function working(url: string, type: string) {
 				await writeFile(pkgFile, jData.replace(`"${pkg.version}"`, `"${version}"`));
 			}
 		} else {
-			await writeFile(pkgFile, createPackage(dirName, type));
+			await writeFile(pkgFile, createPackage(dirName, type, version));
 		}
 		
 		exampleList.push({name, version, type});
@@ -104,9 +104,15 @@ async function working(url: string, type: string) {
 }
 
 export const standaloneExample = task('pm:standalone:example', [clearPmLocalTempTask], () => {
-	return working('https://github.com/kendryte/kendryte-standalone-demo/archive/master.zip', 'standalone');
+	return Promise.all([
+		working(SdkType.standalone, SdkBranch.master),
+		working(SdkType.standalone, SdkBranch.develop),
+	]);
 });
 
 export const freertosExample = task('pm:freertos:example', [clearPmLocalTempTask], () => {
-	return working('https://github.com/kendryte/kendryte-freertos-demo/archive/master.zip', 'freertos');
+	return Promise.all([
+		working(SdkType.freertos, SdkBranch.master),
+		working(SdkType.freertos, SdkBranch.develop),
+	]);
 });
