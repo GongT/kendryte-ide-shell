@@ -90,9 +90,6 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 		log('---------------------------');
 		
 		for (const file of lines) {
-			if (file.startsWith('node_modules.asar')) {
-				continue;
-			}
 			await copy(nativePath(mergingDir, file), nativePath(resultDir, file));
 		}
 	}

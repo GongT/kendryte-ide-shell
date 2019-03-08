@@ -50,7 +50,10 @@ function createSdkTask(type: SdkType, branch: SdkBranch) {
 				.pipe(rename(removeFirstComponent))
 				.pipe(simpleTransformStream(ignoreSomeSdkFile)),
 			gulpSrc(myScriptSourcePath(__dirname), `${type}.json`)
-				.pipe(jeditor({version: branch}))
+				.pipe(jeditor({
+					version: branch,
+					__random: (Math.random() * 10000).toFixed(0) + Date.now().toFixed(0),
+				}))
 				.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
 			gulpSrc(myScriptSourcePath(__dirname), `${type}.cmake`)
 				.pipe(rename((e: VinylFile) => e.basename = 'asm')),
