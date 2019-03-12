@@ -14,6 +14,7 @@
     "*",
     "onDebug",
     "onCommand:kendryte-debug.examineMemoryLocation",
+    "onCommand:kendryte-debug.runWithoutDebug",
     "onCommand:kendryte-debug.getFileNameNoExt",
     "onCommand:kendryte-debug.getFileBasenameNoExt"
   ],
@@ -129,6 +130,7 @@
   },
   "dependencies": {
     "source-map-support": "^0.5.9",
+    "split2": "^3.1.0",
     "vscode-debugadapter": "^1.32.1",
     "vscode-debugprotocol": "^1.32.0"
   },

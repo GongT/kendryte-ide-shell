@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { ChannelLogger } from './logger';
+import { runWithoutDebug } from './actions/runWithoutDebug';
 
 export function activate(context: vscode.ExtensionContext) {
 	const logger = new ChannelLogger();
@@ -12,6 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('debugmemory', new MemoryContentProvider()));
 	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.examineMemoryLocation', examineMemory));
+	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.runWithoutDebug', (arg: any) => runWithoutDebug(logger, arg)));
 	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.getFileNameNoExt', () => {
 		if (!vscode.window.activeTextEditor || !vscode.window.activeTextEditor.document || !vscode.window.activeTextEditor.document.fileName) {
 			vscode.window.showErrorMessage('No editor with valid file name active');

@@ -48,6 +48,7 @@ class GDBDebugSession extends MI2DebugSession {
 			['--interpreter=mi2'],
 			args.debugger_args,
 			args.env,
+			this.logger,
 		));
 		this.quit = false;
 		this.attached = false;

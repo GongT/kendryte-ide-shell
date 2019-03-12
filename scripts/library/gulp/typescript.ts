@@ -24,12 +24,13 @@ export function createTypescriptTaskWithRename(taskConfig: ISourceType): TaskPro
 	});
 	return (p: NodeJS.ReadWriteStream) => {
 		log('Compile typescript from %s (with rename)', taskConfig.root);
+		log('    to %s', taskConfig.output);
 		return p.pipe(sourcemaps.init({includeContent: true}))
 		        .pipe(tsProject())
 		        .pipe(sourcemaps.write(''))
 		        .pipe(simpleTransformStream((file) => {
-			        const distSrc = normalize(join(file.base, 'src'));
-			        file.dirname = file.dirname.replace(distSrc, file.base);
+			        const distSrc = normalize(join(taskConfig.output, 'src'));
+			        file.dirname = file.dirname.replace(distSrc, taskConfig.output);
 			        return file;
 		        }));
 	};

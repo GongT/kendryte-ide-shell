@@ -13,6 +13,7 @@
 		"declaration": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
+		"noEmitOnError": false,
 		"pretty": true,
 		"outDir": "../../build/DebugContents/UserData/latest/extensions/kendryte-debug",
 		"rootDir": "src",
@@ -25,7 +26,8 @@
 			"../../../node_modules/@types"
 		],
 		"types": [
-			"vscode"
+			"vscode",
+			"node"
 		]
 	},
 	"include": [

@@ -5,9 +5,9 @@ import { MINode, parseMI } from './mi_parse';
 import * as nativePath from 'path';
 import { posix } from 'path';
 import { always, DeferredPromise, timeout } from '../lib';
-import { CustomLogger } from './lib/logger';
 import { DebugSession } from 'vscode-debugadapter';
 import { merge_env } from './lib/merge_env';
+import { IMyLogger } from '../common/logger';
 
 const path = posix;
 
@@ -47,18 +47,16 @@ export class MI2 extends EventEmitter implements IBackend {
 	protected process: ChildProcess.ChildProcess;
 	protected stream;
 
-	protected readonly logger: CustomLogger;
-
 	constructor(
 		session: DebugSession,
 		public readonly application: string,
 		public readonly preargs: string[],
 		public readonly extraargs: string[],
 		procEnv: any,
+		protected readonly logger: IMyLogger,
 	) {
 		super();
 
-		this.logger = new CustomLogger('MI2', session);
 		this.procEnv = procEnv ? merge_env(procEnv) : process.env;
 	}
 
@@ -101,7 +99,7 @@ export class MI2 extends EventEmitter implements IBackend {
 	}
 
 	onOutputStderr(lines) {
-		lines = <string[]> lines.split('\n');
+		lines = <string[]>lines.split('\n');
 		lines.forEach(line => {
 			this.log('stderr', line);
 		});
@@ -116,7 +114,7 @@ export class MI2 extends EventEmitter implements IBackend {
 	}
 
 	onOutput(lines) {
-		lines = <string[]> lines.split('\n');
+		lines = <string[]>lines.split('\n');
 		lines.forEach(line => {
 			if (couldBeOutput(line)) {
 				if (!gdbMatch.exec(line)) {
@@ -321,7 +319,6 @@ export class MI2 extends EventEmitter implements IBackend {
 		const result = await this.sendCommand('break-insert -f ' + brk).catch(async (e: MIError) => {
 			if (e.message.includes('Cannot execute this command while the target is running')) {
 				await this.interrupt(true);
-				console.log('-----------------');
 				this.log('stdout', '~~~~~~~~~~~~~~~~~');
 				const result = await this.sendCommand('break-insert -f ' + brk);
 				await this.continue();
@@ -378,7 +375,7 @@ export class MI2 extends EventEmitter implements IBackend {
 			this.emit('quit');
 		});
 		this.process.on('error', (err) => { this.emit('launcherror', err); });
-		await this.sendCommand('gdb-set target-async on');
+		await this.sendCommand('gdb-set target-async off');
 		await this.sendCommand('environment-directory ' + escapePath(cwd));
 		await this.sendCommand('target-select remote ' + target);
 	}
@@ -386,8 +383,9 @@ export class MI2 extends EventEmitter implements IBackend {
 	stop() {
 		const proc = this.process;
 		const to = setTimeout(() => {
-			process.kill(-proc.pid);
-		}, 1000);
+			this.logger.warn('exit timeout, force kill.');
+			proc.kill('SIGKILL');
+		}, 3000);
 		this.process.on('exit', function (code) {
 			clearTimeout(to);
 		});
@@ -397,8 +395,9 @@ export class MI2 extends EventEmitter implements IBackend {
 	detach() {
 		const proc = this.process;
 		const to = setTimeout(() => {
-			process.kill(-proc.pid);
-		}, 1000);
+			this.logger.warn('detach timeout, force kill.');
+			proc.kill('SIGKILL');
+		}, 3000);
 		this.process.on('exit', function (code) {
 			clearTimeout(to);
 		});
@@ -420,45 +419,51 @@ export class MI2 extends EventEmitter implements IBackend {
 		}
 	}
 
-	continue(reverse: boolean = false): Thenable<boolean> {
+	continue(): Thenable<boolean> {
 		if (trace) {
 			this.log('stderr', 'continue:' + (new Error().stack).split('\n').slice(1).join('\n  '));
 		}
 		return new Promise((resolve, reject) => {
-			this.sendCommand('exec-continue' + (reverse ? ' --reverse' : '')).then((info) => {
+			this.sendCommand('exec-continue').then((info) => {
 				resolve(info.resultRecords.resultClass == 'running');
-			}, reject);
+			}, (e) => {
+				this.interrupt(true).then(() => {
+					return this.continue();
+				}).catch(() => {
+					reject(e);
+				});
+			});
 		});
 	}
 
-	next(reverse: boolean = false): Thenable<boolean> {
+	next(): Thenable<boolean> {
 		if (trace) {
 			this.log('stderr', 'next');
 		}
 		return new Promise((resolve, reject) => {
-			this.sendCommand('exec-next' + (reverse ? ' --reverse' : '')).then((info) => {
+			this.sendCommand('exec-next').then((info) => {
 				resolve(info.resultRecords.resultClass == 'running');
 			}, reject);
 		});
 	}
 
-	step(reverse: boolean = false): Thenable<boolean> {
+	step(): Thenable<boolean> {
 		if (trace) {
 			this.log('stderr', 'step');
 		}
 		return new Promise((resolve, reject) => {
-			this.sendCommand('exec-step' + (reverse ? ' --reverse' : '')).then((info) => {
+			this.sendCommand('exec-step').then((info) => {
 				resolve(info.resultRecords.resultClass == 'running');
 			}, reject);
 		});
 	}
 
-	stepOut(reverse: boolean = false): Thenable<boolean> {
+	stepOut(): Thenable<boolean> {
 		if (trace) {
 			this.log('stderr', 'stepOut');
 		}
 		return new Promise((resolve, reject) => {
-			this.sendCommand('exec-finish' + (reverse ? ' --reverse' : '')).then((info) => {
+			this.sendCommand('exec-finish').then((info) => {
 				resolve(info.resultRecords.resultClass == 'running');
 			}, reject);
 		});
