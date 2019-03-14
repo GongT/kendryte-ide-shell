@@ -69,7 +69,6 @@ Else
 {
   # windows
   Write-Output "WindowsPath is $env:PATH"
-  exec { python --version } "Error: python not executable..."
   
   New-Item -ItemType Directory -Path "$env:TMP\szip"
   Set-Location "$env:TMP\szip"

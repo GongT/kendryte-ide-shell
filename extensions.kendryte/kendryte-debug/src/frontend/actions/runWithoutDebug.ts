@@ -19,7 +19,7 @@ channel = vscode.window.createOutputChannel('kendryte/gdb-run');
 
 function createProcess(arg: IMainArguments): ChildProcess & { output: NodeJS.ReadableStream } {
 	channel.appendLine(`spawn:`);
-	channel.appendLine(`     gdb: ${arg.gdb}`);
+	channel.appendLine(`     gdb: ${arg.gdb} --interpreter=mi2`);
 	channel.appendLine(`     app: ${arg.app}`);
 	channel.appendLine(`    port: ${arg.port}`);
 	channel.appendLine(`     env: ${JSON.stringify(arg.env, null, 8)}`);
@@ -37,13 +37,13 @@ function createProcess(arg: IMainArguments): ChildProcess & { output: NodeJS.Rea
 	});
 }
 
-export async function runWithoutDebug(debugChannel: ChannelLogger, arg: IMainArguments) {
+export function runWithoutDebug(debugChannel: ChannelLogger, arg: IMainArguments) {
 	if (!channel) {
 		channel = vscode.window.createOutputChannel('kendryte/gdb-run');
 	}
 	channel.clear();
 
-	await vscode.window.withProgress({
+	return vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
 		title: 'Starting program',
 	}, async (report: vscode.Progress<{ message?: string; increment?: number }>, cancel) => {
@@ -65,5 +65,13 @@ export async function runWithoutDebug(debugChannel: ChannelLogger, arg: IMainArg
 		await m2Handler.command(`exec-continue`);
 
 		process.kill('SIGKILL');
+	}).then(() => {
+		channel.appendLine('[SUCCESS] runWithoutDebug: success.');
+	}, (e) => {
+		if (!e) {
+			e = new Error('Unknown error');
+		}
+		channel.appendLine(`[ERROR] runWithoutDebug: failed with error: ${e}.`);
+		throw e;
 	});
 }
