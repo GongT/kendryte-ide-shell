@@ -1,4 +1,4 @@
-import { basename, resolve } from 'path';
+import { resolve } from 'path';
 import { Transform } from 'stream';
 import { createVinylFile, everyPlatform, filesToStream, gulp, mergeStream, pluginError } from '../library/gulp';
 import { extract7z } from '../library/gulp/7z';
@@ -20,13 +20,14 @@ class ExtractStream extends Transform {
 		})().then(() => {
 			callback();
 		}, (e) => {
-			callback(pluginError('extract', e));
+			this.emit('error', pluginError('extract', e));
+			callback();
 		});
 	}
 }
 
 export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, downloadTask], (platform) => {
-	const bundledVersions = getBundledVersions();
+	const bundledVersions = getBundledVersions(platform);
 	const handle = new ExtractStream();
 	
 	for (const [name, version] of Object.entries(bundledVersions)) {
@@ -36,10 +37,10 @@ export const extractPackages = everyPlatform('offpack:extract', [cleanupTask, do
 	}
 	handle.end();
 	
-	const bundleFile = createPackagesExtractPath(platform, '.');
+	const bundleRoot = createPackagesExtractPath(platform, '.');
 	return mergeStream(
 		handle,
-		filesToStream(createVinylFile('bundled-versions.json', undefined, JSON.stringify(bundledVersions)))
-			.pipe(gulp.dest(basename(bundleFile))),
+		filesToStream(createVinylFile('bundled-versions.json', '.', JSON.stringify(bundledVersions)))
+			.pipe(gulp.dest(bundleRoot)),
 	);
 });

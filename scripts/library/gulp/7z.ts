@@ -2,8 +2,8 @@ import { spawn } from 'child_process';
 import { readdir, rename, rmdir } from 'fs-extra';
 import { processPromise } from '../childprocess/handlers';
 import { log } from '../gulp';
-import { mkdirpSync } from '../misc/fsUtil';
-import { nativePath } from '../misc/pathUtil';
+import { lstat, mkdirpSync } from '../misc/fsUtil';
+import { nativePath, resolvePath } from '../misc/pathUtil';
 
 const p7z = require('7zip-bin').path7za;
 
@@ -54,11 +54,17 @@ export async function extract7z(zip: string, extractTo: string): Promise<void> {
 	});
 	
 	const child = await readdir(temp);
-	if (child.length === 1) {
+	if (child.length === 1 && await isDir(resolvePath(temp, child[0]))) {
 		await rename(nativePath(temp, child[0]), extractTo);
 		await rmdir(temp);
 	} else {
 		await rename(temp, extractTo);
 	}
 	log('Decompress complete: ' + extractTo);
+}
+
+function isDir(f: string) {
+	return lstat(f).then((stat) => {
+		return stat && stat.isDirectory();
+	});
 }

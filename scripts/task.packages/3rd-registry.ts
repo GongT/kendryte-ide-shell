@@ -31,6 +31,10 @@ export function walkRegistry(platform: IPlatformTypes): ReadonlyArray<IRegistryD
 		} else {
 			url = item.source;
 		}
+		if (!url) {
+			return null;
+		}
+		
 		url = resolveUrl(ExS3.instance().websiteUrl('3rd-party/versions.json'), url);
 		
 		let version: string;
@@ -41,13 +45,13 @@ export function walkRegistry(platform: IPlatformTypes): ReadonlyArray<IRegistryD
 		}
 		
 		return {name: item.projectName, platform, version, url};
-	});
+	}).filter(e => !!e);
 }
 
-export function getBundledVersions() {
+export function getBundledVersions(platform: IPlatformTypes) {
 	const bundledVersions: {[name: string]: string} = {};
 	
-	walkRegistry('linux').forEach(({name, version}) => {
+	walkRegistry(platform).forEach(({name, version}) => {
 		bundledVersions[name] = version;
 	});
 	
