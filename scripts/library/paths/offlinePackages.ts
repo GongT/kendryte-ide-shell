@@ -1,7 +1,6 @@
-import { createReleaseTag } from '../releaseInfo/releaseTag';
 import { IPlatformTypes } from '../gulp';
-import { getReleaseChannel } from '../releaseInfo/qualityChannel';
+import { createReleaseTag } from '../releaseInfo/releaseTag';
 
 export function offlinePackageFileName(platform: IPlatformTypes|'*', releaseTag = createReleaseTag()) {
-	return `offlinepackages.${getReleaseChannel()}.${platform}.7z`;
+	return `offlinepackages.${platform}.7z`;
 }

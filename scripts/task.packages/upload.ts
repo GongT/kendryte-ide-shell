@@ -1,10 +1,10 @@
 import { BUILD_ARTIFACTS_DIR } from '../environment';
-import { everyPlatform, gulpSrc, jeditor, task, } from '../library/gulp';
+import { everyPlatform, gulpSrc, jeditor, mergeStream, task } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { offlinePackageFileName } from '../library/paths/offlinePackages';
-import { getReleaseChannel } from '../library/releaseInfo/qualityChannel';
-import { AWS_RELEASE_PACKAGES_PATH } from '../library/releaseInfo/s3Keys';
+import { PublishedChannels } from '../library/releaseInfo/qualityChannel';
 import { createReleaseTag } from '../library/releaseInfo/releaseTag';
+import { AWS_RELEASE_PACKAGES_PATH } from '../library/releaseInfo/s3Keys';
 import { createZipFiles } from './compress';
 
 const uploadPackage = everyPlatform('offpack:upload', [createZipFiles], (platform) => {
@@ -20,9 +20,11 @@ export const modifyJsonTask = task('offpack:update.json', [uploadPackage], updat
 
 function updateRelease() {
 	const version = createReleaseTag();
-	return gulpS3.src(`release/IDE.${getReleaseChannel()}.json`)
-	             .pipe(jeditor({
-		             offlinePackageVersion: version,
-	             }))
-	             .pipe(gulpS3.dest());
+	return mergeStream(...PublishedChannels.map((channel) => {
+		return gulpS3.src(`release/IDE.${channel}.json`)
+		             .pipe(jeditor({
+			             offlinePackageVersion: version,
+		             }))
+		             .pipe(gulpS3.dest());
+	}));
 }

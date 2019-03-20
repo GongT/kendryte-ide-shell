@@ -1,3 +1,8 @@
+export const PublishedChannels = [
+	'alpha',
+	'beta',
+];
+
 export function getReleaseChannel() {
 	let channel = '' + process.env.CHANNEL;
 	switch (channel) {
