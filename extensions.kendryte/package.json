@@ -2,6 +2,7 @@
 	"private": true,
 	"workspaces": [
 		"compiler",
-		"kendryte-debug"
+		"kendryte-debug",
+		"kendryte-zh_cn"
 	]
 }

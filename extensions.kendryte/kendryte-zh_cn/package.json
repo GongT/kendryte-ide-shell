@@ -1,0 +1,32 @@
+{
+	"name": "kendryte-zh_cn",
+	"displayName": "Chinese (Simplified) Language Pack for Kendryte IDE",
+	"description": "Kendryte IDE Chinese (Simplified)",
+	"version": "1.0.0",
+	"publisher": "kendryte",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.30.0"
+	},
+	"icon": "languagepack.png",
+	"categories": [
+		"Language Packs"
+	],
+	"contributes": {
+		"localizations": [
+			{
+				"languageId": "zh-cn",
+				"languageName": "Chinese Simplified",
+				"localizedLanguageName": "中文(简体)",
+				"translations": [
+					{
+						"id": "vscode",
+						"path": "./translations/kendryte_translate.i18n.json"
+					}
+				]
+			}
+		]
+	},
+	"scripts": {
+	}
+}

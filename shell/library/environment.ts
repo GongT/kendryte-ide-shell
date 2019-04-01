@@ -38,6 +38,11 @@ export function myArgs() {
 	if (!isBuilt) {
 		args.shift(); // app path (.)
 	}
+	args.forEach((v, i) => {
+		if (/^--debug(-brk)?(=|$)/.test(v)) {
+			args[i] = v.replace(/^--debug/, '--inspect');
+		}
+	});
 	return args;
 }
 

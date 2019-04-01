@@ -17,23 +17,6 @@ import { executableResolved, getLastKnownApp } from './rememberWhatIsStart';
 
 let connId = 0;
 
-function detectInspectPortToUse() {
-	const myInspectArg = process.argv.find((item) => {
-		return item.startsWith('--inspect');
-	});
-	const argName = /^--inspect(-brk)?(=|$)/.exec(myInspectArg);
-	if (!argName[2]) { // no =port
-		return 9230;
-	}
-	
-	const port = parseInt(myInspectArg.replace(argName[0], ''));
-	if (port === 9229) {
-		return 9222;
-	} else {
-		return 9229;
-	}
-}
-
 function makeAppArg(exe: string, args: string[]): [string, string[]] {
 	if (!exe) {
 		const app = getLastKnownApp();
@@ -48,15 +31,6 @@ function makeAppArg(exe: string, args: string[]): [string, string[]] {
 }
 
 function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channel: string) {
-	const inspectPortArg = args.indexOf('--inspect-brk=') || args.indexOf('--inspect=');
-	if (inspectPortArg !== -1) {
-		args[inspectPortArg] = args[inspectPortArg].split('=')[0] + '=' + detectInspectPortToUse();
-	}
-	const inspectArg = args.indexOf('--inspect-brk') || args.indexOf('--inspect');
-	if (inspectArg !== -1) {
-		args[inspectArg] += '=' + detectInspectPortToUse();
-	}
-	
 	for (const [k, v] of Array.from(Object.entries(process.env))) {
 		if (!(k in envVars)) {
 			envVars[k] = v;
