@@ -20,7 +20,7 @@
 				"localizedLanguageName": "中文(简体)",
 				"translations": [
 					{
-						"id": "vscode",
+						"id": "kendryte",
 						"path": "./translations/kendryte_translate.i18n.json"
 					}
 				]
