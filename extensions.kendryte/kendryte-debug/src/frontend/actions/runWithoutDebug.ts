@@ -13,9 +13,9 @@ export interface IMainArguments {
 	port: number;
 }
 
-const CHANNEL_TITLE = 'kendryte/gdb-run';
+const CHANNEL_TITLE = 'kendryte.gdb-run';
 let channel: vscode.OutputChannel;
-channel = vscode.window.createOutputChannel('kendryte/gdb-run');
+channel = vscode.window.createOutputChannel(CHANNEL_TITLE);
 
 function createProcess(arg: IMainArguments): ChildProcess & { output: NodeJS.ReadableStream } {
 	channel.appendLine(`spawn:`);
@@ -39,7 +39,7 @@ function createProcess(arg: IMainArguments): ChildProcess & { output: NodeJS.Rea
 
 export function runWithoutDebug(debugChannel: ChannelLogger, arg: IMainArguments) {
 	if (!channel) {
-		channel = vscode.window.createOutputChannel('kendryte/gdb-run');
+		channel = vscode.window.createOutputChannel(CHANNEL_TITLE);
 	}
 	channel.clear();
 

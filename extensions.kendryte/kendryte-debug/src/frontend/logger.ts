@@ -6,7 +6,7 @@ export class ChannelLogger extends NodeLoggerCommon {
 
 	constructor() {
 		super('kendryte-debug');
-		this.channel = vscode.window.createOutputChannel('kendryte/gdb');
+		this.channel = vscode.window.createOutputChannel('kendryte.gdb');
 	}
 
 	dispose() {

@@ -18,7 +18,5 @@ export function prepareTempDir(): void {
 		} else if (is.windows) {
 			tDir = 'C:\\Windows\\Temp';
 		}
-		
-		throw new Error(`Your system temporary directory is too long, will cause connection error.\n(value is: ${tDir})`);
 	}
 }
