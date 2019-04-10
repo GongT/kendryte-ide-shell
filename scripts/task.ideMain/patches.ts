@@ -1,4 +1,4 @@
-import { copy, mkdirp, readJson, rename } from 'fs-extra';
+import { appendFile, copy, mkdirp, pathExists, readJson, rename } from 'fs-extra';
 import { basename } from 'path';
 import { BUILD_ARTIFACTS_DIR, isCI, isForceRun } from '../environment';
 import { removeDirectory } from '../ide/codeblocks/removeDir';
@@ -89,8 +89,15 @@ export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatf
 		lines.forEach(l => log(l));
 		log('---------------------------');
 		
+		const deletedListFile = nativePath(resultDir, 'delete.lst');
 		for (const file of lines) {
-			await copy(nativePath(mergingDir, file), nativePath(resultDir, file));
+			const from = nativePath(mergingDir, file);
+			if (await pathExists(from)) {
+				await copy(from, nativePath(resultDir, file));
+			} else {
+				log('Deleted: %s', file);
+				await appendFile(deletedListFile, file + '\n');
+			}
 		}
 	}
 	
