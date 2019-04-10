@@ -3,6 +3,6 @@
 	"workspaces": [
 		"compiler",
 		"kendryte-debug",
-		"kendryte-zh_cn"
+		"kendryte-translate"
 	]
 }

@@ -1,5 +1,5 @@
 {
-	"name": "kendryte-zh_cn",
+	"name": "kendryte-translate",
 	"displayName": "Chinese (Simplified) Language Pack for Kendryte IDE",
 	"description": "Kendryte IDE Chinese (Simplified)",
 	"version": "1.0.0",
@@ -21,7 +21,7 @@
 				"translations": [
 					{
 						"id": "kendryte",
-						"path": "./translations/kendryte_translate.i18n.json"
+						"path": "./translations/kendryte_zh-cn.i18n.json"
 					}
 				]
 			}

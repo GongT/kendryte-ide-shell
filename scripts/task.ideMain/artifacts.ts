@@ -14,7 +14,7 @@ import { extensionsPackageTask } from '../task.extensions/package';
 import { EXTENSIONS_DIST_PATH_RESULT, listExtension } from '../task.extensions/path';
 import { cleanExtractTask } from './cleanup';
 
-const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (platform: string) => {
+export const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (platform) => {
 	if (isCI) {
 		log('isCI, `ide:artifacts:fetch` skip.');
 		return Promise.resolve();

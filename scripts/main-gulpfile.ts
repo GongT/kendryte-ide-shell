@@ -13,6 +13,7 @@ import { publishLocal, publishUserCustom } from './task.packageManager/custom';
 import { updateExampleRegistry, updateSdkRegistry } from './task.packageManager/registry';
 import { modifyJsonTask } from './task.packages/upload';
 import { scriptsTask, scriptsWatchTask } from './task.script/compile';
+import './task.translate/translate.gulpfile';
 
 /* dev section */
 task('default', [developmentTask, scriptsTask, extensionsTask], () => {

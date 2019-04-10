@@ -1,0 +1,361 @@
+{
+    "version": "1.0.0",
+    "contents": {
+        "vs/kendryte/vs/base/common/configKeys": {
+            "build": "构建",
+            "cmake.build.verbose.desc": "构建让CMake显示全部输出",
+            "cmake.build.verbose.lbl": "详细构建日志",
+            "cmake.debug.desc": "超详细CMake输出，仅在调试CMake时使用",
+            "cmake.debug.lbl": "调试CMake输出",
+            "custom": "自定义",
+            "debug": "调试",
+            "debug.common.filter-empty.desc": "从串口设备列表中删除没有“productID”属性的设备",
+            "debug.custom.desc": "自定义OpenOCD配置文件路径",
+            "debug.ftdi.extra.desc": "向OpenOCD配置文件中添加自定义内容",
+            "debug.ftdi.layout.desc": "芯片layout值（输入两个16进制数，如：“1a2b 3c4”）",
+            "debug.ftdi.speed.desc": "kHz",
+            "debug.ftdi.tdo-fe.desc": "TDO采样沿（ftdi_tdo_sample_edge）",
+            "debug.ftdi.vid_pid.desc": "FTDI USB设备的VID、PID值（输入两个16进制数，如：“1a2b 3c4”）",
+            "debug.jtag.id.desc": "JLink设备序列号，0 = 自动探测",
+            "debug.jtag.speed.desc": "kHz",
+            "debug.openocd.config": "选择如何配置OpenOCD",
+            "debug.openocd.core": "调试哪个核心，-1 = 所有核心",
+            "debug.openocd.port": "OpenOCD监听端口，0 = 自动选择",
+            "deploy": "部署",
+            "ftdi": "FTDI",
+            "jtag": "JLink",
+            "kendryte": "勘智",
+            "openocd": "OpenOCD"
+        },
+        "vs/kendryte/vs/base/common/jsonComments": {
+            "jsonsParseReportErrors": "无法解析{0}，因为：{1}"
+        },
+        "vs/kendryte/vs/base/common/jsonSchemas/cmakeConfigSchema": {
+            "cmake": "项目配置文件"
+        },
+        "vs/kendryte/vs/base/common/menu/cmake": {
+            "and": "{0}和{1}",
+            "build": "部署",
+            "cleanup": "清理",
+            "configure": "配置项目",
+            "debug": "调试",
+            "kendryte.serial-port.default": "点击选择刷写器默认串口设备",
+            "no.error": "CMake运行成功",
+            "reboot": "重新启动开发板",
+            "reboot.to.ISP.mode": "重新启动开发板到ISP模式",
+            "show.log.cmake": "点击显示CMake日志",
+            "upload": "刷写"
+        },
+        "vs/kendryte/vs/base/common/menu/openocd": {
+            "jtag": "JLink",
+            "jtag.action.detect": "读取连接的JLink设备ID",
+            "jtag.action.install": "安装官方JLink设备驱动",
+            "jtag.action.install.libusb": "安装第三方JLink设备驱动",
+            "openocd": "调试服务",
+            "openocd.action.restart": "重新启动OpenOCD服务",
+            "openocd.action.start": "启动OpenOCD服务",
+            "openocd.action.stop": "停止OpenOCD服务"
+        },
+        "vs/kendryte/vs/base/common/menu/packageManager": {
+            "DeleteDependency": "删除软件包",
+            "InstallDependencies": "安装当前项目的依赖库",
+            "openMarketPlace": "浏览软件包列表"
+        },
+        "vs/kendryte/vs/base/common/menu/processTool": {
+            "openocd.action.quit-and-update": "退出并启动更新",
+            "openocd.action.relaunch": "重新启动IDE",
+            "openocd.action.report": "生成帮助数据",
+            "reloadWindow": "重新加载窗口"
+        },
+        "vs/kendryte/vs/base/common/menu/serialPort": {
+            "serialport": "串口"
+        },
+        "vs/kendryte/vs/base/common/menu/tools": {
+            "CreateShortcuts": "创建快捷方式",
+            "KendryteIOEditor": "芯片引脚功能编辑器",
+            "tools": "开发工具"
+        },
+        "vs/kendryte/vs/base/common/menu/webLink": {
+            "openocd.action.weblink.forum": "在浏览器中打开勘智论坛",
+            "weblink": "浏览器链接"
+        },
+        "vs/kendryte/vs/base/common/speedShow": {
+            "kendryte.download.message": "已完成{0}，速度：{2} {1}"
+        },
+        "vs/kendryte/vs/base/electron-browser/rawClipboardAction": {
+            "copy": "复制到剪贴板"
+        },
+        "vs/kendryte/vs/platform/menubar/electron-main/aboutMenuDialog": {
+            "copy": "复制(&&C)",
+            "myAboutDetail": "版本: {0}\n勘智：{1}\n提交: {2}\n日期: {3}\nElectron: {4}\nChrome: {5}\nNode.js: {6}\nV8: {7}\nOS: {8}",
+            "okButton": "好"
+        },
+        "vs/kendryte/vs/platform/open/common/actionIds": {
+            "kendryte.open": "打开",
+            "workbench.action.kendryte.open.terminal": "打开系统终端"
+        },
+        "vs/kendryte/vs/platform/openocd/common/openocd": {
+            "custom": "自定义",
+            "openocd.use.custom": "不使用IDE提供的配置文件，在下方“{0}”处提供你自己的配置",
+            "openocd.use.ftdi": "使用FTDI接口",
+            "openocd.use.jtag": "使用JLink接口"
+        },
+        "vs/kendryte/vs/services/openocd/electron-browser/actions/jtagBase": {
+            "detail": "显示更多",
+            "never again": "不再提示"
+        },
+        "vs/kendryte/vs/services/openocd/electron-browser/actions/jtagFindId": {
+            "detail": "显示更多"
+        },
+        "vs/kendryte/vs/services/serialPort/common/configContribution": {
+            "serialport.config.filter-empty": "过滤空设备"
+        },
+        "vs/kendryte/vs/services/serialPort/common/reloadAction": {
+            "serialport.reloadDevice.title": "刷新串口设备列表"
+        },
+        "vs/kendryte/vs/workbench/actionRegistry/common/openDevToolsAction": {
+            "openDevTools": "显示开发工具"
+        },
+        "vs/kendryte/vs/workbench/bootstrap/common/kendryteBootstrap": {
+            "bootstrap.kendryte.fatal": "不好！勘智IDE启动过程中发生了错误：{0}"
+        },
+        "vs/kendryte/vs/workbench/bottomBar/common/kendryteButtonContribution": {
+            "cmake": "CMake",
+            "debug.select.target": "点击选择构建目标",
+            "debug.select.variant": "点击选择构建变体",
+            "error": "CMake错误：{0}"
+        },
+        "vs/kendryte/vs/workbench/cmake/common/actionIds": {
+            "kendryte.cmake.create.hello-world": "创建“Hello World”模板项目"
+        },
+        "vs/kendryte/vs/workbench/cmake/common/errors": {
+            "kendryte.errors.cmake.folder.not.open": "打开目录以开始一个项目",
+            "kendryte.errors.cmake.lists.txt.exists": "CMakeLists.txt将会被覆盖，请先删除它",
+            "kendryte.errors.cmake.project.not.exists": "创建“{0}”文件来开始一个新项目"
+        },
+        "vs/kendryte/vs/workbench/cmake/common/launchConfig": {
+            "workspace": "工作区"
+        },
+        "vs/kendryte/vs/workbench/cmake/electron-browser/actions/openLocalCmakeList": {
+            "open": "打开{1}"
+        },
+        "vs/kendryte/vs/workbench/cmake/electron-browser/actions/selectTargetAction": {
+            "SelectTarget": "选择目标"
+        },
+        "vs/kendryte/vs/workbench/cmake/electron-browser/actions/selectVariantAction": {
+            "SelectVariant": "选择变体"
+        },
+        "vs/kendryte/vs/workbench/cmake/electron-browser/cmakeContribution": {
+            "kendryte": "勘智"
+        },
+        "vs/kendryte/vs/workbench/cmake/electron-browser/listsCreator": {
+            "cmake.dependency": "依赖库处理失败，是否没有安装？"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/editor/contextMenu": {
+            "KendryteIOEditorSetPinFunc": "给选定的引脚赋予一个功能",
+            "KendryteIOEditorSetPinFuncShort": "赋予功能",
+            "KendryteIOEditorUnsetPinFunc": "默认"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/editor/left/chipSelectView": {
+            "alert": "警告",
+            "chip.select.overwrite.alert": "当前的配置将丢失，真的要这么做吗？"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/editor/leftPanel": {
+            "settingsListLabel": "设置"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/fpioaActions": {
+            "workspace.required": "你必须打开一个目录才能使用这个功能"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/fpioaContribution": {
+            "fpioa.editor.label": "芯片引脚功能编辑器",
+            "kendryte": "勘智"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/fpioaEditorInput": {
+            "alert": "警告",
+            "cancel": "取消",
+            "fpioaEditorInputName": "功能引脚配置",
+            "function": "功能",
+            "io.select.overwrite.alert": "将{0}“{1}”从{2}“{3}”移动到{4}“{5}”吗？",
+            "pin": "引脚",
+            "yes": "是"
+        },
+        "vs/kendryte/vs/workbench/fpioaConfig/node/generateorContribution": {
+            "KendryteIOGenerate": "生成引脚功能配置代码"
+        },
+        "vs/kendryte/vs/workbench/kendrytePackageJsonEditor/common/ids": {
+            "kendrytePackageJsonEditor": "项目配置"
+        },
+        "vs/kendryte/vs/workbench/kendrytePackageJsonEditor/electron-browser/kendrytePackageJsonEditor": {
+            "executable": "可执行程序",
+            "kendrytePackageJsonEditor.c_cpp_flags.desc": "每行一个参数",
+            "kendrytePackageJsonEditor.c_cpp_flags.title": "C、C++编译器参数",
+            "kendrytePackageJsonEditor.c_flags.desc": "每行一个参数",
+            "kendrytePackageJsonEditor.c_flags.title": "C编译器参数",
+            "kendrytePackageJsonEditor.cpp_flags.desc": "每行一个参数",
+            "kendrytePackageJsonEditor.cpp_flags.title": "C++编译器参数",
+            "kendrytePackageJsonEditor.definitions.desc": "用户可配置的常量定义，用于在编译前生成`#define`",
+            "kendrytePackageJsonEditor.definitions.title": "C、C++常量定义",
+            "kendrytePackageJsonEditor.entry.desc": "一般用在demo项目中，只作为标记，没有实际影响",
+            "kendrytePackageJsonEditor.entry.title": "入口文件",
+            "kendrytePackageJsonEditor.exampleSource.desc": "一般用在库项目中，暂时只作为标记，没有实际影响",
+            "kendrytePackageJsonEditor.exampleSource.title": "示例代码",
+            "kendrytePackageJsonEditor.extraList.desc": "这个文件将被添加到生成的CMakeLists中，注意：在这个文件中不可以使用编译目标，因为它此时还没有生成",
+            "kendrytePackageJsonEditor.extraList.placeholder": "正常情况下你不应该使用这个功能",
+            "kendrytePackageJsonEditor.extraList.title": "额外CMake脚本",
+            "kendrytePackageJsonEditor.header.desc": "你可以在你的代码中用`#include`包含这些目录中的头文件。每行一个目录。相对于{0}。",
+            "kendrytePackageJsonEditor.header.title": "本地头文件目录",
+            "kendrytePackageJsonEditor.homepage.desc": "这个项目的首页地址（例如github链接）",
+            "kendrytePackageJsonEditor.homepage.title": "首页",
+            "kendrytePackageJsonEditor.include.desc": "使用你的库的用户，可以在他们的代码中用`#include`包含这些目录中的头文件。每行一个目录，但是理应只有一个，不要将源文件放入此处的任何一个目录。",
+            "kendrytePackageJsonEditor.include.title": "导出头文件目录",
+            "kendrytePackageJsonEditor.ld_file.desc": "添加一个LD文件",
+            "kendrytePackageJsonEditor.ld_file.title": "LD文件",
+            "kendrytePackageJsonEditor.link_flags.desc": "每行一个参数",
+            "kendrytePackageJsonEditor.link_flags.title": "连接器参数",
+            "kendrytePackageJsonEditor.name.desc": "你的项目名称，只允许字母、数字、减号、下划线。如果需要对外发布，请用此格式：“你的名字+下划线+项目名称”。例如：kendryte_standalone-sdk",
+            "kendrytePackageJsonEditor.name.title": "项目名称",
+            "kendrytePackageJsonEditor.prebuilt.desc": "如果你的库不开源，则需要在此设置.a文件的路径",
+            "kendrytePackageJsonEditor.prebuilt.title": "预编译库项目",
+            "kendrytePackageJsonEditor.properties.desc": "请查询CMake手册以获取更多信息",
+            "kendrytePackageJsonEditor.properties.title": "CMake属性",
+            "kendrytePackageJsonEditor.source.desc": "在此处列出所有要编译的源码文件，每行一个文件、文件夹",
+            "kendrytePackageJsonEditor.source.placeholder": "path/to/code.c - 直接添加一个文件（推荐）\npath/*.c - 添加一个目录中的所有.c文件\npath/**.c - 添加一个目录和其子目录中所有.c文件",
+            "kendrytePackageJsonEditor.source.title": "源码文件",
+            "kendrytePackageJsonEditor.type.desc": "选择项目的类型。警告：改变此选项将清除下面的其他选项",
+            "kendrytePackageJsonEditor.type.title": "项目类型",
+            "kendrytePackageJsonEditor.version.desc": "发布时使用的版本号",
+            "kendrytePackageJsonEditor.version.title": "版本",
+            "library": "库项目",
+            "prebuilt library": "预编译库项目",
+            "required": "必须"
+        },
+        "vs/kendryte/vs/workbench/kendrytePackageJsonEditor/electron-browser/kendrytePackageJsonEditorInput": {
+            "kendrytePackageJson.editor.description.long": "修改{0}项目的CMake配置",
+            "kendrytePackageJson.editor.description.long_for": "修改当前项目的CMake配置",
+            "kendrytePackageJson.editor.description.medium": "当前项目配置",
+            "kendrytePackageJson.editor.description.medium_for": "{0}项目配置"
+        },
+        "vs/kendryte/vs/workbench/kendrytePackageJsonEditor/node/validators": {
+            "error.arg.list": "行无效：{0}。必须符合“{1}”的要求。",
+            "error.empty": "这个项目是必须的",
+            "error.file.invalid": "不是文件：{0}",
+            "error.file.nf": "没有找到此文件：{0}",
+            "error.folder.invalid": "不是文件夹：{0}",
+            "error.folder.nf": "没有找到此文件夹：{0}",
+            "error.project-name.invalid": "项目名称无效",
+            "error.url.invalid": "首页无效，必须以http(s)://开头",
+            "error.version.invalid": "版本号无效，必须符合格式：x.y.z[-aaa]"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/actions/displayPackageDetailAction": {
+            "openurl.package.homepage": "首页"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/actions/openPackagesMarketPlaceAction": {
+            "openMarketPlaceExample": "寻找一个示例"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/editors/packageBrowser": {
+            "example": "示例",
+            "library": "库",
+            "packageManager.search": "搜索",
+            "packages.browser": "软件包浏览器"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/editors/packageDetail": {
+            "InstallDependency": "安装",
+            "ReinstallDependency": "重新安装",
+            "local.package": "本地包",
+            "name": "包名",
+            "no.description": "没有详细说明",
+            "not.install": "未安装",
+            "open.homepage": "打开首页",
+            "version": "版本号"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/editors/remotePackagesListView": {
+            "detail": "详细信息",
+            "download": "下载",
+            "installing": "正在安装……"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/viewletPanels/localPackagesListView": {
+            "detail": "详情",
+            "packages": "软件包列表"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/viewletPanels/packageConfigView": {
+            "dependency tree": "依赖信息",
+            "leave.empty.to.use.default": "留空使用默认值"
+        },
+        "vs/kendryte/vs/workbench/packageManager/browser/viewletPanels/register": {
+            "config": "配置",
+            "package list": "软件包列表"
+        },
+        "vs/kendryte/vs/workbench/packageManager/common/type": {
+            "packageManager": "软件包管理"
+        },
+        "vs/kendryte/vs/workbench/packageManager/electron-browser/mainPanelContribution": {
+            "package": "软件包",
+            "packageManager": "软件包管理"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/common/actionId": {
+            "kendryte.serial.terminal.toggle": "显示、隐藏串口监视器",
+            "kendryte.serial.terminal.toggle.left": "显示、隐藏左边栏：设备列表",
+            "kendryte.serial.terminal.toggle.right": "显示、隐藏右边栏：连接配置"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/common/configContribution": {
+            "serialport.baudrate.monitor": "波特率",
+            "serialport.baudrate.monitor.desc": "串口监视器默认使用的波特率"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/common/schema": {
+            "charset.binary": "Binary：设备输出是ANSI，原样显示",
+            "charset.hex": "Hex：设备输出是二进制数据，显示为十六进制",
+            "charset.hexasc": "HexAsc：设备输出是十六进制串，显示为二进制",
+            "charset.utf8": "Utf8：设备输出是UTF-8，原样显示",
+            "dataBits.desc": "数据位数",
+            "dataBits.title": "Data Bits",
+            "echo.desc": "（RAW模式）回显输入的内容到屏幕",
+            "echo.title": "回显",
+            "escape.desc": "（RAW模式）对输入的内容进行C语言转义。例如“\n”将被转换成“0x0A”发送。",
+            "escape.title": "输入转义",
+            "hexLineFeed.desc": "当输出十六进制时，让\n字符例外",
+            "hexLineFeed.title": "HEX换行符",
+            "inputCharset.title": "输入字符集",
+            "lineEnding.desc": "（RAW模式）在每次输入后添加字符",
+            "lineEnding.title": "输入行尾",
+            "outputCharset.desc": "从设备接收数据时转换编码",
+            "outputCharset.title": "输出编码",
+            "parity.desc": "串口parity",
+            "parity.title": "Parity",
+            "stopBits.desc": "停止位数",
+            "stopBits.title": "Stop Bits",
+            "translateLineFeed.desc": "当收到这个字符（串）时，打印一个回车。",
+            "translateLineFeed.title": "换行符翻译"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/common/toggleSerialMonitorAction": {
+            "serialport.togglePanel.title": "显示、隐藏串口监视器"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/electron-browser/actions/acceptSerialInput": {
+            "actions.serial-port.acceptInput": "立即发送输入"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/electron-browser/outputWindow": {
+            "terminal.integrated.a11yBlankLine": "空行",
+            "terminal.integrated.a11yPromptLabel": "输入",
+            "terminal.integrated.a11yTooMuchOutput": "输出内容过多",
+            "terminal.integrated.copySelection.noSelection": "没有选择内容"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/electron-browser/serialDeviceList": {
+            "settingsListLabel": "设置"
+        },
+        "vs/kendryte/vs/workbench/serialMonitor/electron-browser/serialMonitorPanel": {
+            "press.ctrl.enter": "按 {0}+回车 发送数据",
+            "serial-port.close": "关闭端口",
+            "serial-port.open.raw": "打开端口（RAW模式）",
+            "serial-port.open.termial": "打开端口（终端模式）"
+        },
+        "vs/kendryte/vs/workbench/serialUpload/common/configContribution": {
+            "serialport.baudrate.flash": "刷写波特率",
+            "serialport.baudrate.flash.desc": "刷写过程中使用的波特率"
+        },
+        "vs/kendryte/vs/workbench/serialUpload/node/flasher": {
+            "serial.memory.writing": "正在写内存：{0}"
+        },
+        "vs/kendryte/vs/workbench/topMenu/node/shortcutsContribution": {
+            "kendryte": "勘智"
+        }
+    }
+}
