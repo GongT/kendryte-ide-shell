@@ -4,16 +4,18 @@ import * as net from 'net';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { ChannelLogger } from './logger';
+import { disposeChannel, FrontendChannelLogger } from './lib/frontendChannelLogger';
 import { runWithoutDebug } from './actions/runWithoutDebug';
+import { BackendLogReceiver } from './lib/backendLogReceiver';
+import { IMyLogger } from '../common/baseLogger';
 
 export function activate(context: vscode.ExtensionContext) {
-	const logger = new ChannelLogger();
+	const logger = new FrontendChannelLogger('F');
 	logger.info('Activating');
 
 	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider('debugmemory', new MemoryContentProvider()));
 	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.examineMemoryLocation', examineMemory));
-	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.runWithoutDebug', (arg: any) => runWithoutDebug(logger, arg)));
+	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.runWithoutDebug', (arg: any) => runWithoutDebug(arg)));
 	context.subscriptions.push(vscode.commands.registerCommand('kendryte-debug.getFileNameNoExt', () => {
 		if (!vscode.window.activeTextEditor || !vscode.window.activeTextEditor.document || !vscode.window.activeTextEditor.document.fileName) {
 			vscode.window.showErrorMessage('No editor with valid file name active');
@@ -32,22 +34,27 @@ export function activate(context: vscode.ExtensionContext) {
 		const ext = path.extname(fileName);
 		return fileName.substr(0, fileName.length - ext.length);
 	}));
-	context.subscriptions.push(logger);
-	context.subscriptions.push(vscode.debug.onDidReceiveDebugSessionCustomEvent((e: any) => {
-		debugger;
-		logger.info('WOW!!!', e.event, e.body);
-	}));
+	context.subscriptions.push(new BackendLogReceiver());
+	context.subscriptions.push({
+		dispose: disposeChannel,
+	});
 
-	vscode.debug.registerDebugConfigurationProvider('kendryte', new Provider(logger));
+	vscode.debug.registerDebugConfigurationProvider('kendryte', new Provider());
 
 	logger.info('Activated');
 }
 
 class Provider implements vscode.DebugConfigurationProvider {
-	constructor(private readonly logger: ChannelLogger) {
+	private readonly logger: IMyLogger;
+
+	constructor() {
+		this.logger = new FrontendChannelLogger('Provider');
 	}
 
-	provideDebugConfigurations?(folder: WorkspaceFolder | undefined, token?: CancellationToken): ProviderResult<DebugConfiguration[]>;
+	provideDebugConfigurations(folder: WorkspaceFolder | undefined, token?: CancellationToken): ProviderResult<DebugConfiguration[]> {
+		this.logger.info('createDebugAdapterDescriptor', arguments);
+		return [];
+	}
 
 	createDebugAdapterDescriptor() {
 		this.logger.info('createDebugAdapterDescriptor', arguments);

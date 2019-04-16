@@ -1,67 +1,25 @@
+import { escapeCString } from './cString';
+
 export interface MIInfo {
 	token: number;
 	outOfBandRecord: { isStream: boolean, type: string, asyncClass: string, output: [string, any][], content: string }[];
 	resultRecords: { resultClass: string, results: [string, any][] };
 }
 
-const octalMatch = /^[0-7]{3}/;
-
-function parseString(str: string): string {
-	const ret = new Buffer(str.length * 4);
-	let bufIndex = 0;
-
-	if (str[0] != '"' || str[str.length - 1] != '"') {
-		throw new Error('Not a valid string');
-	}
-	str = str.slice(1, -1);
-	let escaped = false;
-	for (let i = 0; i < str.length; i++) {
-		if (escaped) {
-			let m;
-			if (str[i] == '\\') {
-				bufIndex += ret.write('\\', bufIndex);
-			} else if (str[i] == '"') {
-				bufIndex += ret.write('"', bufIndex);
-			} else if (str[i] == '\'') {
-				bufIndex += ret.write('\'', bufIndex);
-			} else if (str[i] == 'n') {
-				bufIndex += ret.write('\n', bufIndex);
-			} else if (str[i] == 'r') {
-				bufIndex += ret.write('\r', bufIndex);
-			} else if (str[i] == 't') {
-				bufIndex += ret.write('\t', bufIndex);
-			} else if (str[i] == 'b') {
-				bufIndex += ret.write('\b', bufIndex);
-			} else if (str[i] == 'f') {
-				bufIndex += ret.write('\f', bufIndex);
-			} else if (str[i] == 'v') {
-				bufIndex += ret.write('\v', bufIndex);
-			} else if (str[i] == '0') {
-				bufIndex += ret.write('\0', bufIndex);
-			} else if (m = octalMatch.exec(str.substr(i))) {
-				ret.writeUInt8(parseInt(m[0], 8), bufIndex++);
-				i += 2;
-			} else {
-				bufIndex += ret.write(str[i], bufIndex);
-			}
-			escaped = false;
-		} else {
-			if (str[i] == '\\') {
-				escaped = true;
-			} else if (str[i] == '"') {
-				throw new Error('Not a valid string');
-			} else {
-				bufIndex += ret.write(str[i], bufIndex);
-			}
-		}
-	}
-	return ret.slice(0, bufIndex).toString('utf8');
+export interface IOutOfBandRecord {
+	isStream: boolean;
+	type: string;
+	asyncClass: string;
+	output: [string, any][];
+	content: string;
 }
 
 export class MINode implements MIInfo {
 	token: number;
-	outOfBandRecord: { isStream: boolean, type: string, asyncClass: string, output: [string, any][], content: string }[];
+	outOfBandRecord: IOutOfBandRecord[];
 	resultRecords: { resultClass: string, results: [string, any][] };
+	private _handled: boolean = false;
+	request: string;
 
 	constructor(
 		token: number,
@@ -73,8 +31,18 @@ export class MINode implements MIInfo {
 		this.resultRecords = result;
 	}
 
+	set handled(v: boolean) {
+		if (v && !this._handled) {
+			this._handled = true;
+		}
+	}
+
+	isUnhandled() {
+		return !this._handled;
+	}
+
 	record(path: string): any {
-		if (!this.outOfBandRecord) {
+		if (!this.outOfBandRecord || !this.outOfBandRecord.length) {
 			return undefined;
 		}
 		return MINode.valueOf(this.outOfBandRecord[0].output, path);
@@ -144,7 +112,7 @@ export class MINode implements MIInfo {
 }
 
 const tokenRegex = /^\d+/;
-const outOfBandRecordRegex = /^(?:(\d*|undefined)([\*\+\=])|([\~\@\&]))/;
+const outOfBandRecordRegex = /^(?:(\d*|undefined)([*+=])|([~@&]))/;
 const resultRecordRegex = /^(\d*)\^(done|running|connected|error|exit)/;
 const newlineRegex = /^\r\n?/;
 const endRegex = /^\(gdb\)\r\n?/;
@@ -184,6 +152,7 @@ export function parseMI(output: string): MINode {
 	};
 
 	const parseCString = () => {
+		// console.log('parseCString:', output);
 		if (output[0] != '"') {
 			return '';
 		}
@@ -203,19 +172,13 @@ export function parseMI(output: string): MINode {
 			remaining = remaining.substr(1);
 			stringEnd++;
 		}
-		let str;
-		try {
-			str = parseString(output.substr(0, stringEnd));
-		} catch (e) {
-			str = output.substr(0, stringEnd);
-		}
+		const str = escapeCString(output.substr(0, stringEnd));
 		output = output.substr(stringEnd);
 		return str;
 	};
 
-	let parseValue, parseCommaResult, parseCommaValue, parseResult;
-
 	const parseTupleOrList = () => {
+		// console.log('parseTupleOrList:', output);
 		if (output[0] != '{' && output[0] != '[') {
 			return undefined;
 		}
@@ -253,7 +216,8 @@ export function parseMI(output: string): MINode {
 		return undefined;
 	};
 
-	parseValue = () => {
+	const parseValue = () => {
+		// console.log('parseValue:', output);
 		if (output[0] == '"') {
 			return parseCString();
 		} else if (output[0] == '{' || output[0] == '[') {
@@ -263,7 +227,8 @@ export function parseMI(output: string): MINode {
 		}
 	};
 
-	parseResult = () => {
+	const parseResult = () => {
+		// console.log('parseResult:', output);
 		const variableMatch = variableRegex.exec(output);
 		if (!variableMatch) {
 			return undefined;
@@ -273,7 +238,8 @@ export function parseMI(output: string): MINode {
 		return [variable, parseValue()];
 	};
 
-	parseCommaValue = () => {
+	const parseCommaValue = () => {
+		// console.log('parseCommaValue:', output);
 		if (output[0] != ',') {
 			return undefined;
 		}
@@ -281,7 +247,8 @@ export function parseMI(output: string): MINode {
 		return parseValue();
 	};
 
-	parseCommaResult = () => {
+	const parseCommaResult = () => {
+		// console.log('parseCommaResult:', output);
 		if (output[0] != ',') {
 			return undefined;
 		}
@@ -307,8 +274,12 @@ export function parseMI(output: string): MINode {
 				output: [],
 			};
 			let result;
-			while (result = parseCommaResult()) {
-				asyncRecord.output.push(result);
+			while (result = parseCommaResult() || parseTupleOrList()) {
+				if (Array.isArray(result)) {
+					asyncRecord.output.push(...result);
+				} else {
+					asyncRecord.output.push(result);
+				}
 			}
 			outOfBandRecord.push(asyncRecord);
 		} else if (match[3]) {
@@ -330,15 +301,15 @@ export function parseMI(output: string): MINode {
 		}
 		resultRecords = {
 			resultClass: match[2],
-			results: []
+			results: [],
 		};
 		let result;
 		while (result = parseCommaResult()) {
 			resultRecords.results.push(result);
 		}
 
-		output = output.replace(newlineRegex, "");
+		output = output.replace(newlineRegex, '');
 	}
 
-	return new MINode(token, <any> outOfBandRecord || [], resultRecords);
+	return new MINode(token, <any>outOfBandRecord || [], resultRecords);
 }

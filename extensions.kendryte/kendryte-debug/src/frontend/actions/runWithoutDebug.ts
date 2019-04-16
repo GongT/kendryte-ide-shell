@@ -1,77 +1,79 @@
 import * as vscode from 'vscode';
-import { ChannelLogger } from '../logger';
 import { resolve } from 'path';
 import { ChildProcess, spawn } from 'child_process';
 import { PassThrough } from 'stream';
-import { M2Handler } from '../m2Handler';
+import { Mi2Handler } from '../../common/mi2/mi2Handler';
+import { createChannel, FrontendChannelLogger } from '../lib/frontendChannelLogger';
+import { LogLevel } from '../../common/baseLogger';
+import { createGdbProcess, waitProcess } from '../../common/createGdbProcess';
 import split2 = require('split2');
 
-export interface IMainArguments {
+export interface IDebugWithoutRunArguments {
 	app: string;
 	gdb: string;
 	env: NodeJS.ProcessEnv;
 	port: number;
+	logLevel: LogLevel;
 }
 
 const CHANNEL_TITLE = 'kendryte.gdb-run';
-let channel: vscode.OutputChannel;
-channel = vscode.window.createOutputChannel(CHANNEL_TITLE);
 
-function createProcess(arg: IMainArguments): ChildProcess & { output: NodeJS.ReadableStream } {
-	channel.appendLine(`spawn:`);
-	channel.appendLine(`     gdb: ${arg.gdb} --interpreter=mi2`);
-	channel.appendLine(`     app: ${arg.app}`);
-	channel.appendLine(`    port: ${arg.port}`);
-	channel.appendLine(`     env: ${JSON.stringify(arg.env, null, 8)}`);
-	const process = spawn(arg.gdb, [arg.app, '--interpreter=mi2'], {
-		cwd: resolve(arg.app, '..'),
+function createProcess(arg: IDebugWithoutRunArguments) {
+	const logger = new FrontendChannelLogger('spawn', createChannel(CHANNEL_TITLE));
+	logger.setLevel(arg.logLevel);
+	return createGdbProcess({
+		gdb: arg.gdb,
+		app: arg.app,
+		args: [],
 		env: arg.env,
-		stdio: 'pipe',
-		shell: false,
-		windowsHide: true,
-	});
-	channel.appendLine(`pid: ${process.pid}`);
-
-	return Object.assign(process, {
-		output: process.stdout.pipe(split2()),
+		logger: logger,
 	});
 }
 
-export function runWithoutDebug(debugChannel: ChannelLogger, arg: IMainArguments) {
-	if (!channel) {
-		channel = vscode.window.createOutputChannel(CHANNEL_TITLE);
-	}
+export function runWithoutDebug(arg: IDebugWithoutRunArguments) {
+	const channel = createChannel(CHANNEL_TITLE);
 	channel.clear();
 
-	return vscode.window.withProgress({
+	const logger = new FrontendChannelLogger('run', channel);
+
+	const p = Promise.resolve(vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
 		title: 'Starting program',
 	}, async (report: vscode.Progress<{ message?: string; increment?: number }>, cancel) => {
 		const process = createProcess(arg);
+		const processToExit = waitProcess(process);
 
 		process.stderr.pipe(split2()).on('data', (line: Buffer) => {
-			channel.appendLine(line.toString('utf8').replace(/^/mg, ' ! '));
+			logger.error(line.toString('utf8'));
 		});
 
 		cancel.onCancellationRequested(() => {
 			process.kill('SIGKILL');
 		});
 
-		const m2Handler = new M2Handler(process.output, process.stdin, channel);
-		await m2Handler.command('gdb-set target-async off');
+		const output = new FrontendChannelLogger('mi2', channel);
+		const m2Handler = new Mi2Handler(process.stdout, process.stdin, output);
+		await m2Handler.command('gdb-set target-async on');
 		await m2Handler.command(`target-select remote 127.0.0.1:${arg.port}`);
-		await m2Handler.command(`exec-interrupt`);
-		await m2Handler.command(`target-download`);
-		await m2Handler.command(`exec-continue`);
+		await m2Handler.command('exec-interrupt');
+		await m2Handler.command('target-download');
+		await m2Handler.command('exec-continue');
+
+		logger.info('success.');
 
 		process.kill('SIGKILL');
-	}).then(() => {
-		channel.appendLine('[SUCCESS] runWithoutDebug: success.');
-	}, (e) => {
+
+		await processToExit.catch(() => {});
+
+		logger.info('gdb process quit (killed).');
+	}));
+
+	p.catch((e) => {
 		if (!e) {
 			e = new Error('Unknown error');
 		}
-		channel.appendLine(`[ERROR] runWithoutDebug: failed with error: ${e}.`);
-		throw e;
+		logger.error('failed with error:', e);
 	});
+
+	return p;
 }

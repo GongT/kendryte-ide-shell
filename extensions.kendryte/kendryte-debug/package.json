@@ -36,7 +36,7 @@
       {
         "type": "kendryte",
         "extensions": [],
-        "program": "./gdb-loader.js",
+        "program": "./backend/backend.loader.js",
         "runtime": "node",
         "label": "Kendryte",
         "enableBreakpointsFor": {
@@ -56,34 +56,26 @@
                 "type": "string",
                 "description": "ID of this config"
               },
-              "target": {
+              "executable": {
                 "type": "string",
                 "description": "Path of executable"
               },
-              "debugger_args": {
+              "target": {
+                "type": "string",
+                "description": "openocd server ip port"
+              },
+              "gdbpath": {
+                "type": "string",
+                "description": "gdb working directory"
+              },
+              "cwd": {
+                "type": "string",
+                "description": "gdb working directory"
+              },
+              "debuggerArgs": {
                 "type": "array",
                 "description": "Additional arguments to pass to GDB",
                 "default": []
-              },
-              "valuesFormatting": {
-                "type": "string",
-                "description": "Set the way of showing variable values. 'disabled' - show value as is, 'parseText' - parse debuggers output text into structure, 'prettyPrinters' - enable debuggers custom pretty-printers if there are any",
-                "default": "parseText",
-                "enum": [
-                  "disabled",
-                  "parseText",
-                  "prettyPrinters"
-                ]
-              },
-              "printCalls": {
-                "type": "boolean",
-                "description": "Prints all GDB calls to the console",
-                "default": false
-              },
-              "showDevDebugOutput": {
-                "type": "boolean",
-                "description": "Prints all GDB responses to the console",
-                "default": false
               },
               "autorun": {
                 "type": "array",
@@ -132,7 +124,8 @@
     "source-map-support": "^0.5.9",
     "split2": "^3.1.0",
     "vscode-debugadapter": "^1.32.1",
-    "vscode-debugprotocol": "^1.32.0"
+    "vscode-debugprotocol": "^1.32.0",
+    "vscode-nls": "^4.1.0"
   },
   "devDependencies": {}
 }
