@@ -19,18 +19,24 @@ export class BackendLogger extends NodeLoggerCommon {
 		super(tag);
 	}
 
-	public printLine(tag: string, level: LogLevel, message: string) {
-		this.session.sendEvent(
-			new CustomEvent<ILogEventBody>('log', {
-				level: level,
-				message: `${tag}: ${message.replace(/^/g, '  ').trim()}`,
-			}),
-		);
-	}
-
 	public clear(): void {
 		this.session.sendEvent(
 			new CustomEvent<void>('clear-log', undefined),
 		);
+	}
+
+	public printLine(tag: string, level: LogLevel, message: string) {
+		if (message === '') {
+			this.session.sendEvent(
+				new CustomEvent<any>('nl', {}),
+			);
+		} else {
+			this.session.sendEvent(
+				new CustomEvent<ILogEventBody>('log', {
+					level: level,
+					message: `${tag}: ${message.replace(/^/g, '  ').trim()}`,
+				}),
+			);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
-import { IMyLogger } from './baseLogger';
 import { resolve } from 'path';
+import { IMyLogger } from './baseLogger';
 
 export interface ISpawnArguments {
 	gdb: string;

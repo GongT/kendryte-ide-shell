@@ -1,13 +1,13 @@
+import * as fs from 'fs';
+import * as net from 'net';
+import * as os from 'os';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { CancellationToken, DebugConfiguration, ProviderResult, WorkspaceFolder } from 'vscode';
-import * as net from 'net';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { disposeChannel, FrontendChannelLogger } from './lib/frontendChannelLogger';
+import { IMyLogger } from '../common/baseLogger';
 import { runWithoutDebug } from './actions/runWithoutDebug';
 import { BackendLogReceiver } from './lib/backendLogReceiver';
-import { IMyLogger } from '../common/baseLogger';
+import { disposeChannel, FrontendChannelLogger } from './lib/frontendChannelLogger';
 
 export function activate(context: vscode.ExtensionContext) {
 	const logger = new FrontendChannelLogger('F');

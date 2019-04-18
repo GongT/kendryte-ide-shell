@@ -1,5 +1,5 @@
-import { IMyLogger } from '../../common/baseLogger';
 import { DebugSession, OutputEvent } from 'vscode-debugadapter';
+import { IMyLogger } from '../../common/baseLogger';
 
 export interface IDebugConsole {
 	_log(message: string): void;

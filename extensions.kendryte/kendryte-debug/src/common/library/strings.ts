@@ -10,8 +10,12 @@ export function padPercent(n: number) {
 	return 'NaN';
 }
 
-export function errorMessage(e: Error) {
-	return e ? e.message || e || 'UnknownError' : 'UnknownError';
+export function errorMessage(e: Error): string {
+	return e ? e.message || '' + e || 'UnknownError' : 'UnknownError';
+}
+
+export function errorStack(e: Error) {
+	return e && e.stack || errorMessage(e) + '\n  No stack trace available';
 }
 
 export function dumpJson(a: any) {

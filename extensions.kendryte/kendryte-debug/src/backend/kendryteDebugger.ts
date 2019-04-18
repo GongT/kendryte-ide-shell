@@ -1,18 +1,20 @@
-import { DebugSession, Handles, InitializedEvent, Scope, Source, StackFrame, Thread } from 'vscode-debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
-import { AttachRequestArguments, LaunchRequestArguments, ValuesFormattingMode, VariableObject } from './type';
-import { MINode } from '../common/mi2/mi2Parser';
-import { expandValue } from './session/gdb_expansion';
 import { posix } from 'path';
 import { format } from 'util';
+import { DebugSession, Handles, InitializedEvent, Scope, Source, StackFrame, Thread } from 'vscode-debugadapter';
+import { DebugProtocol } from 'vscode-debugprotocol';
 import { IMyLogger } from '../common/baseLogger';
+import { objectPath } from '../common/library/objectPath';
+import { errorMessage, errorStack } from '../common/library/strings';
+import { isCommandIssueWhenRunning } from '../common/mi2/mi2AutomaticResponder';
+import { createStopEvent, StopReason } from '../common/mi2/pause';
+import { BreakpointType, MyBreakpointFunc, MyBreakpointLine } from '../common/mi2/types';
+import { toProtocolBreakpoint } from '../common/mi2/types.convert';
 import { BackendLogger } from './lib/backendLogger';
-import { DebuggingSession } from './session/session';
-import { ErrorCode, handleMethodPromise } from './lib/handleMethodPromise';
 import { IDebugConsole, wrapDebugConsole } from './lib/duplexDebugConsole';
-import { IBackend } from './session/session.type';
-import { Breakpoint } from '../common/mi2/types';
-import { errorMessage } from '../common/library/strings';
+import { ErrorCode, handleMethodPromise } from './lib/handleMethodPromise';
+import { expandValue } from './session/gdb_expansion';
+import { DebuggingSession } from './session/session';
+import { AttachRequestArguments, LaunchRequestArguments, ValuesFormattingMode, VariableObject } from './type';
 
 const resolve = posix.resolve;
 const relative = posix.relative;
@@ -33,7 +35,6 @@ enum ErrorCodeValue {
 	Launch,
 	Disconnect,
 	SetVariable,
-	FunctionBreakpoint,
 	Breakpoints,
 	Threads,
 	StackTrace,
@@ -54,15 +55,18 @@ enum ErrorCodeValue {
 const STACK_HANDLES_START = 1000;
 const VAR_HANDLES_START = 512 * 256 + 1000;
 
-export class KendryteDebugSession extends DebugSession {
+export class KendryteDebugger extends DebugSession {
 	protected variableHandles = new Handles<VariableId>(VAR_HANDLES_START);
 	protected variableHandlesReverse: { [id: string]: number } = {};
 	protected useVarObjects: boolean;
-	protected debugInstance: IBackend;
+	protected debugInstance: DebuggingSession;
 
 	protected readonly debugLogger: IMyLogger;
 	protected readonly vscodeProtocolLogger: IMyLogger;
 	private readonly debugConsole: IDebugConsole;
+
+	private initComplete: boolean = false;
+	private autoContinue: boolean = true;
 
 	public constructor(debuggerLinesStartAt1: boolean, isServer: boolean = false) {
 		super(debuggerLinesStartAt1, isServer);
@@ -80,57 +84,49 @@ export class KendryteDebugSession extends DebugSession {
 
 		process.on('uncaughtException', (err) => {
 			console.error(err);
-			this.debugConsole.error('[kendryte debug] Fatal: Unhandled Exception: ' + errorMessage(err));
-			process.exit(1);
+			this.debugConsole.error('[kendryte debug] Fatal error during debugging session. Catched unhandled exception.\n' + errorStack(err));
+			setTimeout(() => {
+				process.exit(1);
+			}, 2000);
 		});
 	}
 
-	@handleMethodPromise(ErrorCodeValue.Restart)
-	async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments) {
-		return this.debugInstance.reload();
+	private fireEvent(ev: DebugProtocol.Event) {
+		if (this.autoContinue && !this.initComplete && (ev.event === 'stopped' || ev.event === 'continued')) {
+			this.vscodeProtocolLogger.info('initialize not complete, event muted:', JSON.stringify(ev));
+			return;
+		}
+		this.vscodeProtocolLogger.info('fireEvent: [%s]%s', ev.event, JSON.stringify(ev.body));
+		this.sendEvent(ev);
 	}
 
-	@handleMethodPromise(ErrorCodeValue.Initialize)
-	protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
-		this.vscodeProtocolLogger.info('initializeRequest: ');
-		response.body.supportsHitConditionalBreakpoints = true;
-		response.body.supportsConfigurationDoneRequest = true;
-		response.body.supportsConditionalBreakpoints = true;
-		response.body.supportsFunctionBreakpoints = true;
-		response.body.supportsEvaluateForHovers = true;
-		response.body.supportsSetVariable = true;
-		response.body.supportsRestartRequest = true;
+	private resetStatus() {
+		delete this.debugInstance;
+		this.initComplete = false;
+		this.autoContinue = true;
 	}
 
-	protected async attachOrLaunch(args: AttachRequestArguments | LaunchRequestArguments, load: boolean) {
+	private async attachOrLaunch(args: AttachRequestArguments | LaunchRequestArguments, load: boolean) {
 		if (this.debugInstance) {
-			await this.debugInstance.stop();
+			await this.debugInstance.terminate();
 		}
 
-		this.debugInstance = new DebuggingSession(args, this);
+		const logger = new BackendLogger(args.id ? 'gdb-' + args.id : 'gdb-main', this);
+		const debugConsole = wrapDebugConsole(this, logger);
+		this.debugInstance = new DebuggingSession(args, logger, debugConsole);
+		this.debugInstance.onEvent((ev) => this.fireEvent(ev));
 
 		await this.debugInstance.connect(load);
 		this.setValuesFormattingMode(args.valuesFormatting);
 
 		this.debugInstance.disconnected.then((self) => {
 			if (self === this.debugInstance) {
-				delete this.debugInstance;
+				this.resetStatus();
 			}
 		});
 
 		this.sendEvent(new InitializedEvent());
-	}
-
-	@handleMethodPromise(ErrorCodeValue.Attach)
-	protected async attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments) {
-		this.vscodeProtocolLogger.info('[DAP] attachRequest().');
-		return this.attachOrLaunch(args, false);
-	}
-
-	@handleMethodPromise(ErrorCodeValue.Launch)
-	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-		this.vscodeProtocolLogger.info('[DAP] launchRequest().');
-		return this.attachOrLaunch(args, true);
+		this.initComplete = true;
 	}
 
 	protected setValuesFormattingMode(mode: ValuesFormattingMode) {
@@ -150,85 +146,6 @@ export class KendryteDebugSession extends DebugSession {
 		}
 	}
 
-	@handleMethodPromise(ErrorCodeValue.Disconnect)
-	disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments) {
-		return this.debugInstance.stop();
-	}
-
-	@handleMethodPromise(ErrorCodeValue.SetVariable)
-	async setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
-		if (this.useVarObjects) {
-			let name = args.name;
-			if (args.variablesReference >= VAR_HANDLES_START) {
-				const parent = this.variableHandles.get(args.variablesReference) as VariableObject;
-				name = `${parent.name}.${name}`;
-			}
-
-			const newValue = await this.debugInstance.varAssign(name, args.value);
-			response.body = { value: newValue };
-		} else {
-			const value = await this.debugInstance.changeVariable(args.name, args.value);
-			response.body = { value };
-		}
-	}
-
-	@handleMethodPromise(ErrorCodeValue.FunctionBreakpoint)
-	async setFunctionBreakPointsRequest(response: DebugProtocol.SetFunctionBreakpointsResponse, args: DebugProtocol.SetFunctionBreakpointsArguments) {
-		await this.debugInstance.connected;
-
-		const all = args.breakpoints.map(brk => {
-			return this.debugInstance.addBreakPoint({ raw: brk.name, condition: brk.condition, countCondition: brk.hitCondition });
-		});
-
-		await this.afterAddBreakpoints(response, all);
-	}
-
-	@handleMethodPromise(ErrorCodeValue.Breakpoints)
-	async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments) {
-		await this.debugInstance.connected;
-
-		await this.debugInstance.clearBreakPoints();
-
-		const path = args.source.path;
-		const all = args.breakpoints.map(brk => {
-			return this.debugInstance.addBreakPoint({ file: path, line: brk.line, condition: brk.condition, countCondition: brk.hitCondition });
-		});
-
-		await this.afterAddBreakpoints(response, all);
-	}
-
-	private async afterAddBreakpoints(response: DebugProtocol.SetBreakpointsResponse, breaks: Promise<Breakpoint>[]) {
-		const brkpoints = await Promise.all(breaks);
-		const finalBrks = brkpoints.filter(brkp => !!brkp).map((brk) => {
-			return Object.assign(brk, { verified: true });
-		});
-		response.body = {
-			breakpoints: finalBrks,
-		};
-	}
-
-	@handleMethodPromise(ErrorCodeValue.Threads)
-	async threadsRequest(response: DebugProtocol.ThreadsResponse) {
-		if (!this.debugInstance) {
-			return;
-		}
-		const threads = await this.debugInstance.getThreads();
-		response.body = {
-			threads: [],
-		};
-		for (const thread of threads) {
-			let threadName = thread.name;
-			// TODO: Thread names are undefined on LLDB
-			if (threadName === undefined) {
-				threadName = thread.targetId;
-			}
-			if (threadName === undefined) {
-				threadName = '<unnamed>';
-			}
-			response.body.threads.push(new Thread(thread.id, thread.id + ':' + threadName));
-		}
-	}
-
 	// Supports 256 threads.
 	protected threadAndLevelToFrameId(threadId: number, level: number) {
 		return level << 8 | threadId;
@@ -236,56 +153,6 @@ export class KendryteDebugSession extends DebugSession {
 
 	protected frameIdToThreadAndLevel(frameId: number) {
 		return [frameId & 0xff, frameId >> 8];
-	}
-
-	@handleMethodPromise(ErrorCodeValue.StackTrace)
-	protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments) {
-		const stack = await this.debugInstance.getStack(args.levels, args.threadId);
-		const ret: StackFrame[] = [];
-		stack.forEach(element => {
-			let source = undefined;
-			let file = element.file;
-			if (file) {
-				if (process.platform === 'win32') {
-					if (file.startsWith('\\cygdrive\\') || file.startsWith('/cygdrive/')) {
-						file = file[10] + ':' + file.substr(11); // replaces /cygdrive/c/foo/bar.txt with c:/foo/bar.txt
-					}
-				}
-				source = new Source(element.fileName, file);
-			}
-
-			ret.push(new StackFrame(
-				this.threadAndLevelToFrameId(args.threadId, element.level),
-				element.function + '@' + element.address,
-				source,
-				element.line,
-				0,
-			));
-		});
-		response.body = {
-			stackFrames: ret,
-		};
-	}
-
-	@handleMethodPromise(ErrorCodeValue.init)
-	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-		this.debugConsole.log('Configuration done!');
-		// setImmediate(() => {
-		// 	this.debugInstance.continue().then(done => {
-		// 	}, msg => {
-		// 		this.sendErrorResponse(response, 2, `Could not continue: ${msg}`);
-		// 	});
-		// });
-	}
-
-	@handleMethodPromise(ErrorCodeValue.Scopes)
-	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments) {
-		const scopes: Scope[] = [];
-		scopes.push(new Scope('Local', STACK_HANDLES_START + (parseInt(args.frameId as any) || 0), false));
-
-		response.body = {
-			scopes: scopes,
-		};
 	}
 
 	private _createVariable(arg: VariableId, options?: any) {
@@ -321,7 +188,7 @@ export class KendryteDebugSession extends DebugSession {
 						const changes = await this.debugInstance.varUpdate(varObjName);
 						const changelist = changes.result('changelist');
 						changelist.forEach((change) => {
-							const name = MINode.valueOf(change, 'name');
+							const name = objectPath(change, 'name');
 							const vId = this.variableHandlesReverse[name];
 							const v = this.variableHandles.get(vId) as any;
 							v.applyChanges(change);
@@ -462,6 +329,208 @@ export class KendryteDebugSession extends DebugSession {
 		}
 	}
 
+	@handleMethodPromise(ErrorCodeValue.Initialize)
+	protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+		this.vscodeProtocolLogger.info('initializeRequest: ');
+		response.body.supportsConfigurationDoneRequest = true;
+		response.body.supportsConditionalBreakpoints = true;
+		response.body.supportsFunctionBreakpoints = true;
+		response.body.supportsEvaluateForHovers = true;
+		response.body.supportsSetVariable = true;
+		response.body.supportsRestartRequest = true;
+		response.body.supportsLogPoints = true;
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Disconnect)
+	disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments) {
+		return this.debugInstance.terminate();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Launch)
+	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+		return this.attachOrLaunch(args, true);
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Attach)
+	protected async attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments) {
+		return this.attachOrLaunch(args, false);
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Restart)
+	async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments) {
+		return this.debugInstance.reload();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Breakpoints)
+	async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments) {
+		await this.debugInstance.connected;
+
+		const myBreaks: MyBreakpointLine[] = args.breakpoints.map((bk) => {
+			return <MyBreakpointLine>{
+				type: BreakpointType.Line,
+				file: args.source.path,
+				line: bk.line,
+				condition: bk.condition,
+				logMessage: bk.logMessage,
+			};
+		});
+
+		const resultBreaks = await this.debugInstance.updateBreakPoints(args.source.path, myBreaks);
+
+		if (!response.body) {
+			response.body = { breakpoints: [] };
+		}
+		if (!response.body.breakpoints) {
+			response.body.breakpoints = [];
+		}
+		for (const newBreak of resultBreaks) {
+			response.body.breakpoints.push(toProtocolBreakpoint(newBreak));
+		}
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Breakpoints)
+	async setFunctionBreakPointsRequest(response: DebugProtocol.SetFunctionBreakpointsResponse, args: DebugProtocol.SetFunctionBreakpointsArguments) {
+		await this.debugInstance.connected;
+
+		const myBreaks: MyBreakpointFunc[] = args.breakpoints.map((bk) => {
+			return <MyBreakpointFunc>{
+				type: BreakpointType.Function,
+				name: bk.name,
+				condition: bk.condition,
+			};
+		});
+		const resultBreaks = await this.debugInstance.updateBreakPoints('', myBreaks);
+
+		if (!response.body) {
+			response.body = { breakpoints: [] };
+		}
+		if (!response.body.breakpoints) {
+			response.body.breakpoints = [];
+		}
+		for (const newBreak of resultBreaks) {
+			response.body.breakpoints.push(toProtocolBreakpoint(newBreak));
+		}
+	}
+
+	@handleMethodPromise(ErrorCodeValue.init)
+	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
+		this.debugConsole.log('Configuration done!');
+
+		setImmediate(() => {
+			if (this.autoContinue && !this.debugInstance.isRunning) {
+				this.debugInstance.continue().finally(() => {
+					this.debugLogger.writeln('');
+				});
+			} else if (!this.autoContinue && this.debugInstance.isRunning) {
+				this.debugInstance.interrupt().finally(() => {
+					this.debugLogger.writeln('');
+				});
+			}
+		});
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Continue)
+	continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments) {
+		return this.debugInstance.continue();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.StepNext)
+	protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
+		return this.debugInstance.next();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.StepIn)
+	stepInRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
+		return this.debugInstance.step();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.StepOut)
+	stepOutRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
+		return this.debugInstance.stepOut();
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Pause)
+	async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments) {
+		await this.debugInstance.interrupt();
+		setTimeout(() => {
+			this.fireEvent(createStopEvent(StopReason.Pausing, undefined, 'pause button clicked'));
+		}, 500);
+	}
+
+	@handleMethodPromise(ErrorCodeValue.Threads)
+	async threadsRequest(response: DebugProtocol.ThreadsResponse) {
+		if (!this.debugInstance) {
+			return;
+		}
+		const threads = await this.debugInstance.getThreads(false).catch((e) => {
+			if (isCommandIssueWhenRunning(e)) {
+				return [];
+			} else {
+				throw e;
+			}
+		});
+		response.body = {
+			threads: [],
+		};
+		for (const thread of threads) {
+			let threadName = thread.name;
+			// TODO: Thread names are undefined on LLDB
+			if (threadName === undefined) {
+				threadName = thread.targetId;
+			}
+			if (threadName === undefined) {
+				threadName = '<unnamed>';
+			}
+			response.body.threads.push(new Thread(thread.id, thread.id + ':' + threadName));
+		}
+	}
+
+	@handleMethodPromise(ErrorCodeValue.StackTrace)
+	protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments) {
+		const stack = await this.debugInstance.getStack(args.levels, args.threadId);
+		const ret: StackFrame[] = [];
+		stack.forEach(element => {
+			let source = undefined;
+			let file = element.file;
+			if (file) {
+				if (process.platform === 'win32') {
+					if (file.startsWith('\\cygdrive\\') || file.startsWith('/cygdrive/')) {
+						file = file[10] + ':' + file.substr(11); // replaces /cygdrive/c/foo/bar.txt with c:/foo/bar.txt
+					}
+				}
+				source = new Source(element.fileName, file);
+			}
+
+			ret.push(new StackFrame(
+				this.threadAndLevelToFrameId(args.threadId, element.level),
+				element.function + '@' + element.address,
+				source,
+				element.line,
+				0,
+			));
+		});
+		response.body = {
+			stackFrames: ret,
+		};
+	}
+
+	/*
+	@handleMethodPromise(4, 'Could not step back: %s - Try running \'target record-full\' before stepping back')
+	protected stepBackRequest(response: DebugProtocol.StepBackResponse, args: DebugProtocol.StepBackArguments): void {
+		return this.debugInstance.step();
+	}
+	*/
+
+	@handleMethodPromise(ErrorCodeValue.Scopes)
+	protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments) {
+		const scopes: Scope[] = [];
+		scopes.push(new Scope('Local', STACK_HANDLES_START + (parseInt(args.frameId as any) || 0), false));
+
+		response.body = {
+			scopes: scopes,
+		};
+	}
+
 	protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): Promise<void> {
 		let id: VariableId;
 		if (args.variablesReference < VAR_HANDLES_START) {
@@ -489,36 +558,21 @@ export class KendryteDebugSession extends DebugSession {
 		}
 	}
 
-	@handleMethodPromise(ErrorCodeValue.Continue)
-	continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments) {
-		return this.debugInstance.continue();
-	}
+	@handleMethodPromise(ErrorCodeValue.SetVariable)
+	async setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments): Promise<void> {
+		if (this.useVarObjects) {
+			let name = args.name;
+			if (args.variablesReference >= VAR_HANDLES_START) {
+				const parent = this.variableHandles.get(args.variablesReference) as VariableObject;
+				name = `${parent.name}.${name}`;
+			}
 
-	@handleMethodPromise(ErrorCodeValue.Pause)
-	pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments) {
-		return this.debugInstance.interrupt(true);
-	}
-
-	/*
-	@handleMethodPromise(4, 'Could not step back: %s - Try running \'target record-full\' before stepping back')
-	protected stepBackRequest(response: DebugProtocol.StepBackResponse, args: DebugProtocol.StepBackArguments): void {
-		return this.debugInstance.step();
-	}
-	*/
-
-	@handleMethodPromise(ErrorCodeValue.StepIn)
-	stepInRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
-		return this.debugInstance.step();
-	}
-
-	@handleMethodPromise(ErrorCodeValue.StepOut)
-	stepOutRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
-		return this.debugInstance.stepOut();
-	}
-
-	@handleMethodPromise(ErrorCodeValue.StepNext)
-	protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments) {
-		return this.debugInstance.next();
+			const newValue = await this.debugInstance.varAssign(name, args.value);
+			response.body = { value: newValue };
+		} else {
+			const value = await this.debugInstance.changeVariable(args.name, args.value);
+			response.body = { value };
+		}
 	}
 
 	@handleMethodPromise(ErrorCodeValue.Evaluate)

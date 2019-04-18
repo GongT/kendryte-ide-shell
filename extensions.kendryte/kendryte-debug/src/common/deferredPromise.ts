@@ -1,10 +1,22 @@
-export function timeout(ms: number): [Promise<void>, () => void] {
+export function sleep(ms: number): [Promise<void>, () => void] {
 	let cb: () => void;
 	const p = new Promise<void>((resolve, reject) => {
 		const to = setTimeout(() => resolve(), ms);
 		cb = () => {
 			clearTimeout(to);
-			reject(new Error('cancel'));
+			reject(canceled());
+		};
+	});
+	return [p, cb];
+}
+
+export function timeout(ms: number): [Promise<void>, () => void] {
+	let cb: () => void;
+	const p = new Promise<void>((resolve, reject) => {
+		const to = setTimeout(() => reject(canceled()), ms);
+		cb = () => {
+			clearTimeout(to);
+			resolve();
 		};
 	});
 	return [p, cb];
@@ -64,16 +76,6 @@ export class DeferredPromise<T, NT = void> {
 		}
 	}
 
-	public wrap<ST extends T>(source: Promise<ST>): Promise<ST> {
-		return source.then((data: ST) => {
-			this.complete(data);
-			return data;
-		}, (e) => {
-			this.error(e);
-			throw e;
-		});
-	}
-
 	public isFired() {
 		return this._isComplete || this._isError;
 	}
@@ -83,12 +85,23 @@ export type ValueCallback<T> = (value: T | Thenable<T>) => void;
 export type NotifyCallback<T> = (value: T) => void;
 
 const canceledName = 'Canceled';
+const timoutName = 'Timeout';
 
-/**
- * Returns an error that signals cancellation.
- */
-function canceled(): Error {
-	const error = new Error(canceledName);
-	error.name = error.message;
+export class CanceledError extends Error {
+}
+
+export function timeouts(): CanceledError {
+	const error = new CanceledError(timoutName);
+	error.name = timoutName;
 	return error;
+}
+
+export function canceled(): CanceledError {
+	const error = new CanceledError(canceledName);
+	error.name = canceledName;
+	return error;
+}
+
+export function isCancel(e: Error) {
+	return e instanceof CanceledError;
 }

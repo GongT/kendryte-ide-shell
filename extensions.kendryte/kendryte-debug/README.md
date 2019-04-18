@@ -1,4 +1,5 @@
-# LICENSE
-The entire code base is copied from [WebFreak001/code-debug](https://github.com/WebFreak001/code-debug)
+# kendryte-debug
 
-All modified/added code of `kendryte-debug` is also released into public domain.
+kendryte gdb plugin for kendryte-ide
+
+some code is copied from [WebFreak001/code-debug](https://github.com/WebFreak001/code-debug)

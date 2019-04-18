@@ -10,6 +10,15 @@ export enum LogLevel {
 	Off
 }
 
+export const LogLevelNames = {
+	[LogLevel.Trace]: 'TRACE',
+	[LogLevel.Debug]: 'DEBUG',
+	[LogLevel.Info]: ' INFO',
+	[LogLevel.Warning]: ' WARN',
+	[LogLevel.Error]: 'ERR',
+	[LogLevel.Critical]: 'FATAL',
+};
+
 export interface IMyLogger {
 	writeln(data: string, ...args: any[]);
 
@@ -25,9 +34,13 @@ export abstract class NodeLoggerCommon implements IMyLogger {
 	protected constructor(private readonly _tag: string) {
 	}
 
+	abstract clear(): void;
+
 	protected abstract printLine(tag: string, level: LogLevel, message: string);
 
-	abstract clear(): void;
+	protected prependTags(tag: string, message: string) {
+		return message.replace(/^/g, `[${tag}] `).trim();
+	}
 
 	writeln(msg: string, ...args: any[]) {
 		if (args.length) {
@@ -77,9 +90,5 @@ export abstract class NodeLoggerCommon implements IMyLogger {
 		}
 		this.printLine(this._tag, LogLevel.Critical, msg);
 		throw new Error(msg);
-	}
-
-	protected prependTags(tag: string, message: string) {
-		return message.replace(/^/g, `[${tag}] `).trim();
 	}
 }

@@ -1,19 +1,39 @@
-export interface Breakpoint {
-	bkptNum?: number;
-	file?: string;
-	line?: number;
-	raw?: string;
-	condition: string;
-	countCondition?: string;
+export enum BreakpointType {
+	Function,
+	Line,
 }
 
-export interface Thread {
+interface MyBreakpointBase {
+	gdbBreakNum?: number;
+	type: BreakpointType;
+	condition: string;
+	// countCondition: string;
+	tried?: boolean;
+	errorMessage?: string;
+	addr?: string;
+}
+
+export interface MyBreakpointLine extends MyBreakpointBase {
+	type: BreakpointType.Line;
+	file: string;
+	line: number;
+	logMessage: string;
+}
+
+export interface MyBreakpointFunc extends MyBreakpointBase {
+	type: BreakpointType.Function;
+	name: string;
+}
+
+export type MyBreakpoint = MyBreakpointLine | MyBreakpointFunc;
+
+export interface IMyThread {
 	id: number;
 	targetId: string;
 	name?: string;
 }
 
-export interface Stack {
+export interface IMyStack {
 	level: number;
 	address: string;
 	function: string;
@@ -22,7 +42,7 @@ export interface Stack {
 	line: number;
 }
 
-export interface Variable {
+export interface IMyVariable {
 	name: string;
 	valueStr: string;
 	type: string;

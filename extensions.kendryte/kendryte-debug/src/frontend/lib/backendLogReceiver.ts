@@ -1,12 +1,12 @@
-import * as vscode from 'vscode';
-import { FrontendChannelLogger } from './frontendChannelLogger';
-import { ICustomEvent, ILogEventBody } from '../../common/eventProtocol';
 import { createWriteStream, WriteStream } from 'fs';
+import * as vscode from 'vscode';
 import { IMyLogger, LogLevel } from '../../common/baseLogger';
+import { ICustomEvent, ILogEventBody } from '../../common/eventProtocol';
+import { FrontendChannelLogger } from './frontendChannelLogger';
 
 export class BackendLogReceiver {
-	private handled: vscode.Disposable;
 	public readonly logger: FrontendChannelLogger;
+	private handled: vscode.Disposable;
 
 	constructor() {
 		this.logger = new FrontendChannelLogger('B');
@@ -24,6 +24,9 @@ export class BackendLogReceiver {
 				return;
 			}
 			switch (customEvent.type) {
+				case 'nl':
+					this.logger.writeln('');
+					break;
 				case 'log':
 					const { level, message, args } = customEvent.event as ILogEventBody;
 					doLog(this.logger, level, message, args || []);

@@ -1,5 +1,6 @@
-import { MINode } from '../common/mi2/mi2Parser';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { objectPath } from '../common/library/objectPath';
+import { MINode } from '../common/mi2/mi2Node';
 
 export interface RequestArguments {
 	id: string;
@@ -36,27 +37,27 @@ export class VariableObject {
 	id: number;
 
 	constructor(node: any) {
-		this.name = MINode.valueOf(node, 'name');
-		this.exp = MINode.valueOf(node, 'exp');
-		this.numchild = parseInt(MINode.valueOf(node, 'numchild'));
-		this.type = MINode.valueOf(node, 'type');
-		this.value = MINode.valueOf(node, 'value');
-		this.threadId = MINode.valueOf(node, 'thread-id');
-		this.frozen = !!MINode.valueOf(node, 'frozen');
-		this.dynamic = !!MINode.valueOf(node, 'dynamic');
-		this.displayhint = MINode.valueOf(node, 'displayhint');
+		this.name = objectPath(node, 'name');
+		this.exp = objectPath(node, 'exp');
+		this.numchild = parseInt(objectPath(node, 'numchild'));
+		this.type = objectPath(node, 'type');
+		this.value = objectPath(node, 'value');
+		this.threadId = objectPath(node, 'thread-id');
+		this.frozen = !!objectPath(node, 'frozen');
+		this.dynamic = !!objectPath(node, 'dynamic');
+		this.displayhint = objectPath(node, 'displayhint');
 		// TODO: use has_more when it's > 0
-		this.hasMore = !!MINode.valueOf(node, 'has_more');
+		this.hasMore = !!objectPath(node, 'has_more');
 	}
 
 	public applyChanges(node: MINode) {
-		this.value = MINode.valueOf(node, 'value');
-		if (!!MINode.valueOf(node, 'type_changed')) {
-			this.type = MINode.valueOf(node, 'new_type');
+		this.value = objectPath(node, 'value');
+		if (!!objectPath(node, 'type_changed')) {
+			this.type = objectPath(node, 'new_type');
 		}
-		this.dynamic = !!MINode.valueOf(node, 'dynamic');
-		this.displayhint = MINode.valueOf(node, 'displayhint');
-		this.hasMore = !!MINode.valueOf(node, 'has_more');
+		this.dynamic = !!objectPath(node, 'dynamic');
+		this.displayhint = objectPath(node, 'displayhint');
+		this.hasMore = !!objectPath(node, 'has_more');
 	}
 
 	public isCompound(): boolean {

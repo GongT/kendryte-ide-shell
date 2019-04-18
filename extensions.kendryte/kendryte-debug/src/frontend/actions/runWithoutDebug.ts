@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
-import { resolve } from 'path';
 import { ChildProcess, spawn } from 'child_process';
+import { resolve } from 'path';
 import { PassThrough } from 'stream';
-import { Mi2Handler } from '../../common/mi2/mi2Handler';
-import { createChannel, FrontendChannelLogger } from '../lib/frontendChannelLogger';
+import * as vscode from 'vscode';
 import { LogLevel } from '../../common/baseLogger';
 import { createGdbProcess, waitProcess } from '../../common/createGdbProcess';
+import { Mi2AutomaticResponder } from '../../common/mi2/mi2AutomaticResponder';
+import { createChannel, FrontendChannelLogger } from '../lib/frontendChannelLogger';
 import split2 = require('split2');
 
 export interface IDebugWithoutRunArguments {
@@ -52,12 +52,11 @@ export function runWithoutDebug(arg: IDebugWithoutRunArguments) {
 		});
 
 		const output = new FrontendChannelLogger('mi2', channel);
-		const m2Handler = new Mi2Handler(process.stdout, process.stdin, output);
-		await m2Handler.command('gdb-set target-async on');
-		await m2Handler.command(`target-select remote 127.0.0.1:${arg.port}`);
-		await m2Handler.command('exec-interrupt');
-		await m2Handler.command('target-download');
-		await m2Handler.command('exec-continue');
+		const m2Handler = new Mi2AutomaticResponder(process, output);
+		await m2Handler.commandEnsure('gdb-set target-async off');
+		await m2Handler.commandEnsure(`target-select remote 127.0.0.1:${arg.port}`);
+		await m2Handler.commandEnsure('target-download');
+		await m2Handler.waitContinue();
 
 		logger.info('success.');
 

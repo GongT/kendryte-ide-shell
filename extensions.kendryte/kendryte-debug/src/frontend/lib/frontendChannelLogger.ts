@@ -1,5 +1,5 @@
-import { LogLevel, NodeLoggerCommon } from '../../common/baseLogger';
 import * as vscode from 'vscode';
+import { LogLevel, LogLevelNames, NodeLoggerCommon } from '../../common/baseLogger';
 
 let globalChannel: vscode.OutputChannel;
 let otherChannels = new Map<string, vscode.OutputChannel>();
@@ -39,6 +39,10 @@ export class FrontendChannelLogger extends NodeLoggerCommon {
 		this.setLevel(LogLevel.Info);
 	}
 
+	public setLevel(logLevel: LogLevel) {
+		this.currentLevel = logLevel;
+	}
+
 	clear() {
 		this.channel.clear();
 	}
@@ -47,18 +51,18 @@ export class FrontendChannelLogger extends NodeLoggerCommon {
 		if (this.currentLevel === LogLevel.Off || this.currentLevel > level) {
 			return;
 		}
+		if (message === '') {
+			this.channel.appendLine('');
+			return;
+		}
 
 		if (typeof message !== 'string') {
 			message = '' + message;
 		}
 
-		const levelName = LogLevel[level];
-		const fullTag = level === LogLevel.Off ? tag : `${tag}][${levelName.toUpperCase()}`;
+		const levelName = LogLevelNames[level];
+		const fullTag = levelName ? `${tag}][${levelName}` : tag;
 		this.channel.appendLine(this.prependTags(fullTag, message));
-	}
-
-	public setLevel(logLevel: LogLevel) {
-		this.currentLevel = logLevel;
 	}
 }
 

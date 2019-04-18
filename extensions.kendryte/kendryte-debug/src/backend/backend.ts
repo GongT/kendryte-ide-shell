@@ -1,4 +1,4 @@
 import { DebugSession } from 'vscode-debugadapter';
-import { KendryteDebugSession } from './kendryteDebugSession';
+import { KendryteDebugger } from './kendryteDebugger';
 
-DebugSession.run(KendryteDebugSession);
+DebugSession.run(KendryteDebugger);
