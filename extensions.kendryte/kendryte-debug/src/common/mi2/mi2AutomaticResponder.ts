@@ -217,10 +217,13 @@ export class Mi2AutomaticResponder {
 
 	cliCommand(expression: string, threadId: number = 0, frameLevel: number = 0) {
 		const params = [];
+		const tParams = [];
 		if (threadId !== 0) {
-			params.push('--thread', threadId, '--frame', frameLevel);
+			tParams.push('--thread', threadId, '--frame', frameLevel);
 		}
-		return this.command('interpreter-exec', 'console', JSON.stringify(expression), ...params);
+		const args = [...tParams, 'console', JSON.stringify(expression), ...params];
+		this.logger.info(`user command: interpreter-exec ${args.join(' ')}`);
+		return this.command('interpreter-exec', ...args);
 	}
 
 	private handleMI(node: OneOfMiNodeType): boolean {
