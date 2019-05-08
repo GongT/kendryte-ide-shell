@@ -201,6 +201,17 @@ export function parseMI(output: string): OneOfMiNodeType {
 		return value;
 	}
 
+	function parseCommaResult(required = false) { // parse <,xxxx=???>
+		if (!cut(',', required)) {
+			return undefined;
+		}
+		const value = parseResult();
+		if (required && value === undefined) {
+			throw new Mi2SyntaxError('require result ', remOutput, output);
+		}
+		return value;
+	}
+
 	const tokenMatch = readReg(/^\d+/);
 	const token = tokenMatch ? parseInt(tokenMatch[0]) : NaN;
 	const type = cut(['*', '+', '=', '^', '~', '@', '&'], true);
@@ -210,7 +221,19 @@ export function parseMI(output: string): OneOfMiNodeType {
 		if (isEnding()) {
 			return { className, value: undefined };
 		}
-		const value = parseCommaAny(true);
+		cut(',', true);
+		let value = parseTupleOrList();
+		if (value) {
+			if (!isEnding()) {
+				throw new Mi2SyntaxError('expect eol ', remOutput, output);
+			}
+		} else {
+			const valueArr = popAll(parseResult, parseCommaResult);
+			if (!isEnding()) {
+				throw new Mi2SyntaxError('expect eol ', remOutput, output);
+			}
+			value = Object.assign({}, ...valueArr);
+		}
 		return { className, value };
 	}
 

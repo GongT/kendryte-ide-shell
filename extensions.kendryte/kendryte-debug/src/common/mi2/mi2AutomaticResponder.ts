@@ -270,6 +270,7 @@ export class Mi2AutomaticResponder {
 	}
 
 	private handleExec(node: IAsyncNode) {
+		this.logger.warning('MI2Node: ', node);
 		const event: IRunStateEvent = {
 			allThreads: node.result('stopped-threads') === 'all',
 			threadId: parseInt(node.result('thread-id')),
