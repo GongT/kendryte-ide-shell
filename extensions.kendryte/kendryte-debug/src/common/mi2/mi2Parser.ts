@@ -187,7 +187,33 @@ export function parseMI(output: string): OneOfMiNodeType {
 		const variableName = variableMatch[0];
 		read(variableName.length);
 		cut('=', true);
-		return { [variableName]: parseValue(true) };
+		const mainValue = parseValue(true);
+		if (mainValue && typeof mainValue === 'object' && !Array.isArray(mainValue)) {
+			while (findMatch(',{')) {
+				const child = parseCommaTupleOrList(true);
+				if (mainValue.MI2ChildValues) {
+					if (Array.isArray(mainValue.MI2ChildValues)) {
+						mainValue.MI2ChildValues.push(child);
+					} else {
+						mainValue.MI2ChildValues = [mainValue.MI2ChildValues, child];
+					}
+				} else {
+					mainValue.MI2ChildValues = child;
+				}
+			}
+		}
+		return { [variableName]: mainValue };
+	}
+
+	function parseCommaTupleOrList(required = false) { // parse <,???>
+		if (!cut(',', required)) {
+			return undefined;
+		}
+		const value = parseTupleOrList();
+		if (required && value === undefined) {
+			throw new Mi2SyntaxError('require object or array ', remOutput, output);
+		}
+		return value;
 	}
 
 	function parseCommaAny(required = false) { // parse <,???>

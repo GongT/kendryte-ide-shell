@@ -85,7 +85,7 @@ export class Mi2CommandController {
 
 			this._onSimpleLine.fire({
 				error: false,
-				message: line,
+				message: line + '\n',
 			});
 			return;
 		}
@@ -100,7 +100,7 @@ export class Mi2CommandController {
 		if (node.isUnhandled()) {
 			this._onSimpleLine.fire({
 				error: true,
-				message: 'Unhandled GDB output: ' + line + dumpJson(node),
+				message: 'Unhandled GDB output: ' + line + dumpJson(node) + '\n',
 			});
 		}
 	}
@@ -110,13 +110,13 @@ export class Mi2CommandController {
 			case MiOutputType.streamConsole:
 				this._onSimpleLine.fire({
 					error: true,
-					message: node.content.replace(/\s+$/, ''),
+					message: node.content.replace(/\s+$/, '') + '\n',
 				});
 				return true;
 			case MiOutputType.streamLog:
 				this._onSimpleLine.fire({
 					error: false,
-					message: node.content.replace(/\s+$/, ''),
+					message: node.content.replace(/\s+$/, '') + '\n',
 				});
 				return true;
 			case MiOutputType.streamTarget:

@@ -11,7 +11,7 @@ import { BreakpointType, MyBreakpointFunc, MyBreakpointLine } from '../common/mi
 import { toProtocolBreakpoint } from '../common/mi2/types.convert';
 import { BackendLogger } from './lib/backendLogger';
 import { IDebugConsole, wrapDebugConsole } from './lib/duplexDebugConsole';
-import { ErrorCode, handleMethodPromise } from './lib/handleMethodPromise';
+import { ErrorCode, ErrorMi2, handleMethodPromise } from './lib/handleMethodPromise';
 import { expandValue } from './session/gdb_expansion';
 import { DebuggingSession } from './session/session';
 import { AttachRequestArguments, LaunchRequestArguments, ValuesFormattingMode, VariableObject } from './type';
@@ -67,6 +67,7 @@ export class KendryteDebugger extends DebugSession {
 
 	private initComplete: boolean = false;
 	private autoContinue: boolean = true;
+	private firstThreadRequest: boolean = true;
 
 	public constructor(debuggerLinesStartAt1: boolean, isServer: boolean = false) {
 		super(debuggerLinesStartAt1, isServer);
@@ -78,13 +79,20 @@ export class KendryteDebugger extends DebugSession {
 
 		process.on('unhandledRejection', (reason, p) => {
 			p.catch((e) => {
-				this.debugConsole.error('[kendryte debug] Unhandled Rejection: ' + errorMessage(e));
+				if (e instanceof ErrorMi2) {
+					this.debugLogger.error('Unhandled Mi2 Rejection: ' + (e.node.token ? 'token=' + e.node.token : 'result=' + e.node.rawLine));
+					this.debugLogger.error(errorStack(e));
+				} else {
+					this.debugLogger.error('Unhandled Rejection: ' + errorStack(e));
+				}
+				this.debugConsole.errorUser('[kendryte debug] Unhandled Rejection: ' + errorMessage(e));
 			});
 		});
 
 		process.on('uncaughtException', (err) => {
 			console.error(err);
-			this.debugConsole.error('[kendryte debug] Fatal error during debugging session. Catched unhandled exception.\n' + errorStack(err));
+			this.debugLogger.error('uncaughtException: ' + errorStack(err));
+			this.debugConsole.errorUser('[kendryte debug] Fatal error during debugging session. Catched unhandled exception.\n' + errorStack(err));
 			setTimeout(() => {
 				process.exit(1);
 			}, 2000);
@@ -414,7 +422,7 @@ export class KendryteDebugger extends DebugSession {
 
 	@handleMethodPromise(ErrorCodeValue.init)
 	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-		this.debugConsole.log('Configuration done!');
+		this.debugConsole.logUser('Configuration done!');
 
 		setImmediate(() => {
 			if (this.autoContinue && !this.debugInstance.isRunning) {
@@ -462,13 +470,16 @@ export class KendryteDebugger extends DebugSession {
 		if (!this.debugInstance) {
 			return;
 		}
-		const threads = await this.debugInstance.getThreads(false).catch((e) => {
+		const threads = await this.debugInstance.getThreads(this.firstThreadRequest).catch((e) => {
 			if (isCommandIssueWhenRunning(e)) {
 				return [];
 			} else {
 				throw e;
 			}
 		});
+
+		this.firstThreadRequest = false;
+
 		response.body = {
 			threads: [],
 		};

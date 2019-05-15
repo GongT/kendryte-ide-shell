@@ -53,15 +53,15 @@ export class DebuggingSession {
 			logger: this.logger,
 		});
 		this.processToExit = waitProcess(process).catch((e) => {
-			this.debugConsole.error('process return error: ' + e.toString());
-			this.debugConsole.error('ignore this process.');
+			this.debugConsole.errorUser('process return error: ' + e.toString());
+			this.debugConsole.errorUser('ignore this process.');
 		}).finally(() => {
-			this.debugConsole.log('debug session finished.');
+			this.debugConsole.logUser('debug session finished.');
 			this.triggerEvent(new TerminatedEvent());
 		});
 
 		process.stderr.pipe(split2()).on('data', (line: Buffer) => {
-			this.debugConsole.error(line.toString('utf8'));
+			this.debugConsole.errorUser(line.toString('utf8'));
 		});
 
 		/* COMMAND SERVER */
@@ -135,7 +135,7 @@ export class DebuggingSession {
 	}
 
 	async load() {
-		this.debugConsole.log(MESSAGE_LOADING_PROGRAM);
+		this.debugConsole.logUser(MESSAGE_LOADING_PROGRAM);
 		// await this.handler.command('exec-interrupt');
 		let totalSent = 0, totalSize = NaN;
 		await this.handler.commandEnsure('target-download').progress((node) => {
@@ -157,9 +157,9 @@ export class DebuggingSession {
 
 			const percent = padPercent(100 * totalSent / totalSize);
 
-			this.debugConsole.log(`[${percent}] ${totalSent}/${totalSize}, Section "${section}" ${sectionProgress}`);
+			this.debugConsole.logUser(`[${percent}] ${totalSent}/${totalSize}, Section "${section}" ${sectionProgress}`);
 		});
-		this.debugConsole.log('program loaded.');
+		this.debugConsole.logUser('program loaded.');
 	}
 
 	async examineMemory(from: number, length: number) {
@@ -183,7 +183,7 @@ export class DebuggingSession {
 			throw new Error('cannot remove breakpoint ' + breakpoint.gdbBreakNum);
 		}
 
-		this.debugConsole.error(`Delete breakpoint: ${breakpoint.gdbBreakNum || '<invalid>'}`);
+		this.debugConsole.errorUser(`Delete breakpoint: ${breakpoint.gdbBreakNum || '<invalid>'}`);
 		this.breakpoints.removeExists(file, breakpoint);
 
 		delete breakpoint.gdbBreakNum;
@@ -195,7 +195,7 @@ export class DebuggingSession {
 		this._onEvent.fire(e);
 	}
 
-	private addBreakPoint(file: string, breakpoint: MyBreakpoint) {
+	private async addBreakPoint(file: string, breakpoint: MyBreakpoint): Promise<MyBreakpoint> {
 		if (breakpoint.gdbBreakNum) {
 			throw new Error('adding registered breakpoint.');
 		}
@@ -208,44 +208,42 @@ export class DebuggingSession {
 			special.push('-c', JSON.stringify(breakpoint.condition));
 		}
 
-		const insert = () => {
-			breakpoint.tried = true;
-			return breakpoint.type === BreakpointType.Line ?
-				this.handler.commandEnsure('break-insert', '--source', JSON.stringify(breakpoint.file), '--line', breakpoint.line.toString(), ...special) :
-				this.handler.commandEnsure('break-insert', '--function', breakpoint.name, ...special);
-		};
+		breakpoint.tried = true;
+		const result = breakpoint.type === BreakpointType.Line ?
+			await this.handler.commandEnsure('break-insert', '--source', JSON.stringify(breakpoint.file), '--line', breakpoint.line.toString(), ...special) :
+			await this.handler.commandEnsure('break-insert', '--function', breakpoint.name, ...special);
 
-		return insert().then(async (result) => {
-			breakpoint.gdbBreakNum = parseInt(result.result('bkpt.number'));
+		breakpoint.gdbBreakNum = parseInt(result.result('bkpt.number') || result.result('bkpt.MI2ChildValues.0.number'));
 
-			const resultFile = result.result('bkpt.file');
-			const line = parseInt(result.result('bkpt.line'));
+		let resultFile: string;
+		let line: number;
+		breakpoint.addr = result.result('bkpt.addr');
+		if (breakpoint.addr === '<MULTIPLE>') {
+			breakpoint.addr = result.result('bkpt.MI2ChildValues.0.addr');
+			resultFile = result.result('bkpt.MI2ChildValues.0.file');
+			line = parseInt(result.result('bkpt.MI2ChildValues.0.line'));
+		} else {
+			resultFile = result.result('bkpt.file');
+			line = parseInt(result.result('bkpt.line'));
+		}
 
-			breakpoint.addr = result.result('bkpt.addr');
-			const sameAddress = this.breakpoints.conflictsAddress(breakpoint.addr);
-			if (sameAddress) {
-				this.logger.info('add more breakpoints on same address: a1: %s, a2:%s , id=%s', sameAddress.addr, breakpoint.addr, breakpoint.gdbBreakNum);
-				const result = await this.handler.commandEnsure('break-delete', breakpoint.gdbBreakNum.toString());
-				this.triggerEvent(new BreakpointEvent('removed', { id: breakpoint.gdbBreakNum } as any));
-				return sameAddress;
-			}
+		const sameAddress = this.breakpoints.conflictsAddress(breakpoint.addr);
+		if (sameAddress) {
+			this.logger.info('add more breakpoints on same address: a1: %s, a2:%s , id=%s', sameAddress.addr, breakpoint.addr, breakpoint.gdbBreakNum);
+			const result = await this.handler.commandEnsure('break-delete', breakpoint.gdbBreakNum.toString());
+			this.triggerEvent(new BreakpointEvent('removed', { id: breakpoint.gdbBreakNum } as any));
+			return sameAddress;
+		}
 
-			if (breakpoint.type === BreakpointType.Line) {
-				breakpoint.file = resultFile;
-				breakpoint.line = line;
-			}
+		if (breakpoint.type === BreakpointType.Line) {
+			breakpoint.file = resultFile;
+			breakpoint.line = line;
+		}
 
-			const base = systemPath.basename(resultFile);
-			this.debugConsole.error(`New breakpoint: ${breakpoint.gdbBreakNum} (${result.result('bkpt.func')} in ${base}:${line})`);
-			this.breakpoints.registerNew(file, breakpoint);
-
-			return breakpoint;
-		}, (err: Error) => {
-			breakpoint.errorMessage = 'Cannot add breakpoint! // TODO';
-			this.debugConsole.error('Add breakpoint failed: ' + errorMessage(err));
-
-			return breakpoint;
-		});
+		const base = systemPath.basename(resultFile);
+		this.debugConsole.errorUser(`New breakpoint: ${breakpoint.gdbBreakNum} (${result.result('bkpt.func')} in ${base}:${line})`);
+		this.breakpoints.registerNew(file, breakpoint);
+		return breakpoint;
 	}
 
 	private async modifyBreakPoint(file: string, breakpoint: MyBreakpoint, change: IBreakpointDiff) {
@@ -259,9 +257,9 @@ export class DebuggingSession {
 	private registerMi2EventHandlers() {
 		this.handler.onSimpleLine(({ error, message }) => {
 			if (error) {
-				this.debugConsole._error(message);
+				this.debugConsole.error(message);
 			} else {
-				this.debugConsole._log(message);
+				this.debugConsole.log(message);
 			}
 		});
 		this.handler.onThreadNotify(this.threadEvent.bind(this));
@@ -270,7 +268,7 @@ export class DebuggingSession {
 
 	private handleStopResume(status: IRunStateEvent) {
 		if (status.realChange) {
-			this.debugConsole._error(status.running ? '> continue' : '> interrupt by ' + status.reasonString);
+			this.debugConsole.errorUser(status.running ? '> continue' : '> interrupt by ' + status.reasonString);
 
 			if (status.running) {
 				const event = new ContinuedEvent(status.threadId, status.allThreads);
@@ -316,7 +314,7 @@ export class DebuggingSession {
 			throw new Error('Already connected');
 		}
 
-		this.debugConsole.log('[kendryte debug] debugger starting...');
+		this.debugConsole.logUser('[kendryte debug] debugger starting...');
 		this.logger.info(`[kendryte debug] debugger starting: test log.`);
 
 		await this.handler.commandSequence([
@@ -328,7 +326,7 @@ export class DebuggingSession {
 			this.connectReady.error(e);
 			throw e;
 		});
-		this.debugConsole.log('connected to: ' + this.config.target);
+		this.debugConsole.logUser('connected to: ' + this.config.target);
 
 		if (load) {
 			await this.load();
@@ -358,10 +356,10 @@ export class DebuggingSession {
 	}
 
 	public async terminate() {
-		this.debugConsole.log('[kendryte debug] debugger stopping.');
+		this.debugConsole.logUser('[kendryte debug] debugger stopping.');
 		await this.dispose();
 		await this.processToExit;
-		this.debugConsole.log('ok.');
+		this.debugConsole.logUser('ok.');
 	}
 
 	async interrupt() {
@@ -415,7 +413,14 @@ export class DebuggingSession {
 			}
 
 			this.logger.info('will create breakpoint: %s', JSON.stringify(breakpoint));
-			const newBreak = await this.addBreakPoint(file, breakpoint);
+			// const newBreaks = await
+			const newBreak = await this.addBreakPoint(file, breakpoint).catch((err) => {
+				breakpoint.errorMessage = 'Cannot add breakpoint! // TODO';
+				this.debugConsole.errorUser('Add breakpoint failed: ' + errorMessage(err));
+
+				return breakpoint;
+			});
+
 			ret.push(newBreak);
 		}
 

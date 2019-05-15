@@ -64,7 +64,7 @@ export class Mi2AutomaticResponder {
 
 		this.onSimpleLine = this.controller.onSimpleLine;
 		this.controller.onSimpleLine(({ error, message }) => {
-			logger.writeln('simpleOut: ' + message);
+			logger.writeln('simpleOut: ' + message.trim());
 		});
 		this.controller.onReceiveMi2((node) => {
 			node.handled = this.handleMI(node);
