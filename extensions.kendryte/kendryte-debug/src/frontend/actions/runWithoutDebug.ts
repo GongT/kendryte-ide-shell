@@ -53,10 +53,10 @@ export function runWithoutDebug(arg: IDebugWithoutRunArguments) {
 
 		const output = new FrontendChannelLogger('mi2', channel);
 		const m2Handler = new Mi2AutomaticResponder(process, output);
-		await m2Handler.commandEnsure('gdb-set target-async off');
-		await m2Handler.commandEnsure(`target-select remote 127.0.0.1:${arg.port}`);
+		await m2Handler.command('gdb-set target-async off');
+		await m2Handler.command(`target-select remote 127.0.0.1:${arg.port}`);
 		await m2Handler.commandEnsure('target-download');
-		await m2Handler.waitContinue();
+		await m2Handler.execContinue();
 
 		logger.info('success.');
 
