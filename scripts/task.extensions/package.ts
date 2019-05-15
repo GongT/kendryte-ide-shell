@@ -20,8 +20,7 @@ const taskList = listExtension().map((name: string) => {
 					'--prefer-offline',
 					'--no-default-rc',
 					'--use-yarnrc',
-					join(SHELL_ROOT, '.yarnrc',
-					),
+					join(SHELL_ROOT, '.yarnrc'),
 				],
 			}));
 	});

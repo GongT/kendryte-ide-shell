@@ -14,7 +14,6 @@ import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
 import { artifactsExtractedTempPath, extractTempDir, patchDownloadKey } from '../library/paths/ide';
 import { artifactsPrepareTask } from './artifacts';
-import { cleanExtractTask } from './cleanup';
 import { downloadPrevVersion } from './download.prev';
 
 function noop(): any {
@@ -24,7 +23,6 @@ function noop(): any {
 }
 
 export const createPatchesFiles: ITaskPlatform = isForceRun? noop() : everyPlatform('ide:patches:create', [
-	cleanExtractTask,
 	artifactsPrepareTask,
 ], async (platform) => {
 	const result = nativePath(artifactsExtractedTempPath(platform, 'latest'), platformResourceAppDir(platform));

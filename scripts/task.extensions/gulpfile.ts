@@ -38,7 +38,7 @@ function wrapTypescriptTask(name: string) {
 }
 
 export function buildTaskName(name: string) {
-return TASK_CATEGORY + ':' + name + ':build';
+	return TASK_CATEGORY + ':' + name + ':build';
 }
 
 function createBuildTask(name: string) {

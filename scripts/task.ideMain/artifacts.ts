@@ -9,7 +9,7 @@ import { checkRemoteOutdated, ensureVersionMain } from '../library/jsonDefine/re
 import { ExS3 } from '../library/misc/awsUtil';
 import { nativePath } from '../library/misc/pathUtil';
 import { platformResourceAppDir } from '../library/paths/app';
-import { artifactsExtractedTempPath, artifactsLocalTempPath, artifactsS3TempUrl, ideDownloadKey, } from '../library/paths/ide';
+import { artifactsExtractedTempPath, artifactsLocalTempPath, artifactsS3TempUrl, ideDownloadKey } from '../library/paths/ide';
 import { extensionsPackageTask } from '../task.extensions/package';
 import { EXTENSIONS_DIST_PATH_RESULT, listExtension } from '../task.extensions/path';
 import { cleanExtractTask } from './cleanup';
@@ -27,7 +27,6 @@ export const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (plat
 export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
 	cleanExtractTask,
 	artifactsFetchTask,
-	extensionsPackageTask,
 ], async (platform) => {
 	const saveTo = artifactsLocalTempPath(platform, 'latest');
 	const extractTo = artifactsExtractedTempPath(platform, 'latest');
@@ -41,7 +40,10 @@ export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
 	}
 });
 
-export const artifactsRepackTask = everyPlatform('ide:artifacts:repack', [artifactsPrepareTask], async (platform) => {
+export const artifactsRepackTask = everyPlatform('ide:artifacts:repack', [
+	artifactsPrepareTask,
+	extensionsPackageTask,
+], async (platform) => {
 	const sourceFrom = artifactsExtractedTempPath(platform, 'latest');
 	const packageJsonFile = nativePath(sourceFrom, platformResourceAppDir(platform), 'package.json');
 	log('repack read latest package.json from %s', packageJsonFile);
