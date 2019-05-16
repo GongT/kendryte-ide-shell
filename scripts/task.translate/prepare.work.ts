@@ -2,9 +2,10 @@ import { pathExists, readJson } from 'fs-extra';
 import { writeFile } from '../library/misc/fsUtil';
 import { cmp_string } from '../library/strings';
 import { JsonBuilder } from './json5Create';
+import { everyMetadata } from './lib';
 import { mergeWorkingIfExists } from './merge';
 import { metadataFile, translateWorkingFile, versionControlFile } from './path';
-import { IMetaDataStruct, IResultFileContent, languageList, MyTranslate, TranslateMap } from './type';
+import { IMetaDataStruct, IResultFile, IResultFileContent, languageList, MyTranslate, TranslateMap } from './type';
 
 export async function doTranslate() {
 	for (const language of languageList) {
@@ -26,32 +27,25 @@ function getMessage(translate: IResultFileContent, file: string, key: string) {
 async function initTranslations(lang: string) {
 	const metadata: IMetaDataStruct = await readJson(metadataFile());
 	const previousFile = versionControlFile(lang);
-	const previous: IResultFileContent = await pathExists(previousFile)? await readJson(previousFile) : {};
+	const previousMetadata: IResultFile = await pathExists(previousFile)? await readJson(previousFile) : {};
 	
 	const translates: MyTranslate[] = [];
 	
 	// parse translation sections from metadata
-	Object.entries(metadata.keys).forEach(([file, keys]) => {
-		if (!file.startsWith('vs/kendryte')) {
-			return;
-		}
+	for (const {file, key, message} of everyMetadata(metadata)) {
+		const previousMessage = getMessage(previousMetadata.contents, file, key);
+		console.log('Key[%s] %s -> %s', key, previousMessage, message);
 		
-		keys.forEach((item, index) => {
-			const key = typeof item === 'string'? item : item.key;
-			const previousMessage = getMessage(previous, file, key);
-			const englishMessage = metadata.messages[file][index];
-			
-			translates.push({
-				filename: file,
-				key,
-				english: englishMessage,
-				previousEnglish: previousMessage,
-				changed: englishMessage !== previousMessage,
-				deleted: false,
-				message: '',
-			});
+		translates.push({
+			filename: file,
+			key,
+			english: message,
+			previousEnglish: previousMessage,
+			changed: message !== previousMessage,
+			deleted: false,
+			message: '',
 		});
-	});
+	}
 	
 	// remove duplicate entries
 	for (let i = translates.length - 1; i >= 0; i--) {

@@ -1,7 +1,8 @@
-import { copy, pathExists, unlink } from 'fs-extra';
+import { pathExists, readJson, unlink, writeJson } from 'fs-extra';
 import { readFile, writeFile } from '../library/misc/fsUtil';
+import { everyMetadata } from './lib';
 import { metadataFile, translateFinalFile, translateWorkingFile, versionControlFile } from './path';
-import { IResultFile, languageList } from './type';
+import { IMetaDataStruct, IResultFile, IResultFileContent, languageList } from './type';
 import json5 = require('json5');
 
 export async function doCommitTranslate() {
@@ -33,5 +34,14 @@ async function commitTranslate(lang: string) {
 	
 	await writeFile(translateFinalFile(lang), JSON.stringify(data, null, 4));
 	await unlink(workingFile);
-	await copy(metadataFile(), versionControlFile(lang));
+	
+	const metadata: IMetaDataStruct = await readJson(metadataFile());
+	const newContents: IResultFileContent = {};
+	for (const {file, key, message} of everyMetadata(metadata)) {
+		if (!newContents[file]) {
+			newContents[file] = {};
+		}
+		newContents[file][key] = message;
+	}
+	await writeJson(versionControlFile(lang), {version: '-1', contents: newContents});
 }
