@@ -27,6 +27,7 @@ export const artifactsFetchTask = everyPlatform('ide:artifacts:fetch', [], (plat
 export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
 	cleanExtractTask,
 	artifactsFetchTask,
+	extensionsPackageTask,
 ], async (platform) => {
 	const saveTo = artifactsLocalTempPath(platform, 'latest');
 	const extractTo = artifactsExtractedTempPath(platform, 'latest');
@@ -42,7 +43,6 @@ export const artifactsPrepareTask = everyPlatform('ide:artifacts:prepare', [
 
 export const artifactsRepackTask = everyPlatform('ide:artifacts:repack', [
 	artifactsPrepareTask,
-	extensionsPackageTask,
 ], async (platform) => {
 	const sourceFrom = artifactsExtractedTempPath(platform, 'latest');
 	const packageJsonFile = nativePath(sourceFrom, platformResourceAppDir(platform), 'package.json');

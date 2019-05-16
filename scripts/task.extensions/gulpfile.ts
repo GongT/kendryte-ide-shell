@@ -2,6 +2,7 @@ import { ISingleTask, task } from '../library/gulp';
 import { createCompileTask, createTypescriptWatch, createWatchTask } from '../library/gulp/compileTaskBuild';
 import { createTypescriptTaskWithRename } from '../library/gulp/typescript';
 import { nativePath } from '../library/misc/pathUtil';
+import { cleanupBuildTask, cleanupDevelTask } from './cleanup';
 import { EXTENSIONS_DIST_PATH_DEVELOP, EXTENSIONS_DIST_PATH_RESULT, EXTENSIONS_SOURCE_CODE_PATH, listExtension } from './path';
 
 const TASK_CATEGORY = 'extensions';
@@ -43,21 +44,21 @@ export function buildTaskName(name: string) {
 
 function createBuildTask(name: string) {
 	return task(buildTaskName(name), [
-		createCompileTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [], true),
-		createCompileTask(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [], true),
+		createCompileTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [cleanupBuildTask], true),
+		createCompileTask(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [cleanupBuildTask], true),
 	]);
 }
 
 function createDevelTask(name: string) {
 	return task(TASK_CATEGORY + ':' + name + ':compile', [
-		createCompileTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [], false),
-		createCompileTask(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [], false),
+		createCompileTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [cleanupDevelTask], false),
+		createCompileTask(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [cleanupDevelTask], false),
 	]);
 }
 
 function createDevelWatchTask(name: string) {
 	return task(TASK_CATEGORY + ':' + name + ':watch', [
-		createWatchTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), []),
-		createTypescriptWatch(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), []),
+		createWatchTask(TASK_CATEGORY + ':' + name, wrapJsonTask(name), [cleanupDevelTask]),
+		createTypescriptWatch(TASK_CATEGORY + ':' + name, wrapTypescriptTask(name), [cleanupDevelTask]),
 	]);
 }
