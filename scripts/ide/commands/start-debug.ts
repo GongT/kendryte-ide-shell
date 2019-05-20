@@ -4,7 +4,6 @@ import { readJsonSync } from 'fs-extra';
 import { resolve } from 'path';
 import { isWin, ORIGINAL_PATH, PATH, PATH_SP, VSCODE_ROOT } from '../../environment';
 import { cleanScreen } from '../../library/misc/clsUtil';
-import { mkdirpSync } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { preventProxy, runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
@@ -36,8 +35,6 @@ runMain(async () => {
 	delete process.env.VSCODE_PORTABLE;
 	
 	chdir(VSCODE_ROOT);
-	
-	mkdirpSync('data');
 	
 	delete process.env.HTTP_PROXY;
 	delete process.env.HTTPS_PROXY;

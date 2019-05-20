@@ -1,10 +1,12 @@
 import { isWin, VSCODE_ROOT } from '../../environment';
 import { installDependency } from '../../library/childprocess/yarn';
+import { fixSerialPortPackageBuild } from '../../library/fixSerialPortPackageBuild';
 import { log } from '../../library/gulp';
 import { lstat } from '../../library/misc/fsUtil';
 import { whatIsThis } from '../../library/misc/help';
 import { runMain } from '../../library/misc/myBuildSystem';
 import { chdir } from '../../library/misc/pathUtil';
+import { usePrettyIfTty } from '../../library/misc/usePretty';
 import { packWindows } from '../codeblocks/packWindows';
 import { reset_asar } from '../codeblocks/resetAsar';
 
@@ -14,6 +16,7 @@ whatIsThis(
 );
 
 runMain(async () => {
+	usePrettyIfTty();
 	chdir(VSCODE_ROOT);
 	log('installing dependencies');
 	if (isWin) {
@@ -29,6 +32,7 @@ runMain(async () => {
 	} else {
 		log('is not windows, use native method.');
 		await installDependency(VSCODE_ROOT);
+		await fixSerialPortPackageBuild(VSCODE_ROOT);
 		log('node packages installed.');
 	}
 	

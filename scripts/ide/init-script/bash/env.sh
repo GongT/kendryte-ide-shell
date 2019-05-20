@@ -58,8 +58,9 @@ if [ "$SYSTEM" = mac ]; then
 	CommonPaths="/usr/local/opt/coreutils/libexec/gnubin:/usr/local/bin:${CommonPaths}"
 fi
 LocalNodePath="$(resolvePath "${WORKSPACE_ROOT}" node_modules/.bin)"
+GlobalYarnPath="$(resolvePath "${BUILD_ROOT}" yarn/bin)"
 ToolchainPath="$(resolvePath "${VSCODE_ROOT}" data/packages/toolchain/bin):$(resolvePath "${VSCODE_ROOT}" data/packages/cmake/bin)"
-export PATH="$PRIVATE_BINS:$LocalNodePath:$ToolchainPath:$CommonPaths"
+export PATH="$PRIVATE_BINS:$GlobalYarnPath:$LocalNodePath:$ToolchainPath:$CommonPaths"
 
 if [ -n "$HTTP_PROXY" ] ; then
 	export HTTPS_PROXY="$HTTP_PROXY"

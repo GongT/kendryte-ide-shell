@@ -4,6 +4,7 @@ import { resolve } from 'path';
 import { MY_SCRIPT_ROOT, VSCODE_ROOT } from '../../environment';
 import { simpleCommandOut } from '../../library/childprocess/complex';
 import { installDependency, yarn } from '../../library/childprocess/yarn';
+import { fixSerialPortPackageBuild } from '../../library/fixSerialPortPackageBuild';
 import { log } from '../../library/gulp';
 import { isExists, writeFile } from '../../library/misc/fsUtil';
 import { resolveGitDir } from '../../library/misc/git';
@@ -45,6 +46,7 @@ export async function packWindows() {
 	const timeOutProd = timing();
 	await installDependency(prodDepsDir);
 	log('production dependencies installed.' + timeOutProd());
+	await fixSerialPortPackageBuild(prodDepsDir);
 	
 	//// devDependencies
 	log('  create devDependencies');

@@ -1,6 +1,5 @@
-import { createWriteStream, existsSync, unlinkSync } from 'fs';
+import { existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
-import { PassThrough } from 'stream';
 import { isCI } from '../../environment';
 import { log } from '../gulp';
 import { useWriteFileStream } from '../misc/myBuildSystem';
@@ -16,9 +15,6 @@ export async function installDependency(dir?: string, opts: IInstallOpt = {}): P
 		chdir(dir);
 	}
 	
-	const tee = new PassThrough();
-	tee.pipe(createWriteStream('yarn-install.log'));
-	
 	const extra = [];
 	if (opts.args) {
 		extra.push(...opts.args);
@@ -31,9 +27,18 @@ export async function yarn(cmd: string, ...args: string[]) {
 		unlinkSync('yarn-error.log');
 	}
 	
-	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${resolve(process.cwd(), 'yarn-install.log')}`);
-	const logTarget = isCI? process.stderr : useWriteFileStream('logs/yarn-install.log');
-	await pipeCommandOut(logTarget, 'yarn', cmd, '--verbose', ...args).catch((e) => {
+	let logPath = 'unknown', logStream: NodeJS.WritableStream;
+	if (isCI) {
+		logStream = process.stderr;
+		logPath = 'standard error';
+	} else {
+		const logger = useWriteFileStream('logs/yarn-install.log');
+		logStream = logger;
+		logPath = logger.fsPath;
+	}
+	
+	log(`Pwd: ${process.cwd()}\nCommand: yarn ${cmd}\nLogfile: ${logPath}`);
+	await pipeCommandOut(logStream, 'yarn', cmd, '--verbose', ...args).catch((e) => {
 		showError(cmd, 'yarn-install.log');
 		throw e;
 	});

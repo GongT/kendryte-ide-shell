@@ -81,7 +81,7 @@ function runHandle() {
 
 async function run(): Promise<number> {
 	for (const cb of jobQueue) {
-		const ret = await cb()  as any;
+		const ret = await cb() as any;
 		if (ret) {
 			return ret;
 		}
@@ -89,7 +89,7 @@ async function run(): Promise<number> {
 	return 0;
 }
 
-export function useWriteFileStream(file: string): WriteStream {
+export function useWriteFileStream(file: string): WriteStream&{fsPath: string} {
 	file = resolve(BUILD_ROOT, file);
 	mkdirpSync(resolve(file, '..'));
 	const fd = openSync(file, 'w');
@@ -99,7 +99,9 @@ export function useWriteFileStream(file: string): WriteStream {
 		stream.end();
 		return streamPromise(stream);
 	});
-	return stream;
+	return Object.assign(stream, {
+		fsPath: file,
+	});
 }
 
 export function readFileStream(file: string): ReadStream {
