@@ -1,8 +1,11 @@
+import { resolve } from 'path';
 import { Transform } from 'stream';
 import { dest, src } from 'vinyl-fs';
 import { streamPromise } from './streamPromise';
 
 export function ecopy(source: string, target: string) {
+	// copy use vinyl fs, prevent error around ".asar" files
+	console.log('~~~~~ %s\n%s', source, target);
 	return streamPromise(
 		src(source + '/**', {
 			base: source + '/',
@@ -14,7 +17,7 @@ export function ecopy(source: string, target: string) {
 			.pipe(new Rename(target))
 			.pipe(dest(target, {
 				cwd: target,
-				relativeSymlinks: true,
+				relativeSymlinks: false,
 			})),
 	);
 }
@@ -27,8 +30,12 @@ class Rename extends Transform {
 	}
 	
 	_transform(file: any, _: any, callback: Function) {
+		if (file.isDirectory()) {
+			callback();
+			return;
+		}
+		file.path = resolve(this.base, file.relative);
 		file.base = this.base;
-		file.path = file.path.replace(file.cwd, this.base);
 		file.cwd = this.base;
 		
 		this.push(file);
