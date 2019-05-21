@@ -36,13 +36,16 @@ fi
 
 function prompt_path(){
 	local PW="$1"
-	local NL="${1#$VSCODE_ROOT}"
-	if [ "$NL" = "$PW" ]; then
-		echo -e "[\[\e[38;5;${_PROMPT_COLOR1}m\]\u\[\e[0m\] $(basename "$1")]$ "
-	elif [ -n "$NL" ]; then
-		echo -e "[\[\e[38;5;${_PROMPT_COLOR2}m\]KendryteIDE\[\e[0m\] ${NL#/}]$ "
-	else
+	if [[ "$PW" == "$VSCODE_ROOT" ]] ; then
 		echo -e "[\[\e[38;5;${_PROMPT_COLOR2}m\]KendryteIDE\[\e[0m\]]$ "
+	elif [[ "$PW" == "$VSCODE_ROOT/"* ]]; then
+		echo -e "[\[\e[38;5;${_PROMPT_COLOR2}m\]KendryteIDE\[\e[0m\] $(basename "$PW")]$ "
+	elif [[ "$PW" == "$WORKSPACE_ROOT" ]]; then
+		echo -e "[\[\e[38;5;${_PROMPT_COLOR2}m\]Shell\[\e[0m\]]$ "
+	elif [[ "$PW" == "$WORKSPACE_ROOT/"* ]]; then
+		echo -e "[\[\e[38;5;${_PROMPT_COLOR2}m\]Shell\[\e[0m\] $(basename "$PW")]$ "
+	else
+		echo -e "[\[\e[38;5;${_PROMPT_COLOR1}m\]\u\[\e[0m\] $(basename "$1")]$ "
 	fi
 }
 function prompt() {

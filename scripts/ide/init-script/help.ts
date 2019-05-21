@@ -8,16 +8,18 @@ import { resolvePath } from '../../library/misc/pathUtil';
 
 process.argv.push('--what-is-this');
 
+const refresh = process.argv.indexOf('-r') > 0;
+
 if (!isCI) {
-	if (existsSync(helpStringCache())) {
+	if (!refresh && existsSync(helpStringCache())) {
 		process.stderr.write(readFileSync(helpStringCache()));
 		process.exit(0);
 	}
 }
 
 const myCreatedCommands = resolvePath(PRIVATE_BINS, '.commands.lst');
-const oldCommands: { [id: string]: boolean } = existsSync(myCreatedCommands) ? JSON.parse(readFileSync(myCreatedCommands, 'utf-8')) : {};
-const newCommands: { [id: string]: boolean } = {};
+const oldCommands: {[id: string]: boolean} = existsSync(myCreatedCommands)? JSON.parse(readFileSync(myCreatedCommands, 'utf-8')) : {};
+const newCommands: {[id: string]: boolean} = {};
 
 ensureDirSync(process.env.TEMP);
 const out = helpPrint(new PassThrough());
@@ -25,12 +27,10 @@ const cacheFile = helpStringCache();
 if (existsSync(cacheFile)) {
 	unlinkSync(cacheFile);
 }
-out.pipe(createWriteStream(cacheFile))
-	.write('This menu is cached on disk [' + cacheFile + '], if you found something wrong, remove it and retry.\n');
-
+out.pipe(createWriteStream(cacheFile));
 out.pipe(process.stderr);
 
-whatIsThis('Print this', '显示这些提示', 'show-help');
+whatIsThis('Print this (-r to refresh)', '显示这些提示（-r刷新缓存）', 'show-help');
 const base = resolve(__dirname, '../commands');
 
 readdirSync(base).forEach((file) => {
@@ -53,8 +53,11 @@ ${e.stack}
 	}
 });
 
+whatIsThis('change directory to kendryte-ide', '切换到 kendryte-ide', 'd1', 'tool');
+whatIsThis('change directory to kendryte-ide-shell', '切换到 kendryte-ide-shell', 'd2', 'tool');
+whatIsThis('source the fake aws credentials', '载入假的aws信息', 'fake-aws', 'tool');
 if (isWin) {
-	whatIsThis('Open new window like this', '打开一个新窗口', 'fork');
+	whatIsThis('Open new window like this', '打开一个新窗口', 'fork', 'tool');
 }
 
 Object.keys(oldCommands).forEach((removedCommand) => {

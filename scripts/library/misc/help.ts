@@ -22,9 +22,9 @@ function toPrintHelp() {
 			setTimeout(() => {
 				process.exit(0);
 			}, 1000);
-			
+
 			defaultOutput.write(whatError);
-			
+
 			defaultOutput.write('\n\n');
 			for (const list of registry.values()) {
 				if (!list.length) {
@@ -65,6 +65,7 @@ const cates: {[id: string]: [string, string]} = {
 	pm: ['Package Manager', '包管理器'],
 	release: ['Releasing', '发布'],
 	start: ['Local Development', '本地开发调试'],
+	install: ['Development Preparation', '本地开发环境的准备'],
 	test: ['Test', '测试'],
 	tool: ['Misc', '工具'],
 };
@@ -91,7 +92,7 @@ export function whatIsError(message: string) {
 	whatError += message;
 }
 
-export function whatIsThis(en: string, cn: string, file: string = stack()) {
+export function whatIsThis(en: string, cn: string, file: string = stack(), category = '') {
 	if (isZh === null) {
 		if (isWin) {
 			isZh = execSync('powershell.exe -Command Get-UICulture', {encoding: 'utf8'}).toLowerCase().includes('zh');
@@ -99,7 +100,7 @@ export function whatIsThis(en: string, cn: string, file: string = stack()) {
 			isZh = UILanguage.includes('zh');
 		}
 	}
-	let category = (/^[^-]+/.exec(file) || ['unknown'])[0];
+	category = category? category : (/^[^-]+/.exec(file) || ['unknown'])[0];
 	if (!cates[category]) {
 		category = 'unknown';
 	}
@@ -109,11 +110,11 @@ export function whatIsThis(en: string, cn: string, file: string = stack()) {
 		category,
 		file,
 	};
-	
+
 	if (firstWhat.file === 'unknown-command') {
 		firstWhat = data;
 	}
-	
+
 	if (WIT()) {
 		toPrintHelp();
 		if (!registry.has(category)) {

@@ -31,7 +31,7 @@
       <option name="ALIGN_MULTILINE_BLOCK_PARAMETERS" value="true" />
       <option name="BLOCK_PARAMETERS_RPAREN_ON_NEXT_LINE" value="false" />
     </PowerShellCodeStyleSettings>
-    <TypeScriptCodeStyleSettings version="0">
+    <TypeScriptCodeStyleSettings version="1">
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
       <option name="USE_PUBLIC_MODIFIER" value="true" />
       <option name="USE_DOUBLE_QUOTES" value="false" />
@@ -216,7 +216,6 @@
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />
         <option name="SMART_TABS" value="true" />
-        <option name="KEEP_INDENTS_ON_EMPTY_LINES" value="true" />
       </indentOptions>
       <arrangement>
         <groups>
