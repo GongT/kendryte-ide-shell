@@ -29,8 +29,10 @@ export class DebugScript {
 		this.cmd.push(`"${name}" ${args.join(' ')}`);
 	}
 	
-	writeBack(file: string) {
-		return writeFile(myProfilePath('logs/' + is.windows? file + '.bat' : file + '.sh'), this.toString(), 'utf8');
+	async writeBack(file: string) {
+		const fullPath = myProfilePath('logs/' + is.windows? file + '.bat' : file + '.sh');
+		await writeFile(fullPath, this.toString(), 'utf8');
+		return fullPath;
 	}
 	
 	toString() {

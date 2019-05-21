@@ -5,7 +5,7 @@ import { alwaysPromise } from '../library/alwaysPromise';
 import { tempDir } from '../library/environment';
 import { registerCleanup, registerCleanupStream } from '../library/lifecycle';
 import { streamPromise } from '../library/streamPromise';
-import split2 =require('split2');
+import split2 = require('split2');
 
 const defTimeout = is.windows? 35000 : 20000;
 let pipePath = '';
@@ -235,13 +235,14 @@ export async function ensureIpcServer() {
 	}, 'ipcServer');
 	
 	await new Promise((resolve, reject) => {
-		console.warn('\x1B[38;5;14mtry listening socket: %s\x1B[0m', ipcPipe);
+		const pipePath = ipcPipe();
+		console.warn('\x1B[38;5;14mtry listening socket: %s\x1B[0m', pipePath);
 		pipe.on('error', function (e: NodeJS.ErrnoException) {
 			console.warn('\x1B[38;5;14m  --> %s\x1B[0m', e.code);
 			reject(e);
 		});
 		
-		pipe.listen(ipcPipe(), () => {
+		pipe.listen(pipePath, () => {
 			resolve();
 		});
 	});

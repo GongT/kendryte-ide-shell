@@ -56,10 +56,14 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 	
 	const dbg = new DebugScript(cwd, envVars);
 	dbg.command(exe, args);
-	dbg.writeBack('last-instance').catch(e => console.error('DebugScript::writeBack - ', e));
+	dbg.writeBack('last-instance').then((f) => {
+		console.log('\x1B[38;5;10mThe startup emulation script is written to %s\x1B[0m', f);
+	}, (e) => {
+		return console.error('\x1B[38;5;9mDebugScript::writeBack\x1B[0m -', e);
+	});
 	
-	console.log('\x1B[38;5;10m%s\x1B[0m\n\x1B[38;5;11m%s\x1B[0m\n\x1B[38;5;14mcwd: %s\x1B[0m',
-		exe, args.map((e, i) => `  ${i}: ${e}`).join('\n'), cwd);
+	console.log('Spawn:\nExecutable: \x1B[38;5;10m%s\x1B[0m\nWorking Directory: %s\nArguments:\n\x1B[38;5;11m%s\x1B[0m',
+		exe, cwd, args.map((e, i) => `  ${i}: ${e}`).join('\n'));
 	const cp = spawn(exe, args, {
 		cwd,
 		stdio: ['inherit', 'pipe', 'pipe'],
@@ -94,7 +98,6 @@ export async function spawnIDE(args: string[], cwd: string, envVars: any = {}, e
 		[exe, args] = makeAppArg(exe, args);
 	}
 	
-	console.log('spawnIDE:\n  exe=%s\n  args=%j\n  cwd=%s\n  env=%j)', exe, args, cwd, envVars);
 	if (!isBuilt) {
 		await new Promise((resolve, reject) => {
 			const cb = (shoudContinue: number) => {
