@@ -63,7 +63,7 @@ function newSpawn(exe: string, args: string[], cwd: string, envVars: any, channe
 	const cp = spawn(exe, args, {
 		cwd,
 		stdio: ['inherit', 'pipe', 'pipe'],
-		shell: true,
+		shell: false,
 		windowsVerbatimArguments: true,
 		windowsHide: true,
 		env: envVars,
