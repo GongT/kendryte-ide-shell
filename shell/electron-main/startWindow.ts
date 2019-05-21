@@ -1,4 +1,4 @@
-import { BrowserWindow, screen, shell } from 'electron';
+import { app, BrowserWindow, screen, shell } from 'electron';
 import { resolve } from 'path';
 import { WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_WIDTH_WITH_LOG } from '../library/constants';
 import { isQuitting } from './lifecycleMain';
@@ -54,4 +54,19 @@ export function startUpdater() {
 		win.show();
 	});
 	win.loadFile(resolve(__dirname, '..', 'index.html'));
+	
+	if (app.dock) {
+		try {
+			app.dock.show();
+		} catch (e) {
+			console.error('show dock: %s', e.message);
+		}
+		win.on('closed', () => {
+			try {
+				app.dock.hide();
+			} catch (e) {
+				console.error('hide dock: %s', e.message);
+			}
+		});
+	}
 }
