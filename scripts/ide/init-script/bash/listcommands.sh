@@ -23,11 +23,15 @@ function d2 {
 export -f d2
 
 function fake-aws {
+	local C="$1"
+	if [[ "$C" == "" ]]; then
+		C="sourcecode"
+	fi
 	export AWS_SECRET_ACCESS_KEY="fake"
 	export AWS_REGION="cn-northwest-1"
 	export AWS_ACCESS_KEY_ID="fake"
 	export AWS_BUCKET="kendryte-ide"
-	export CHANNEL=${1-"sourcecode"}
+	export CHANNEL="$C"
 }
 export -f fake-aws
 
