@@ -6,7 +6,9 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 	echo "Install Node.js"
-	downloadFile "https://nodejs.org/dist/v8.12.0/win-x64/node.exe" "$DOWNLOAD_PATH/node.exe"
+	$VERSION=11.6.0
+	$VERSION_OLD=8.12.0
+	downloadFile "https://nodejs.org/dist/v$VERSION_OLD/win-x64/node.exe" "$DOWNLOAD_PATH/node.exe"
 	
 	echo "Coping node.exe from $DOWNLOAD_PATH to $NODEJS_INSTALL"
 	RimDir $NODEJS_INSTALL

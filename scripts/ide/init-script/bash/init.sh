@@ -51,7 +51,7 @@ if [ ! -e "$PRIVATE_BINS/node" ]; then
 	writeShFile node "
 		export PRIVATE_BINS='$PRIVATE_BINS'
 		export VSCODE_ROOT='$VSCODE_ROOT'
-		if pwd | grep -q \"$VSCODE_ROOT\" || pwd | grep -q \"$RELEASE_ROOT\" ; then
+		if pwd | grep -qE \"$VSCODE_ROOT(/|$)\" || pwd | grep -q \"$RELEASE_ROOT\" ; then
 			export NODEJS=\"$NODEJS_INSTALL/node8/bin/node\"
 			echo -e \"\e[38;5;8mUsing node 8 in \$(pwd)\e[0m\" >&2
 		else
