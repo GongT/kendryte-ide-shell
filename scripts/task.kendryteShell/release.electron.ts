@@ -59,12 +59,12 @@ const asarResultEditor = {
 
 export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, asarTask, downloadTask], (platform, root) => {
 	const tempTarget = resolve(root, 'KendryteIDE');
-	
+
 	const extractElectronSource = zip
 		.src(getElectronZipPath(platform))
 		.pipe(zipResultEditor[platform]())
-		.pipe(filter(['**', '!**/default_app.asar']));
-	
+		.pipe(filter(['**', '!**/default_app.asar', '!**/Contents/Resources/electron.icns']));
+
 	let platform7Z = '';
 	if (platform === 'win32') {
 		platform7Z = `**/node_modules/7zip-bin/win/x64/7za.exe`;
@@ -73,10 +73,10 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 	} else if (platform === 'darwin') {
 		platform7Z = `**/node_modules/7zip-bin/mac/7za`;
 	}
-	
+
 	const copyAsar = gulpSrc(BUILD_ASAR_DIR, ['app.asar', platform7Z])
 		.pipe(asarResultEditor[platform]());
-	
+
 	const selfDir = nativePath(myScriptSourcePath(__dirname), 'release-assets', platform);
 	const copyAssetsFiles = gulpSrc(selfDir, '**')
 		.pipe(simpleTransformStream((f) => {
@@ -85,14 +85,14 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 			}
 			return f;
 		}));
-	
+
 	const createChannelJson = gulpSrc(SHELL_ROOT, 'channel.json')
 		.pipe(jeditor({
 			channel: getReleaseChannel(),
 			registry: ExS3.instance().websiteUrl(getIDEJsonObjectKey(getReleaseChannel())),
 			downloadPage: ExS3.instance().websiteUrl(getIndexPageObjectKey(getReleaseChannel())),
 		}));
-	
+
 	return mergeStream(
 		extractElectronSource,
 		copyAsar,
