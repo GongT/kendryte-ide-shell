@@ -64,6 +64,24 @@
 		"-Wl,-static",
 		"-Wl,-EL"
 	],
+	"definitions": {
+		"KENDRYTE_SDK:raw": "2"
+	},
+	"localDependency": [
+		"lib",
+		"third_party"
+	],
+	"systemLibrary": [
+		"gcc",
+		"m",
+		"c",
+		"atomic",
+		"stdc++",
+		"freertos",
+		"bsp",
+		"drivers",
+		"posix"
+	],
 	"ld_file": "lds/kendryte.ld",
 	"properties": {
 		"LINKER_LANGUAGE": "C"

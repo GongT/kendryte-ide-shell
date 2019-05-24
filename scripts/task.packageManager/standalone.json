@@ -58,6 +58,14 @@
 		"-Wl,-static",
 		"-Wl,-EL"
 	],
+	"definitions": {
+		"KENDRYTE_SDK:raw": "1"
+	},
+	"systemLibrary": [
+		"gcc",
+		"m",
+		"c"
+	],
 	"ld_file": "lds/kendryte.ld",
 	"properties": {
 		"LINKER_LANGUAGE": "C"
