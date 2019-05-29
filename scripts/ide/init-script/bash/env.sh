@@ -37,6 +37,7 @@ export MY_SCRIPT_ROOT="$(resolvePath "${WORKSPACE_ROOT}" scripts/ide)"
 export VSCODE_ROOT="$(resolvePath "${WORKSPACE_ROOT}" ../kendryte-ide)"
 export BUILD_ROOT="$(resolvePath "${WORKSPACE_ROOT}" build)"
 export DEBUG_APP_ROOT="$(resolvePath "${BUILD_ROOT}" DebugContents)"
+export LOCAL_PACKAGE_ROOT="$(resolvePath "${DEBUG_APP_ROOT}" LocalPackage)"
 export VSCODE_PORTABLE="$(resolvePath "${DEBUG_APP_ROOT}" UserData/latest)"
 export MY_SCRIPT_ROOT_BUILT="$(resolvePath "${BUILD_ROOT}" MyScriptBuildResult/ide)"
 export DOWNLOAD_PATH="$(resolvePath "${BUILD_ROOT}" download)"
@@ -59,7 +60,7 @@ if [ "$SYSTEM" = mac ]; then
 fi
 LocalNodePath="$(resolvePath "${WORKSPACE_ROOT}" node_modules/.bin)"
 GlobalYarnPath="$(resolvePath "${BUILD_ROOT}" yarn/bin)"
-ToolchainPath="$(resolvePath "${VSCODE_ROOT}" data/packages/toolchain/bin):$(resolvePath "${VSCODE_ROOT}" data/packages/cmake/bin)"
+ToolchainPath="$(resolvePath "${LOCAL_PACKAGE_ROOT}" toolchain/bin):$(resolvePath "${LOCAL_PACKAGE_ROOT}" cmake/bin)"
 export PATH="$PRIVATE_BINS:$GlobalYarnPath:$LocalNodePath:$ToolchainPath:$CommonPaths"
 
 if [ -n "$HTTP_PROXY" ] ; then

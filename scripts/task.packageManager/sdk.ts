@@ -38,6 +38,9 @@ function ignoreSomeSdkFile(f: VinylFile) {
 	if (f.relative.startsWith('CMakeLists.txt')) {
 		return void 0;
 	}
+	if (f.relative.startsWith('kendryte-package.json')) {
+		return void 0;
+	}
 	
 	return f;
 }

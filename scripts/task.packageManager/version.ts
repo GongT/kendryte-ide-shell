@@ -11,3 +11,11 @@ export enum SdkBranch {
 	master = 'master',
 	develop = 'develop',
 }
+
+export function isOverrideableVersion(v: string) {
+	if (v === SdkBranch.develop || v === SdkBranch.master) {
+		return true;
+	} else {
+		return false;
+	}
+}

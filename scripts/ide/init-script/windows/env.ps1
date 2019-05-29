@@ -10,6 +10,7 @@ setSystemVar 'MY_SCRIPT_ROOT' (resolvePath $WORKSPACE_ROOT scripts\ide)
 setSystemVar 'VSCODE_ROOT' (resolvePath $WORKSPACE_ROOT ..\kendryte-ide)
 setSystemVar 'BUILD_ROOT' (resolvePath $WORKSPACE_ROOT build)
 setSystemVar 'DEBUG_APP_ROOT' (resolvePath $BUILD_ROOT DebugContents)
+setSystemVar 'LOCAL_PACKAGE_ROOT' (resolvePath $DEBUG_APP_ROOT LocalPackage)
 setSystemVar 'VSCODE_PORTABLE' (resolvePath $DEBUG_APP_ROOT UserData/latest)
 setSystemVar 'MY_SCRIPT_ROOT_BUILT' (resolvePath $BUILD_ROOT MyScriptBuildResult/ide)
 setSystemVar 'DOWNLOAD_PATH' (resolvePath $BUILD_ROOT download)
@@ -29,7 +30,8 @@ $CommonPaths = "C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDO
 $LocalNodePath = (resolvePath $WORKSPACE_ROOT node_modules\.bin)
 $GlobalYarnPath = (resolvePath $BUILD_ROOT yarn\bin)
 $PythonPath = 'C:\Users\gongt\.windows-build-tools\python27'
-setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$GlobalYarnPath;$LocalNodePath;$PythonPath;$CommonPaths"
+$ToolchainPath="$( resolvePath $LOCAL_PACKAGE_ROOT toolchain/bin );$( resolvePath $LOCAL_PACKAGE_ROOT cmake/bin )"
+setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$GlobalYarnPath;$LocalNodePath;$PythonPath;$ToolchainPath;$CommonPaths"
 
 if ($env:KENDRYTE_PROXY) {
 	setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"

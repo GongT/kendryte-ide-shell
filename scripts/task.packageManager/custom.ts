@@ -18,16 +18,19 @@ import {
 } from '../library/releaseInfo/s3Keys';
 import { PM_TEMP_DIR } from './clean';
 import { findOrAppendVersion, findOrPrependPackage } from './registry';
+import { isOverrideableVersion } from './version';
 
-export function publishUserCustom() {
+export async function publishUserCustom() {
 	if (!process.env.REPO) {
 		console.error('environment "REPO" is required');
 		throw new Error('Arguments wrong');
 	}
 	const target = process.env.REPO.replace(/\.git$/, '');
 	const branch = process.env.BRANCH || 'master';
-	
-	return publishZip(target, downloadBuffer(`https://github.com/${target}/archive/${branch}.zip`));
+
+	await packageManagerPublishZip(target, downloadBuffer(`https://github.com/${target}/archive/${branch}.zip`));
+
+	await packageManagerFlushJson();
 }
 
 export async function publishLocal() {
@@ -36,7 +39,7 @@ export async function publishLocal() {
 		throw new Error('Arguments wrong');
 	}
 	const targetArg = process.env.REPO.replace(/\.git$/, '');
-	
+
 	if (!process.env.ZIP) {
 		console.error('environment "ZIP" is required');
 		throw new Error('Arguments wrong');
@@ -46,7 +49,7 @@ export async function publishLocal() {
 		console.error('last argument must end with .zip');
 		throw new Error('Arguments wrong');
 	}
-	
+
 	await streamPromise(
 		zip.src(fileArg)
 		   .pipe(buffer())
@@ -61,15 +64,46 @@ export async function publishLocal() {
 			   return file;
 		   })),
 	);
-	
-	await publishZip(targetArg, gulp.src(fileArg));
+
+	await packageManagerPublishZip(targetArg, gulp.src(fileArg));
+
+	await packageManagerFlushJson();
 }
 
-async function publishZip(target: string, zipStream: NodeJS.ReadableStream) {
+const registryCache: {[type: string]: IRemotePackageRegistry} = {};
+
+async function fetchJson(type: PackageTypes): Promise<IRemotePackageRegistry> {
+	if (type === PackageTypes.Library) {
+		if (!registryCache[type]) {
+			registryCache[type] = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_LIBRARY);
+		}
+		return registryCache[type];
+	} else if (type === PackageTypes.Executable) {
+		if (!registryCache[type]) {
+			registryCache[type] = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_EXAMPLE);
+		}
+		return registryCache[type];
+	} else {
+		throw new Error('package type is invalid');
+	}
+}
+
+export async function packageManagerFlushJson() {
+	if (registryCache[PackageTypes.Library]) {
+		log('put registry json (library) back.');
+		await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_LIBRARY, registryCache[PackageTypes.Library]);
+	}
+	if (registryCache[PackageTypes.Executable]) {
+		log('put registry json (example) back.');
+		await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_EXAMPLE, registryCache[PackageTypes.Executable]);
+	}
+}
+
+export async function packageManagerPublishZip(target: string, zipStream: NodeJS.ReadableStream) {
 	const name = target.toLowerCase().replace('/', '_');
-	
+
 	const tempDir = nativePath(PM_TEMP_DIR, name);
-	
+
 	const extractStream = zipStream
 		.pipe(zip.src())
 		.pipe(normalizeVinyl())
@@ -85,9 +119,9 @@ async function publishZip(target: string, zipStream: NodeJS.ReadableStream) {
 			return f;
 		}))
 		.pipe(gulp.dest(tempDir));
-	
+
 	await streamPromise(extractStream);
-	
+
 	const packageFile = nativePath(tempDir, 'kendryte-package.json');
 	if (!await pathExists(packageFile)) {
 		throw new Error('kendryte-package.json does not exists');
@@ -97,50 +131,34 @@ async function publishZip(target: string, zipStream: NodeJS.ReadableStream) {
 	const pkgName = pkgData.name;
 	const version = pkgData.version;
 	const type: PackageTypes = pkgData.type;
-	
+
 	log('package.name=%s', pkgName);
 	log('package.version=%s', version);
 	log('package.type=%s', type);
-	
+
 	if (!pkgName || !version || !type) {
 		throw new Error('[name, version, type] is not exists in kendryte-package.json');
 	}
 	if (pkgName !== name) {
 		throw new Error('the package must name with ' + name);
 	}
-	
-	let registry: IRemotePackageRegistry;
-	if (type === PackageTypes.Library) {
-		registry = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_LIBRARY);
-	} else if (type === PackageTypes.Executable) {
-		registry = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_EXAMPLE);
-	} else {
-		throw new Error('package type is invalid');
-	}
+
+	const registry = await fetchJson(type);
 	const packageRegistry = findOrPrependPackage(type, name, registry, false);
 	const versionRegistry = findOrAppendVersion(version, packageRegistry.versions);
-	if (versionRegistry.downloadUrl && !isForceRun) {
+	if (versionRegistry.downloadUrl && !isForceRun && !isOverrideableVersion(version)) {
 		throw new Error('cannot publish over same version (' + version + ').');
 	}
-	
+
 	const uploadStream = gulpSrc(tempDir, '**')
 		.pipe(normalizeVinyl())
 		.pipe(skipDirectories())
 		.pipe(zip.zip(`${target}-${version}.zip`))
 		.pipe(buffer())
 		.pipe(gulpS3.dest({base: OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH}));
-	
+
 	versionRegistry.downloadUrl =
 		ExS3.instance().websiteUrl(posixJoin(OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH, `${target}-${version}.zip`));
-	
+
 	await streamPromise(uploadStream);
-	
-	log('put registry json back.');
-	if (type === PackageTypes.Library) {
-		await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_LIBRARY, registry);
-	} else if (type === PackageTypes.Executable) {
-		await ExS3.instance().putJson(OBJKEY_PACKAGE_MANAGER_EXAMPLE, registry);
-	} else {
-		throw new Error('package type is invalid');
-	}
 }
