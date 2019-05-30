@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { BUILD_ASAR_DIR, myScriptSourcePath, SHELL_ROOT } from '../environment';
-import { everyPlatform, filter, gulpSrc, jeditor, mergeStream, vfs, VinylFile, zip } from '../library/gulp';
+import { debug, everyPlatform, filter, gulpSrc, jeditor, mergeStream, vfs, VinylFile, zip } from '../library/gulp';
 import { cleanReleaseTask } from '../library/gulp/cleanup';
 import { normalizeVinyl } from '../library/gulp/normalizeVinyl';
 import { skipDirectories } from '../library/gulp/skipDirectories';
@@ -79,8 +79,12 @@ export const releaseTasks = everyPlatform('release:merge', [cleanReleaseTask, as
 
 	const selfDir = nativePath(myScriptSourcePath(__dirname), 'release-assets', platform);
 	const copyAssetsFiles = gulpSrc(selfDir, '**')
+		.pipe(debug({title: 'copy-asset:'}))
 		.pipe(simpleTransformStream((f) => {
 			if (f.basename === 'KendryteIDE.sh' || f.basename === 'KendryteIDE.command') {
+				f.stat.mode = 33261; // 100755
+			}
+			if (f.relative.endsWith('bin/kide')) {
 				f.stat.mode = 33261; // 100755
 			}
 			return f;
