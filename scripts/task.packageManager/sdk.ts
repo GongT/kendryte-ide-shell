@@ -1,81 +1,66 @@
 import { join } from 'path';
-import { myScriptSourcePath } from '../environment';
-import { buffer, downloadBuffer, gulp, gulpSrc, jeditor, mergeStream, rename, task, VinylFile, zip } from '../library/gulp';
+import { buffer, downloadBuffer, log, rename, task, VinylFile, zip } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
-import { startsWithFolder } from '../library/gulp/path';
 import { removeFirstComponent } from '../library/gulp/pathTools';
 import { simpleTransformStream } from '../library/gulp/transform';
-import { nativePath } from '../library/misc/pathUtil';
+import { PackageTypes } from '../library/jsonDefine/packageRegistry';
+import { ExS3 } from '../library/misc/awsUtil';
+import { streamPromise } from '../library/misc/streamUtil';
 import { OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH } from '../library/releaseInfo/s3Keys';
-import { PM_TEMP_DIR } from './clean';
+import { clearPmLocalTempTask } from './clean';
+import { packageManagerFetchJson, packageManagerFlushJson } from './custom';
+import { findOrAppendVersion, findOrPrependPackage } from './registry';
 import { SdkBranch, SdkType } from './version';
 
 function ignoreSomeSdkFile(f: VinylFile) {
 	if (f.isDirectory()) {
 		return void 0;
 	}
-	
-	if (f.basename.startsWith('.')) {
+
+	if (f.relative.startsWith('.')) {
 		return void 0;
 	}
-	
-	if (
-		startsWithFolder(f, 'cmake') ||
-		startsWithFolder(f, 'src') ||
-		startsWithFolder(f, '.github')
-	) {
-		return void 0;
-	}
-	
-	if (
-		f.relative.includes('third_party/fatfs/documents') ||
-		f.relative.includes('third_party/lwip/doc') ||
-		f.relative.includes('third_party/lwip/test')
-	) {
-		return void 0;
-	}
-	
 	if (f.relative.startsWith('CMakeLists.txt')) {
 		return void 0;
 	}
-	if (f.relative.startsWith('kendryte-package.json')) {
+	if (f.relative.startsWith('package.json')) {
 		return void 0;
 	}
-	
+
 	return f;
 }
 
-function createSdkTask(type: SdkType, branch: SdkBranch) {
-	return task(`pm:${type}:${branch}`, () => {
-		return mergeStream(
-			downloadBuffer(`https://github.com/kendryte/kendryte-${type}-sdk/archive/${branch}.zip`)
-				.pipe(zip.src())
-				.pipe(rename(removeFirstComponent))
-				.pipe(simpleTransformStream(ignoreSomeSdkFile)),
-			gulpSrc(myScriptSourcePath(__dirname), `${type}.json`)
-				.pipe(jeditor({
-					version: branch,
-					__random: (Math.random() * 10000).toFixed(0) + Date.now().toFixed(0),
-				}))
-				.pipe(rename((e: VinylFile) => e.basename = 'kendryte-package')),
-			gulpSrc(myScriptSourcePath(__dirname), `${type}.cmake`)
-				.pipe(rename((e: VinylFile) => e.basename = 'asm')),
-		)
-			.pipe(gulp.dest(nativePath(PM_TEMP_DIR, `${type}-sdk-${branch}`)))
-			.pipe(zip.zip(`${branch}.zip`))
-			.pipe(buffer())
-			.pipe(gulpS3.dest({
-				base: join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, `kendryte-${type}-sdk`),
-			}));
-	});
+async function runSdkTask(type: SdkType, branch: SdkBranch) {
+	const name = `kendryte-${type}-sdk`;
+	const d = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+	const createFileName = `${branch}.${d}.zip`;
+	const s3BaseKey = join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, `kendryte-${type}-sdk`);
+	const s3Key = s3BaseKey + '/' + createFileName;
+	const githubUrl = `https://github.com/kendryte/kendryte-${type}-sdk/archive/${branch}.zip`;
+
+	log('Download file from %s\t\tto %s.', githubUrl, createFileName);
+	const p = downloadBuffer(githubUrl)
+		.pipe(zip.src())
+		.pipe(rename(removeFirstComponent))
+		.pipe(simpleTransformStream(ignoreSomeSdkFile))
+		// .pipe(gulpDest(nativePath(PM_TEMP_DIR, createFileName)))
+		.pipe(zip.zip(createFileName))
+		.pipe(buffer())
+		.pipe(gulpS3.dest({base: s3BaseKey}));
+
+	await streamPromise(p);
+
+	const registry = await packageManagerFetchJson(PackageTypes.Library);
+	const packageRegistry = findOrPrependPackage(PackageTypes.Library, name, registry, true);
+	const versionRegistry = findOrAppendVersion(branch, packageRegistry.versions);
+	if (!packageRegistry.homepage) {
+		packageRegistry.homepage = `https://github.com/kendryte/${name}`;
+	}
+	versionRegistry.downloadUrl = ExS3.instance().websiteUrl(s3Key);
 }
 
-export const standaloneSdk = task('pm:standalone', [
-	createSdkTask(SdkType.standalone, SdkBranch.master),
-	createSdkTask(SdkType.standalone, SdkBranch.develop),
-]);
-
-export const freertosSdk = task('pm:freertos', [
-	createSdkTask(SdkType.freertos, SdkBranch.master),
-	createSdkTask(SdkType.freertos, SdkBranch.develop),
-]);
+export const updateSdk = task('pm:sdk', [clearPmLocalTempTask], async () => {
+	await runSdkTask(SdkType.standalone, SdkBranch.develop);
+	await runSdkTask(SdkType.freertos, SdkBranch.develop);
+	await packageManagerFlushJson();
+});

@@ -11,7 +11,8 @@ import { compressTasks } from './task.kendryteShell/release.compress';
 import { clearPmLocalTempTask } from './task.packageManager/clean';
 import { publishLocal, publishUserCustom } from './task.packageManager/custom';
 import { packageManagerPublishMonorepo } from './task.packageManager/monorepo';
-import { updateExampleRegistry, updateSdkRegistry } from './task.packageManager/registry';
+import { updateExampleRegistry } from './task.packageManager/registry';
+import { updateSdk } from './task.packageManager/sdk';
 import { modifyJsonTask } from './task.packages/upload';
 import { scriptsTask, scriptsWatchTask } from './task.script/compile';
 import './task.translate/translate.gulpfile';
@@ -52,7 +53,7 @@ task('ide', [
 
 /* package manager section */
 task('pm', [
-	updateSdkRegistry,
+	updateSdk,
 	updateExampleRegistry,
 ]);
 

@@ -72,7 +72,7 @@ export async function publishLocal() {
 
 const registryCache: {[type: string]: IRemotePackageRegistry} = {};
 
-async function fetchJson(type: PackageTypes): Promise<IRemotePackageRegistry> {
+export async function packageManagerFetchJson(type: PackageTypes): Promise<IRemotePackageRegistry> {
 	if (type === PackageTypes.Library) {
 		if (!registryCache[type]) {
 			registryCache[type] = await ExS3.instance().loadJson<IRemotePackageRegistry>(OBJKEY_PACKAGE_MANAGER_LIBRARY);
@@ -128,7 +128,7 @@ export async function packageManagerPublishZip(target: string, zipStream: NodeJS
 	}
 	let pkgData: any;
 	eval('pkgData=' + await readFile(packageFile));
-	const pkgName = pkgData.name;
+	const pkgName = ('' + pkgData.name).toLowerCase();
 	const version = pkgData.version;
 	const type: PackageTypes = pkgData.type;
 
@@ -143,7 +143,7 @@ export async function packageManagerPublishZip(target: string, zipStream: NodeJS
 		throw new Error('the package must name with ' + name);
 	}
 
-	const registry = await fetchJson(type);
+	const registry = await packageManagerFetchJson(type);
 	const packageRegistry = findOrPrependPackage(type, name, registry, false);
 	const versionRegistry = findOrAppendVersion(version, packageRegistry.versions);
 	if (versionRegistry.downloadUrl && !isForceRun && !isOverrideableVersion(version)) {

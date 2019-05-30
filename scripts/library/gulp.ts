@@ -16,6 +16,7 @@ export interface IAnonGulpPlugin {
 }
 
 export const gulp = require('gulp');
+export const gulpDest: IAnonGulpPlugin = gulp.dest;
 export const watch: IAnonGulpPlugin = require('gulp-watch');
 export const sourcemaps: IAnonGulpPlugin = require('gulp-sourcemaps');
 export const typescript: any = require('gulp-typescript');
@@ -65,7 +66,7 @@ export function limitSpeedTransform(
 			const reject = (e: Error) => {
 				callback(pluginError(name, e));
 			};
-			
+
 			Promise.resolve().then(transform.bind(this, chunk, this)).then(() => {
 				callback();
 			}, reject);
@@ -76,7 +77,7 @@ class SuperVerboseLog extends Transform {
 	constructor() {
 		super({objectMode: true});
 	}
-	
+
 	_transform(chunk: File, encoding: string, callback: Function) {
 		log.warn((chunk.contents as any).toString(encoding));
 		this.push(chunk);
@@ -167,9 +168,9 @@ export function everyPlatform(task: string, deps: ITask[]|IMyTaskFunc, cb?: IMyT
 			return cb(platform, currentPlatformDir);
 		});
 	}
-	
+
 	taskCreator(task, Array.from(Object.values(ret)));
-	
+
 	return Object.assign(new String(task), ret) as any;
 }
 
