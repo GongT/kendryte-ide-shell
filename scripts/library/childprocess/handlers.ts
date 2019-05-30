@@ -18,7 +18,7 @@ export function parseCommand(cmd: string, args: ReadonlyArray<string>): [string,
 			}
 			return arg;
 		});
-		return ['powershell.exe', ['-Command', cmd, ...args]];
+		return ['C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe', ['-Command', cmd, ...args]];
 	} else {
 		return [cmd, args.slice()];
 	}

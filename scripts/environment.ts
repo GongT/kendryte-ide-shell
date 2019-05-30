@@ -28,11 +28,12 @@ export const WORKSPACE_ROOT = resolve(myScriptSourcePath(__dirname), '..');
 /**@deprecated*/ export const MY_SCRIPT_ROOT = resolve(WORKSPACE_ROOT, 'scripts/ide');
 /**@deprecated*/ export const MY_SCRIPT_ROOT_BUILT = resolve(buildTo, 'ide');
 export const VSCODE_ROOT = resolve(WORKSPACE_ROOT, '../kendryte-ide');
+export const VSCODE_LOCAL_DEV_DATA_PATH = resolve(VSCODE_ROOT, '.build');
 export const BUILD_ROOT = resolve(WORKSPACE_ROOT, 'build');
 export const DEBUG_APP_ROOT = resolve(BUILD_ROOT, 'DebugContents');
 export const DOWNLOAD_PATH = resolve(BUILD_ROOT, 'download');
 export const RELEASE_ROOT = resolve(BUILD_ROOT, 'ide-main-release');
-/**@deprecated*/ export const ARCH_RELEASE_ROOT = isCI? VSCODE_ROOT : resolve(RELEASE_ROOT, 'kendryte-ide-release-x64');
+/**@deprecated*/ export const ARCH_RELEASE_ROOT = isCI ? VSCODE_ROOT : resolve(RELEASE_ROOT, 'kendryte-ide-release-x64');
 export const FAKE_HOME = resolve(BUILD_ROOT, 'FAKE_HOME');
 
 if (!process.env.ORIGINAL_HOME) {
@@ -41,7 +42,7 @@ if (!process.env.ORIGINAL_HOME) {
 export const HOME = process.env.HOME = FAKE_HOME;
 
 export const NODEJS_INSTALL = resolve(BUILD_ROOT, 'nodejs');
-export const NODEJS = isWin? 'node.ps1' : 'node';
+export const NODEJS = isWin ? 'node.ps1' : 'node';
 
 export const YARN_FOLDER = resolve(BUILD_ROOT, 'yarn');
 export const PREFIX = YARN_FOLDER;
@@ -50,9 +51,11 @@ export const YARN_CACHE_FOLDER = resolve(YARN_FOLDER, 'cache');
 export const PRIVATE_BINS = resolve(BUILD_ROOT, 'wrapping-bins');
 
 const LocalNodePath = resolve(WORKSPACE_ROOT, 'node_modules/.bin');
+const GlobalYarnPath = resolve(BUILD_ROOT, 'yarn/bin');
 let sp = '';
 let PATHS = [
 	PRIVATE_BINS,
+	GlobalYarnPath,
 	LocalNodePath,
 	resolve(DEBUG_APP_ROOT, 'LocalPackage/toolchain/bin'),
 	resolve(DEBUG_APP_ROOT, 'LocalPackage/cmake/bin'),

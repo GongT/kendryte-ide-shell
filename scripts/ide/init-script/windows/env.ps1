@@ -1,8 +1,8 @@
 if (!$env:ORIGINAL_HOME) {
-	setSystemVar 'ORIGINAL_HOME' $HOME
+    setSystemVar 'ORIGINAL_HOME' $HOME
 }
 if (!$env:ORIGINAL_PATH) {
-	setSystemVar 'ORIGINAL_PATH' $env:PATH
+    setSystemVar 'ORIGINAL_PATH' $env:PATH
 }
 
 setSystemVar 'WORKSPACE_ROOT' (resolvePath $PSScriptRoot ..\..\..\..)
@@ -30,16 +30,16 @@ $CommonPaths = "C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDO
 $LocalNodePath = (resolvePath $WORKSPACE_ROOT node_modules\.bin)
 $GlobalYarnPath = (resolvePath $BUILD_ROOT yarn\bin)
 $PythonPath = 'C:\Users\gongt\.windows-build-tools\python27'
-$ToolchainPath="$( resolvePath $LOCAL_PACKAGE_ROOT toolchain/bin );$( resolvePath $LOCAL_PACKAGE_ROOT cmake/bin )"
-setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$GlobalYarnPath;$LocalNodePath;$PythonPath;$CommonPaths;$ToolchainPath"
+$ToolchainPath = "$( resolvePath $LOCAL_PACKAGE_ROOT toolchain/bin );$( resolvePath $LOCAL_PACKAGE_ROOT cmake/bin )"
+setSystemVar 'PATH' "$PRIVATE_BINS;$GlobalYarnPath;$LocalNodePath;$PythonPath;$CommonPaths;$ToolchainPath"
 
 if ($env:KENDRYTE_PROXY) {
-	setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"
+    setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"
 }
 
 if ($env:HTTP_PROXY) {
-	setSystemVar 'HTTPS_PROXY' "$env:HTTP_PROXY"
-	setSystemVar 'ALL_PROXY' "$env:HTTP_PROXY"
+    setSystemVar 'HTTPS_PROXY' "$env:HTTP_PROXY"
+    setSystemVar 'ALL_PROXY' "$env:HTTP_PROXY"
 }
 
 setSystemVar 'TMP' (resolvePath $BUILD_ROOT tmp)

@@ -95,6 +95,7 @@ export async function getOutputExitCommand(cmd: string, ...args: string[]): Prom
 function _spawnCommand(cmd: string, args: string[], opts?: SpawnOptions): ProcessHandler {
 	const output = new PassThrough();
 	opts = {
+		shell:false,
 		stdio: ['ignore', 'pipe', 'pipe'],
 		...mergeEnv(),
 		...opts,

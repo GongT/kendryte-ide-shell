@@ -134,10 +134,8 @@ writeShFile yarn "
 if [ ! -e "$MY_SCRIPT_ROOT_BUILT" ]; then
 	echo "init scripts..."
 	cd "$WORKSPACE_ROOT"
-	yarn
 	yarn global add node-gyp
-	cd scripts
-	tsc -p .
+	yarn
 fi
 ### install node_modules for my scripts
 

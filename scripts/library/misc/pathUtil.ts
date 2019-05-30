@@ -1,7 +1,7 @@
 import { mkdirpSync } from 'fs-extra';
 import { isAbsolute, join, normalize, resolve } from 'path';
 import { resolve as _resolve } from 'url';
-import { isWin, RELEASE_ROOT } from '../../environment';
+import { isWin, VSCODE_LOCAL_DEV_DATA_PATH } from '../../environment';
 
 export function chdir(d: string) {
 	d = normalize(d);
@@ -18,7 +18,7 @@ export function ensureChdir(p: string) {
 }
 
 export function yarnPackageDir(what: string) {
-	return resolve(RELEASE_ROOT, 'yarn-dir', what);
+	return resolve(VSCODE_LOCAL_DEV_DATA_PATH, 'yarn-dir', what);
 }
 
 export interface PathJoiner {
