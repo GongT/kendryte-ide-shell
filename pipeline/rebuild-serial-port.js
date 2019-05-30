@@ -13,7 +13,7 @@ process.chdir('node_modules/@serialport/bindings');
 console.log('run gyp rebuild in %s', process.cwd());
 
 const electronVersion = require(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY + '/build/lib/electron').getElectronVersion();
-console.log('npm_config_target=%s', electronVersion);
+console.log('electronVersion=%s', electronVersion);
 
 rimraf.sync('build');
 execSync('node-gyp', [
