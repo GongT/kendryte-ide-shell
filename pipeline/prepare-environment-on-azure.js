@@ -5,7 +5,8 @@ const {platform} = require('os');
 
 const isCI = !!process.env.SYSTEM_COLLECTIONID;
 if (!isCI) {
-	throw new Error('this script is for azure pipelines');
+	console.error('this script is for azure pipelines');
+	process.exit(0);
 }
 
 const pwsh = platform() === 'win32'? 'powershell.exe' : 'pwsh';

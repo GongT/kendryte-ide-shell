@@ -6,5 +6,8 @@
 		"install": "node ./prepare-environment-on-azure.js"
 	},
 	"author": "",
-	"license": "ISC"
+	"license": "ISC",
+	"dependencies": {
+		"rimraf": "^2.6.3"
+	}
 }

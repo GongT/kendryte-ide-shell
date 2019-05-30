@@ -11,7 +11,8 @@
 	},
 	"workspaces": [
 		"shell",
-		"scripts"
+		"scripts",
+		"pipeline"
 	],
 	"resolutions": {
 		"**/@types/node": "^8.10.39"
