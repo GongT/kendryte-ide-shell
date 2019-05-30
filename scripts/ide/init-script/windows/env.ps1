@@ -31,7 +31,7 @@ $LocalNodePath = (resolvePath $WORKSPACE_ROOT node_modules\.bin)
 $GlobalYarnPath = (resolvePath $BUILD_ROOT yarn\bin)
 $PythonPath = 'C:\Users\gongt\.windows-build-tools\python27'
 $ToolchainPath="$( resolvePath $LOCAL_PACKAGE_ROOT toolchain/bin );$( resolvePath $LOCAL_PACKAGE_ROOT cmake/bin )"
-setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$GlobalYarnPath;$LocalNodePath;$PythonPath;$ToolchainPath;$CommonPaths"
+setSystemVar 'PATH' "$PRIVATE_BINS;$NODEJS_BIN;$GlobalYarnPath;$LocalNodePath;$PythonPath;$CommonPaths;$ToolchainPath"
 
 if ($env:KENDRYTE_PROXY) {
 	setSystemVar 'HTTP_PROXY' "$env:KENDRYTE_PROXY"

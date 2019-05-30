@@ -61,7 +61,7 @@ fi
 LocalNodePath="$(resolvePath "${WORKSPACE_ROOT}" node_modules/.bin)"
 GlobalYarnPath="$(resolvePath "${BUILD_ROOT}" yarn/bin)"
 ToolchainPath="$(resolvePath "${LOCAL_PACKAGE_ROOT}" toolchain/bin):$(resolvePath "${LOCAL_PACKAGE_ROOT}" cmake/bin)"
-export PATH="$PRIVATE_BINS:$GlobalYarnPath:$LocalNodePath:$ToolchainPath:$CommonPaths"
+export PATH="$PRIVATE_BINS:$GlobalYarnPath:$LocalNodePath:$CommonPaths:$ToolchainPath"
 
 if [ -n "$HTTP_PROXY" ] ; then
 	export HTTPS_PROXY="$HTTP_PROXY"
