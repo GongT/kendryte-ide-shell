@@ -6,6 +6,10 @@ if (!isCI) {
 	console.error('this script is for azure pipelines');
 	process.exit(1);
 }
+if (process.platform === 'win32') {
+	console.log('Skip on windows.');
+	process.exit(0);
+}
 process.chdir(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY);
 
 process.chdir('node_modules/@serialport/bindings');
