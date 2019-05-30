@@ -82,3 +82,5 @@ Else
 #  exec { 7za -h | Out-Null } "7za not executable..."
 #  exec { 7z -h | Out-Null } "7z not executable..."
 }
+
+exec { npm install -g 'node-gyp' }
