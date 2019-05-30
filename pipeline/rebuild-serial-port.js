@@ -14,18 +14,25 @@ console.log('run gyp rebuild in %s', process.cwd());
 
 const electronVersion = require(process.env.SYSTEM_DEFAULTWORKINGDIRECTORY + '/build/lib/electron').getElectronVersion();
 console.log('electronVersion=%s', electronVersion);
+console.log('PATH=%s', process.env.Path);
 
 rimraf.sync('build');
-/** @var SpawnSyncReturns */
-const r = spawnSync('node-gyp', [
+
+let cmd = 'node-gyp';
+let args = [
 	'rebuild',
 	'--verbose',
 	'--target=' + electronVersion,
 	'--arch=x64',
 	'--dist-url=https://atom.io/download/electron',
-], {
-	stdio: 'inherit',
-});
+];
+if (process.platform === 'win32') {
+	args.unshift(cmd);
+	cmd = 'powershell.exe';
+}
+
+/** @var SpawnSyncReturns */
+const r = spawnSync(cmd, args, {stdio: 'inherit'});
 if (r.error) {
 	throw r.error;
 }
