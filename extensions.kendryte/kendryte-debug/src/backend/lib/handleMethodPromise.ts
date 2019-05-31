@@ -30,7 +30,7 @@ export function handleMethodPromise(code?: number, actionTitle?: string): Method
 						e = new Error('Unknown reason: ' + msg);
 					}
 
-					this.debugConsole._error('Internal error occurred. See log for more information.');
+					this.debugConsole.error('Internal error occurred. See log for more information.');
 					this.vscodeProtocolLogger.info(`::%s() rejected:\n~~~~~~~~~~~~~~~~~~~\n%s\n~~~~~~~~~~~~~~~~~~~`, propertyKey, e.stack);
 					this.vscodeProtocolLogger.writeln('');
 					code = (e instanceof ErrorCode) ? e.code : 233;
