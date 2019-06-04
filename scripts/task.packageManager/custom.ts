@@ -1,6 +1,6 @@
 import { pathExists } from 'fs-extra';
 import { isForceRun } from '../environment';
-import { buffer, downloadBuffer, gulp, gulpSrc, log, rename, VinylFile, zip } from '../library/gulp';
+import { buffer, downloadBuffer, gulp, gulpSrc, log, rename, zip } from '../library/gulp';
 import { gulpS3 } from '../library/gulp/aws';
 import { normalizeVinyl } from '../library/gulp/normalizeVinyl';
 import { removeFirstComponent } from '../library/gulp/pathTools';
@@ -35,35 +35,21 @@ export async function publishUserCustom() {
 
 export async function publishLocal() {
 	if (!process.env.REPO) {
-		console.error('environment "REPO" is required');
+		log.error('environment "REPO" is required');
 		throw new Error('Arguments wrong');
 	}
 	const targetArg = process.env.REPO.replace(/\.git$/, '');
 
 	if (!process.env.ZIP) {
-		console.error('environment "ZIP" is required');
+		log.error('environment "ZIP" is required');
 		throw new Error('Arguments wrong');
 	}
 	const fileArg = process.env.ZIP;
 	if (!fileArg.endsWith('.zip')) {
-		console.error('last argument must end with .zip');
+		log.error('last argument must end with .zip');
 		throw new Error('Arguments wrong');
 	}
-
-	await streamPromise(
-		zip.src(fileArg)
-		   .pipe(buffer())
-		   .pipe(simpleTransformStream((file: VinylFile) => {
-			   if (file.basename === 'kendryte-package.json') {
-				   const data = JSON.parse(file.contents.toString());
-				   const wantName = targetArg.replace('/', '_');
-				   if (data.name !== wantName) {
-					   throw new Error(`name of project is ${data.name} but not ${wantName}`);
-				   }
-			   }
-			   return file;
-		   })),
-	);
+	log.info('REPO=%s, ZIP=%s', targetArg, fileArg);
 
 	await packageManagerPublishZip(targetArg, gulp.src(fileArg));
 
@@ -100,9 +86,8 @@ export async function packageManagerFlushJson() {
 }
 
 export async function packageManagerPublishZip(target: string, zipStream: NodeJS.ReadableStream) {
-	const name = target.toLowerCase().replace('/', '_');
-
-	const tempDir = nativePath(PM_TEMP_DIR, name);
+	const libName = target.toLowerCase().replace('/', '_');
+	const tempDir = nativePath(PM_TEMP_DIR, libName);
 
 	const extractStream = zipStream
 		.pipe(zip.src())
@@ -139,12 +124,12 @@ export async function packageManagerPublishZip(target: string, zipStream: NodeJS
 	if (!pkgName || !version || !type) {
 		throw new Error('[name, version, type] is not exists in kendryte-package.json');
 	}
-	if (pkgName !== name) {
-		throw new Error('the package must name with ' + name);
+	if (pkgName !== target) {
+		throw new Error(`the package must name with ${target}, but got ${pkgName}`);
 	}
 
 	const registry = await packageManagerFetchJson(type);
-	const packageRegistry = findOrPrependPackage(type, name, registry, false);
+	const packageRegistry = findOrPrependPackage(type, target, registry, false);
 	const versionRegistry = findOrAppendVersion(version, packageRegistry.versions);
 	if (versionRegistry.downloadUrl && !isForceRun && !isOverrideableVersion(version)) {
 		throw new Error('cannot publish over same version (' + version + ').');
@@ -153,12 +138,12 @@ export async function packageManagerPublishZip(target: string, zipStream: NodeJS
 	const uploadStream = gulpSrc(tempDir, '**')
 		.pipe(normalizeVinyl())
 		.pipe(skipDirectories())
-		.pipe(zip.zip(`${target}-${version}.zip`))
+		.pipe(zip.zip(`${libName}-${version}.zip`))
 		.pipe(buffer())
 		.pipe(gulpS3.dest({base: OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH}));
 
 	versionRegistry.downloadUrl =
-		ExS3.instance().websiteUrl(posixJoin(OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH, `${target}-${version}.zip`));
+		ExS3.instance().websiteUrl(posixJoin(OBJKEY_PACKAGE_MANAGER_USER_PACKAGE_PATH, `${libName}-${version}.zip`));
 
 	await streamPromise(uploadStream);
 }

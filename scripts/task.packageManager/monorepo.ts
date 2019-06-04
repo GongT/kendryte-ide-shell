@@ -18,7 +18,7 @@ export async function packageManagerPublishMonorepo() {
 		}
 
 		log.info(`Publishing file '%s'`, item);
-		const nameShould = 'kendryte_' + basename(item, '.zip');
+		const nameShould = 'kendryte/' + basename(item, '.zip');
 
 		await packageManagerPublishZip(nameShould, gulp.src(resolvePath(buildPath, item)));
 	}

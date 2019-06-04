@@ -31,7 +31,7 @@ function ignoreSomeSdkFile(f: VinylFile) {
 }
 
 async function runSdkTask(type: SdkType, branch: SdkBranch) {
-	const name = `kendryte-${type}-sdk`;
+	const name = `kendryte/${type}-sdk`;
 	const d = new Date().toISOString().replace(/:/g, '-').split('.')[0];
 	const createFileName = `${branch}.${d}.zip`;
 	const s3BaseKey = join(OBJKEY_PACKAGE_MANAGER_LIBRARY_PATH, `kendryte-${type}-sdk`);
@@ -54,7 +54,7 @@ async function runSdkTask(type: SdkType, branch: SdkBranch) {
 	const packageRegistry = findOrPrependPackage(PackageTypes.Library, name, registry, true);
 	const versionRegistry = findOrAppendVersion(branch, packageRegistry.versions);
 	if (!packageRegistry.homepage) {
-		packageRegistry.homepage = `https://github.com/kendryte/${name}`;
+		packageRegistry.homepage = `https://github.com/kendryte/${name.replace('/', '-')}`;
 	}
 	versionRegistry.downloadUrl = ExS3.instance().websiteUrl(s3Key);
 }

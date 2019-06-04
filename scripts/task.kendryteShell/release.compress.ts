@@ -1,4 +1,4 @@
-import { BUILD_ARTIFACTS_DIR, isWin } from '../environment';
+import { BUILD_ARTIFACTS_DIR } from '../environment';
 import { everyPlatform, log, run } from '../library/gulp';
 import { resolvePath } from '../library/misc/pathUtil';
 import { updaterFileName } from '../library/paths/updater';
@@ -14,9 +14,8 @@ export const compressTasks = everyPlatform('release:compress', [releaseTasks], (
 		'-mmt',
 		'-ssc',
 	];
-	if (!isWin) {
-		// szCmdArr.push('"-sfx7z.sfx"'); // windows
-		szCmdArr.push('-sfx7zCon.sfx'); // self extraction
+	if (platform === 'darwin') {
+		szCmdArr.push('-tzip');
 	}
 	szCmdArr.push(
 		resolvePath(BUILD_ARTIFACTS_DIR, updaterFileName(platform)),
