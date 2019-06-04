@@ -9,13 +9,14 @@ export const compressTasks = everyPlatform('release:compress', [releaseTasks], (
 		require('7zip-bin').path7za,
 		'a',
 		'-y',
-		'-ms=on',
 		'-mx8',
 		'-mmt',
 		'-ssc',
 	];
 	if (platform === 'darwin') {
 		szCmdArr.push('-tzip');
+	} else {
+		szCmdArr.push('-ms=on');
 	}
 	szCmdArr.push(
 		resolvePath(BUILD_ARTIFACTS_DIR, updaterFileName(platform)),
