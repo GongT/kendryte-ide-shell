@@ -225,7 +225,7 @@
             "noteAddressProgram": "注意：记得检查程序文件大小",
             "open": "打开{1}",
             "selectTitle": "选择要刷写的文件",
-            "swapLabel": "交还大小端"
+            "swapLabel": "交换大小端"
         },
         "vs/kendryte/vs/workbench/flashManager/common/editorInput": {
             "editingFile": "正在编辑{0}",
@@ -265,7 +265,6 @@
         "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/editor/leftPanel": {
             "settingsListLabel": "设置"
         },
-        "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/fpioaActions": {},
         "vs/kendryte/vs/workbench/fpioaConfig/electron-browser/fpioaContribution": {
             "fpioa.editor.label": "芯片引脚功能编辑器"
         },
@@ -486,7 +485,6 @@
             "serialport.baudrate.flash": "刷写波特率",
             "serialport.baudrate.flash.desc": "刷写过程中使用的波特率"
         },
-        "vs/kendryte/vs/workbench/serialUpload/node/flasher": {},
         "vs/kendryte/vs/workbench/topMenu/node/shortcutsContribution": {
             "kendryte": "勘智"
         }
