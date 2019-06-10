@@ -5,18 +5,14 @@ function dieInstall() {
 	die "\e[38;5;14;1mpython 2.x\e[38;5;9m is not installed on your system, install it first."
 }
 function diePermission() {
-	die "You [$(whoami)]($(id -u)) do not have write permission to this dir: \n  $(ls -dlh "${1}")\nNeed run \e[38;5;14msudo chown -R $(whoami) '$WORKSPACE_ROOT'\e[0m"
+	die "You [$(whoami)]($(id -u)) do not have write permission to this dir: \n  $([[ -e "$1" ]] && ls -dlh "$1" || echo "$1")\nNeed run\n  \e[38;5;14msudo mkdir '$1' && sudo chown -R $(whoami) '$1'\e[0m"
 }
-
-touch "$WORKSPACE_ROOT" || diePermission "$WORKSPACE_ROOT"
 
 MakeNewDir "$RELEASE_ROOT" || diePermission "$(dirname "$RELEASE_ROOT")"
 MakeNewDir "$HOME" || diePermission "$(dirname "$HOME")"
 MakeNewDir "$PRIVATE_BINS" || diePermission "$(dirname "$PRIVATE_BINS")"
 MakeNewDir "$TMP" || diePermission "$(dirname "$TMP")"
-MakeNewDir $DOWNLOAD_PATH || diePermission "$(dirname "$DOWNLOAD_PATH")"
-
-touch "$RELEASE_ROOT" || die "You [$(whoami)]($(id -u)) do not have write permission to this dir: \n  $(ls -dlh "${RELEASE_ROOT}")\nNeed to chown to you."
+MakeNewDir "$DOWNLOAD_PATH" || diePermission "$(dirname "$DOWNLOAD_PATH")"
 
 export HISTFILE="$HOME/.bash_history"
 
@@ -51,7 +47,11 @@ if [ ! -e "$PRIVATE_BINS/node" ]; then
 	writeShFile node "
 		export PRIVATE_BINS='$PRIVATE_BINS'
 		export VSCODE_ROOT='$VSCODE_ROOT'
-		if pwd | grep -qE \"$VSCODE_ROOT(/|$)\" || pwd | grep -q \"$RELEASE_ROOT\" ; then
+		export MY_EXTENSION_ROOT='$MY_EXTENSION_ROOT'
+		if pwd | grep -qE \"\$VSCODE_ROOT(/|$)\" \\
+		|| pwd | grep -q \"\$RELEASE_ROOT\" \\
+		|| pwd | grep -q \"\$MY_EXTENSION_ROOT\"
+		then
 			export NODEJS=\"$NODEJS_INSTALL/node8/bin/node\"
 			echo -e \"\e[38;5;8mUsing node 8 in \$(pwd)\e[0m\" >&2
 		else
@@ -78,7 +78,7 @@ if [ ! -e "$PRIVATE_BINS/yarn" ]; then
 	tar xf "$DOWNLOAD_PATH/yarn.tgz" --strip-components 1
 	echo "Install yarn to $NODEJS_INSTALL"
 	node ./bin/yarn.js \
-			--prefer-offline --no-default-rc --no-bin-links \
+			--prefer-offline --no-bin-links \
 			--cache-folder "$YARN_CACHE_FOLDER" \
 			--global-folder "$NODEJS_INSTALL" \
 			--link-folder "$YARN_FOLDER" \
@@ -121,7 +121,7 @@ writeShFile yarn "
 
 	exec node \\
 		'$NODEJS_INSTALL/node_modules/yarn/bin/yarn.js' \\
-			--prefer-offline --no-default-rc \$BL \\
+			--prefer-offline \$BL \\
 			--use-yarnrc '$VSCODE_ROOT/.yarnrc' \\
 			--cache-folder '$YARN_CACHE_FOLDER' \\
 			--global-folder '$NODEJS_INSTALL' \\

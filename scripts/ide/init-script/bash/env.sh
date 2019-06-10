@@ -34,6 +34,7 @@ fi
 
 export WORKSPACE_ROOT="$(resolvePath "${SCRIPT_LIB_ROOT}" ../../../..)"
 export MY_SCRIPT_ROOT="$(resolvePath "${WORKSPACE_ROOT}" scripts/ide)"
+export MY_EXTENSION_ROOT="$(resolvePath "${WORKSPACE_ROOT}" extensions.kendryte)"
 export VSCODE_ROOT="$(resolvePath "${WORKSPACE_ROOT}" ../kendryte-ide)"
 export BUILD_ROOT="$(resolvePath "${WORKSPACE_ROOT}" build)"
 export DEBUG_APP_ROOT="$(resolvePath "${BUILD_ROOT}" DebugContents)"

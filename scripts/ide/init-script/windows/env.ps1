@@ -7,6 +7,7 @@ if (!$env:ORIGINAL_PATH) {
 
 setSystemVar 'WORKSPACE_ROOT' (resolvePath $PSScriptRoot ..\..\..\..)
 setSystemVar 'MY_SCRIPT_ROOT' (resolvePath $WORKSPACE_ROOT scripts\ide)
+setSystemVar 'MY_EXTENSION_ROOT' (resolvePath $WORKSPACE_ROOT extensions.kendryte)
 setSystemVar 'VSCODE_ROOT' (resolvePath $WORKSPACE_ROOT ..\kendryte-ide)
 setSystemVar 'BUILD_ROOT' (resolvePath $WORKSPACE_ROOT build)
 setSystemVar 'DEBUG_APP_ROOT' (resolvePath $BUILD_ROOT DebugContents)

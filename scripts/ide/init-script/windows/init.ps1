@@ -20,10 +20,15 @@ if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
 
     writeCmdFile node "
 		set VSCODE_ROOT=$VSCODE_ROOT
+		set EXTENSION_ROOT=$MY_EXTENSION_ROOT
 		set NODEJS_INSTALL=$NODEJS_INSTALL
 
 		IF x%VSCODE_ROOT%==x%cd% GOTO use8
 		call set XXXXXX=%%cd:%VSCODE_ROOT%\=%%
+		IF NOT x%XXXXXX%==x%cd% GOTO use8
+
+		IF x%EXTENSION_ROOT%==x%cd% GOTO use8
+		call set XXXXXX=%%cd:%EXTENSION_ROOT%\=%%
 		IF NOT x%XXXXXX%==x%cd% GOTO use8
 
 		:usel
@@ -74,7 +79,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
     (Get-ChildItem -Directory | Select-Object -Index 0).Name | cd
     echo "Install yarn to $NODEJS_INSTALL"
     node ".\bin\yarn.js" `
-        --prefer-offline --no-default-rc --no-bin-links `
+        --prefer-offline --no-bin-links `
         --cache-folder "$YARN_CACHE_FOLDER" `
         --global-folder "$NODEJS_INSTALL" `
         --link-folder "$YARN_FOLDER" `
@@ -123,7 +128,7 @@ writeScriptFile yarn @"
 
 	node ``
 		'$NODEJS_INSTALL\node_modules\yarn\bin\yarn.js' ``
-			--prefer-offline --no-default-rc `$BL ``
+			--prefer-offline `$BL ``
 			--use-yarnrc '$VSCODE_ROOT/.yarnrc' ``
 			--cache-folder '$YARN_CACHE_FOLDER' ``
 			--global-folder '$NODEJS_INSTALL' ``
