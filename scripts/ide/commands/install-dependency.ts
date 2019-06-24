@@ -19,6 +19,7 @@ runMain(async () => {
 	usePrettyIfTty();
 	chdir(VSCODE_ROOT);
 	log('installing dependencies');
+	process.env.CHILD_CONCURRENCY = '1';
 	if (isWin) {
 		log('is windows, use asar method.');
 		const stat = await lstat('./node_modules');
