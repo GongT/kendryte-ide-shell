@@ -9,6 +9,7 @@ app.setPath('userData', myProfilePath('.'));
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
+	console.log('single instance: quit');
 	app.quit();
 } else {
 	app.on('second-instance', (event, argv: string[], workDir: string) => {

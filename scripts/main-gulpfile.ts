@@ -3,7 +3,7 @@ require('source-map-support/register');
 import { log, task } from './library/gulp';
 import './task.azure/python2';
 import { createIndexAndUpload } from './task.common/indexPage';
-import { extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
+import { createExtensionsNodeModulesTask, extensionsTask, extensionsWatchTask } from './task.extensions/gulpfile';
 import { ideUploadJson } from './task.ideMain/updateAws';
 import { developmentTask, watchTask } from './task.kendryteShell/compile';
 import { awsModifyJsonTask } from './task.kendryteShell/release.aws';
@@ -18,10 +18,10 @@ import { scriptsTask, scriptsWatchTask } from './task.script/compile';
 import './task.translate/translate.gulpfile';
 
 /* dev section */
-task('default', [developmentTask, scriptsTask, extensionsTask], () => {
+task('default', [developmentTask, scriptsTask, extensionsTask, createExtensionsNodeModulesTask], () => {
 	log('Kendryte shell (updater) compile success.');
 });
-task('watch', [watchTask, scriptsWatchTask, extensionsWatchTask], () => {
+task('watch', [watchTask, scriptsWatchTask, extensionsWatchTask, createExtensionsNodeModulesTask], () => {
 	log('Bye bye.');
 });
 

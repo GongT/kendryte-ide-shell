@@ -1,6 +1,7 @@
 import { StoppedEvent } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
 
+
 export function createStopEvent(reason: StopReason, threadId?: number, description?: string) {
 	const ev: DebugProtocol.StoppedEvent = new StoppedEvent(stopReasonString(StopReason.Pausing));
 	const b = ev.body;

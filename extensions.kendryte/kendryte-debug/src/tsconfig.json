@@ -15,15 +15,12 @@
 		"experimentalDecorators": true,
 		"noEmitOnError": false,
 		"pretty": true,
-		"outDir": "../../build/DebugContents/UserData/latest/extensions/kendryte-debug",
-		"rootDir": "src",
+		"outDir": "../.debugging",
 		"typeRoots": [
 			"../node_modules",
 			"../node_modules/@types",
 			"../../node_modules",
-			"../../node_modules/@types",
-			"../../../node_modules",
-			"../../../node_modules/@types"
+			"../../node_modules/@types"
 		],
 		"types": [
 			"vscode",
@@ -32,6 +29,6 @@
 	},
 	"exclude": [ "node_modules" ],
 	"include": [
-		"src/**/*.ts"
+		"**/*.ts"
 	]
 }

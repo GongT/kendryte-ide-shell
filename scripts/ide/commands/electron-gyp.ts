@@ -23,7 +23,7 @@ runMain(async () => {
 	setEnv('runtime', 'electron');
 	setEnv('build_from_source', 'true');
 	setEnv('LANG', 'en_US.UTF-8');
-    process.env.HOME += '/electron-gyp';
+	process.env.HOME += '/electron-gyp';
 
 	await simpleCommandOut('node-gyp', ...process.argv.slice(2));
 });
