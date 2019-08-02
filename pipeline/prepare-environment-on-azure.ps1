@@ -1,6 +1,6 @@
-echo "====================================================="
-echo " * This is prepare-environment-on-azure.ps1"
-echo "====================================================="
+Write-Host "====================================================="
+Write-Host " * This is prepare-environment-on-azure.ps1"
+Write-Host "====================================================="
 
 $ErrorActionPreference = "Stop"
 $env:CHILD_CONCURRENCY = "1"

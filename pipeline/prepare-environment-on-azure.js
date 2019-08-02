@@ -1,6 +1,10 @@
 const {spawnSync} = require('child_process');
 const {platform} = require('os');
 
+console.log('=====================================================');
+console.log(' * This is prepare-environment-on-azure.ps1');
+console.log('=====================================================');
+
 // this file bootstrap powershell script with npm credentials, but it need to rewrite in js...
 
 const isCI = !!process.env.SYSTEM_COLLECTIONID;
