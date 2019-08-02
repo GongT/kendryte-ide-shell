@@ -89,3 +89,4 @@ Else
 }
 
 exec { npm install -g 'node-gyp' }
+exec { npm config list -l }

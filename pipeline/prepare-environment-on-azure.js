@@ -3,7 +3,6 @@ const {platform} = require('os');
 
 console.log('=====================================================');
 console.log(' * This is prepare-environment-on-azure.js');
-console.log(Object.entries(process.env).map(([k, v]) => `${k}=${v}`).join('\n'));
 console.log('=====================================================');
 
 // this file bootstrap powershell script with npm credentials, but it need to rewrite in js...
