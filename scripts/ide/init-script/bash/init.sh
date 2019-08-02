@@ -19,31 +19,33 @@ export HISTFILE="$HOME/.bash_history"
 if [ ! -e "$PRIVATE_BINS/node" ]; then
 	echo "Install Node.js"
 
-	VERSION=11.6.0
-	VERSION_OLD=8.12.0
+	VERSION=12.7.0
+	NEW_VERSION_SHORT=12
+	VERSION_OLD=10.16.0
+	OLD_VERSION_SHORT=10
 	if [ "$SYSTEM" = "linux" ]; then
-		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
-		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node$OLD_VERSION_SHORT.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node$NEW_VERSION_SHORT.tar.xz"
 	else
-		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node8.tar.xz"
-		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node$OLD_VERSION_SHORT.tar.xz"
+		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-darwin-x64.tar.xz" "$DOWNLOAD_PATH/node$NEW_VERSION_SHORT.tar.xz"
 	fi
 	echo "Extracting node from node.tar.xz to $NODEJS_INSTALL"
-	RimDir "$NODEJS_INSTALL/node8"
-	RimDir "$NODEJS_INSTALL/node-latest"
-	MakeNewDir "$NODEJS_INSTALL/node8"
-	MakeNewDir "$NODEJS_INSTALL/node-latest"
+	RimDir "$NODEJS_INSTALL/node$OLD_VERSION_SHORT"
+	RimDir "$NODEJS_INSTALL/node$NEW_VERSION_SHORT"
+	MakeNewDir "$NODEJS_INSTALL/node$OLD_VERSION_SHORT"
+	MakeNewDir "$NODEJS_INSTALL/node$NEW_VERSION_SHORT"
 
-	tar xf "$DOWNLOAD_PATH/node8.tar.xz" --strip-components 1 -C "$NODEJS_INSTALL/node8"
-	RimDir "$NODEJS_INSTALL/node8/lib"
-	RimDir "$NODEJS_INSTALL/node8/bin/npm"
-	RimDir "$NODEJS_INSTALL/node8/bin/npx"
-	
-	tar xf "$DOWNLOAD_PATH/node.tar.xz" --strip-components 1 -C "$NODEJS_INSTALL/node-latest"
-	RimDir "$NODEJS_INSTALL/node-latest/lib"
-	RimDir "$NODEJS_INSTALL/node-latest/bin/npm"
-	RimDir "$NODEJS_INSTALL/node-latest/bin/npx"
-	
+	tar xf "$DOWNLOAD_PATH/node$OLD_VERSION_SHORT.tar.xz" --strip-components 1 -C "$NODEJS_INSTALL/node$OLD_VERSION_SHORT"
+	RimDir "$NODEJS_INSTALL/node$OLD_VERSION_SHORT/lib"
+	RimDir "$NODEJS_INSTALL/node$OLD_VERSION_SHORT/bin/npm"
+	RimDir "$NODEJS_INSTALL/node$OLD_VERSION_SHORT/bin/npx"
+
+	tar xf "$DOWNLOAD_PATH/node.tar.xz" --strip-components 1 -C "$NODEJS_INSTALL/node$NEW_VERSION_SHORT"
+	RimDir "$NODEJS_INSTALL/node$NEW_VERSION_SHORT/lib"
+	RimDir "$NODEJS_INSTALL/node$NEW_VERSION_SHORT/bin/npm"
+	RimDir "$NODEJS_INSTALL/node$NEW_VERSION_SHORT/bin/npx"
+
 	writeShFile node "
 		export PRIVATE_BINS='$PRIVATE_BINS'
 		export VSCODE_ROOT='$VSCODE_ROOT'
@@ -52,11 +54,11 @@ if [ ! -e "$PRIVATE_BINS/node" ]; then
 		|| pwd | grep -q \"\$RELEASE_ROOT\" \\
 		|| pwd | grep -q \"\$MY_EXTENSION_ROOT\"
 		then
-			export NODEJS=\"$NODEJS_INSTALL/node8/bin/node\"
-			echo -e \"\e[38;5;8mUsing node 8 in \$(pwd)\e[0m\" >&2
+			export NODEJS=\"$NODEJS_INSTALL/node$OLD_VERSION_SHORT/bin/node\"
+			echo -e \"\e[38;5;8mUsing node $OLD_VERSION_SHORT in \$(pwd)\e[0m\" >&2
 		else
-			export NODEJS=\"$NODEJS_INSTALL/node-latest/bin/node\"
-			echo -e \"\e[38;5;8mUsing node latest in \$(pwd)\e[0m\" >&2
+			export NODEJS=\"$NODEJS_INSTALL/node$NEW_VERSION_SHORT/bin/node\"
+			echo -e \"\e[38;5;8mUsing node $NEW_VERSION_SHORT in \$(pwd)\e[0m\" >&2
 		fi
 		export PATH=\"\$(dirname \"\$NODEJS\"):\$PATH\"
 		\$NODEJS $_PASSARG

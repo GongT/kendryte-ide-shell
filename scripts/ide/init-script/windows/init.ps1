@@ -6,39 +6,41 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
     echo "Install Node.js"
-    $VERSION = "11.6.0"
-    $VERSION_OLD = "8.12.0"
-    downloadFile "https://nodejs.org/dist/v$VERSION_OLD/win-x64/node.exe" "$DOWNLOAD_PATH/node-8.exe"
-    downloadFile "https://nodejs.org/dist/v$VERSION/win-x64/node.exe" "$DOWNLOAD_PATH/node-latest.exe"
+    $VERSION=12.7.0
+    $NEW_VERSION_SHORT=12
+    $VERSION_OLD=10.16.0
+    $OLD_VERSION_SHORT=10
+    downloadFile "https://nodejs.org/dist/v$VERSION_OLD/win-x64/node.exe" "$DOWNLOAD_PATH/node-$OLD_VERSION_SHORT.exe"
+    downloadFile "https://nodejs.org/dist/v$VERSION/win-x64/node.exe" "$DOWNLOAD_PATH/node-$NEW_VERSION_SHORT.exe"
 
     echo "Coping node.exe from $DOWNLOAD_PATH to $NODEJS_INSTALL"
     RimDir $NODEJS_INSTALL
-    MkDir $NODEJS_INSTALL\node8\bin
-    MkDir $NODEJS_INSTALL\node-latest\bin
-    Copy-Item "$DOWNLOAD_PATH\node-8.exe" $NODEJS_INSTALL\node8\bin\node.exe -Force
-    Copy-Item "$DOWNLOAD_PATH\node-latest.exe" $NODEJS_INSTALL\node-latest\bin\node.exe -Force
+    MkDir $NODEJS_INSTALL\node$OLD_VERSION_SHORT\bin
+    MkDir $NODEJS_INSTALL\node$NEW_VERSION_SHORT\bin
+    Copy-Item "$DOWNLOAD_PATH\node-$OLD_VERSION_SHORT.exe" $NODEJS_INSTALL\node$OLD_VERSION_SHORT\bin\node.exe -Force
+    Copy-Item "$DOWNLOAD_PATH\node-$NEW_VERSION_SHORT.exe" $NODEJS_INSTALL\node$NEW_VERSION_SHORT\bin\node.exe -Force
 
     writeCmdFile node "
 		set VSCODE_ROOT=$VSCODE_ROOT
 		set EXTENSION_ROOT=$MY_EXTENSION_ROOT
 		set NODEJS_INSTALL=$NODEJS_INSTALL
 
-		IF x%VSCODE_ROOT%==x%cd% GOTO use8
+		IF x%VSCODE_ROOT%==x%cd% GOTO useold
 		call set XXXXXX=%%cd:%VSCODE_ROOT%\=%%
-		IF NOT x%XXXXXX%==x%cd% GOTO use8
+		IF NOT x%XXXXXX%==x%cd% GOTO useold
 
-		IF x%EXTENSION_ROOT%==x%cd% GOTO use8
+		IF x%EXTENSION_ROOT%==x%cd% GOTO useold
 		call set XXXXXX=%%cd:%EXTENSION_ROOT%\=%%
-		IF NOT x%XXXXXX%==x%cd% GOTO use8
+		IF NOT x%XXXXXX%==x%cd% GOTO useold
 
 		:usel
-		set NODEJS=$NODEJS_INSTALL\node-latest\bin\node.exe
-		rem this will break someone collect output: powershell.exe write-host -foregroundcolor DarkGray Using node latest in %cd% 1>&2
+		set NODEJS=$NODEJS_INSTALL\node$NEW_VERSION_SHORT\bin\node.exe
+		rem this will break someone collect output: powershell.exe write-host -foregroundcolor DarkGray Using node $NEW_VERSION_SHORT in %cd% 1>&2
 		GOTO end
 
-		:use8
-		set NODEJS=$NODEJS_INSTALL\node8\bin\node.exe
-		rem this will break someone collect output: powershell.exe write-host -foregroundcolor DarkGray Using node 8 in %cd% 1>&2
+		:useold
+		set NODEJS=$NODEJS_INSTALL\node$OLD_VERSION_SHORT\bin\node.exe
+		rem this will break someone collect output: powershell.exe write-host -foregroundcolor DarkGray Using node $OLD_VERSION_SHORT in %cd% 1>&2
 		GOTO end
 
 		:end
