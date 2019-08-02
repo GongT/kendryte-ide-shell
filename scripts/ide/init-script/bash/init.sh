@@ -19,10 +19,10 @@ export HISTFILE="$HOME/.bash_history"
 if [ ! -e "$PRIVATE_BINS/node" ]; then
 	echo "Install Node.js"
 
-	VERSION=12.7.0
-	NEW_VERSION_SHORT=12
-	VERSION_OLD=10.16.0
-	OLD_VERSION_SHORT=10
+	VERSION="12.7.0"
+	NEW_VERSION_SHORT="12"
+	VERSION_OLD="10.16.0"
+	OLD_VERSION_SHORT="10"
 	if [ "$SYSTEM" = "linux" ]; then
 		downloadFile "https://nodejs.org/dist/v${VERSION_OLD}/node-v${VERSION_OLD}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node$OLD_VERSION_SHORT.tar.xz"
 		downloadFile "https://nodejs.org/dist/v${VERSION}/node-v${VERSION}-linux-x64.tar.xz" "$DOWNLOAD_PATH/node$NEW_VERSION_SHORT.tar.xz"

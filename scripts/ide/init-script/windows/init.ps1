@@ -6,10 +6,10 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
     echo "Install Node.js"
-    $VERSION=12.7.0
-    $NEW_VERSION_SHORT=12
-    $VERSION_OLD=10.16.0
-    $OLD_VERSION_SHORT=10
+    $VERSION="12.7.0"
+    $NEW_VERSION_SHORT="12"
+    $VERSION_OLD="10.16.0"
+    $OLD_VERSION_SHORT="10"
     downloadFile "https://nodejs.org/dist/v$VERSION_OLD/win-x64/node.exe" "$DOWNLOAD_PATH/node-$OLD_VERSION_SHORT.exe"
     downloadFile "https://nodejs.org/dist/v$VERSION/win-x64/node.exe" "$DOWNLOAD_PATH/node-$NEW_VERSION_SHORT.exe"
 
