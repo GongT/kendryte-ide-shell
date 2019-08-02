@@ -12,6 +12,7 @@ function Exec
     [ Parameter(Position = 0, Mandatory = 1) ][ scriptblock ]$cmd,
     [ Parameter(Position = 1, Mandatory = 0) ][ string ]$errorMessage = ($msgs.error_bad_command -f $cmd)
   )
+  echo "pwsh: +++ $cmd"
   & $cmd
   if ( $lastexitcode -ne 0 )
   {
@@ -59,7 +60,7 @@ ElseIf ($env:AGENT_OS -eq "Darwin")
 {
   Write-Output "MacPath is $env:PATH"
   
-  New-Item -ItemType Directory -Path "$env:TMPDIR/szip"
+  New-Item -Force -ItemType Directory -Path "$env:TMPDIR/szip"
   Set-Location "$env:TMPDIR/szip"
   Write-Host "-->> vso[task.prependpath]$env:TMPDIR/szip"
   Write-Host "##vso[task.prependpath]$env:TMPDIR/szip"
@@ -74,7 +75,7 @@ Else
   # windows
   Write-Output "WindowsPath is $env:PATH"
   
-  New-Item -ItemType Directory -Path "$env:TMP\szip"
+  New-Item -Force -ItemType Directory -Path "$env:TMP\szip"
   Set-Location "$env:TMP\szip"
   Write-Host "-->> vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
   Write-Host "##vso[task.prependpath]$env:TMP\szip\node_modules\7zip\7zip-lite"
