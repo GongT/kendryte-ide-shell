@@ -1,4 +1,5 @@
 import { unlinkSync } from 'fs';
+import { resolve } from 'path';
 import { VSCODE_ROOT } from '../../environment';
 import { log } from '../../library/gulp';
 import { isExistsSync, isLinkSync } from '../../library/misc/fsUtil';
@@ -14,7 +15,7 @@ export async function reset_asar() {
 		unlinkSync('./node_modules.asar');
 	}
 	if (await isExistsSync('./node_modules.asar.unpacked')) {
-		await removeDirectory('./node_modules.asar.unpacked');
+		await removeDirectory(resolve(process.cwd(), './node_modules.asar.unpacked'));
 	}
 	log('cleanup ASAR files.\n');
 }

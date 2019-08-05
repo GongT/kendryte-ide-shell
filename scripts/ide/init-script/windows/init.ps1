@@ -6,8 +6,8 @@ MkDir $DOWNLOAD_PATH
 
 if (!(Test-Path -Path "$PRIVATE_BINS\node.bat")) {
     echo "Install Node.js"
-    $VERSION="12.7.0"
-    $NEW_VERSION_SHORT="12"
+    $VERSION="10.16.0"
+    $NEW_VERSION_SHORT="nn"
     $VERSION_OLD="10.16.0"
     $OLD_VERSION_SHORT="10"
     downloadFile "https://nodejs.org/dist/v$VERSION_OLD/win-x64/node.exe" "$DOWNLOAD_PATH/node-$OLD_VERSION_SHORT.exe"
@@ -81,7 +81,7 @@ if (!(Test-Path -Path "$PRIVATE_BINS/yarn.ps1")) {
     (Get-ChildItem -Directory | Select-Object -Index 0).Name | cd
     echo "Install yarn to $NODEJS_INSTALL"
     node ".\bin\yarn.js" `
-        --prefer-offline --no-bin-links `
+        --no-bin-links `
         --cache-folder "$YARN_CACHE_FOLDER" `
         --global-folder "$NODEJS_INSTALL" `
         --link-folder "$YARN_FOLDER" `

@@ -7,6 +7,7 @@ import { timeout } from '../../library/misc/timeUtil';
 export async function removeDirectory(path: string) {
 	path = normalize(path);
 	if (!isAbsolute(path)) {
+		console.error('remove: %s', path);
 		throw new Error('removeDirectory not absolute.');
 	}
 	if (process.cwd().indexOf(path) === 0) {

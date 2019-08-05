@@ -1,6 +1,2 @@
-import { reset_asar } from '../ide/codeblocks/resetAsar';
-import { runMain } from '../library/misc/myBuildSystem';
+console.log('pre install: empty.');
 
-runMain(async () => {
-	await reset_asar();
-});
