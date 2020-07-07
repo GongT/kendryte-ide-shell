@@ -35,6 +35,6 @@
 		"@types/semver": "^5.5.0",
 		"@types/split2": "^2.1.6",
 		"@types/vinyl-fs": "^2.4.9",
-		"electron": "^4.0.0"
+		"electron": "^7.2.4"
 	}
 }
